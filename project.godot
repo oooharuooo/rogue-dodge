@@ -1,0 +1,25 @@
+; Engine configuration file.
+; Godot 4.x project for the combat sandbox prototype.
+
+config_version=5
+
+[application]
+config/name="Rogue Dodge Combat Sandbox"
+run/main_scene="res://scenes/Main.tscn"
+config/features=PackedStringArray("4.7")
+boot_splash/show_image=false
+
+[display]
+window/size/viewport_width=540
+window/size/viewport_height=960
+window/size/window_width_override=432
+window/size/window_height_override=768
+window/stretch/mode="canvas_items"
+window/handheld/orientation=1
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/default_filters/use_nearest_mipmap_filter=false
+
+audio/driver/enable_input=false
