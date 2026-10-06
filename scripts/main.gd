@@ -2,6 +2,8 @@ extends Control
 
 const MAX_HP := 3
 const DODGE_COMMIT_SECONDS := 0.35
+const SWIPE_DOWN_THRESHOLD := 72.0
+const TOUCH_MOUSE_SUPPRESS_MS := 450
 const SkillCatalog = preload("res://scripts/skill_catalog.gd")
 const VersionInfo = preload("res://scripts/version_info.gd")
 
@@ -20,11 +22,11 @@ const C := {
 }
 
 var enemies := [
-	{"name":"Swordsman","counters":1,"windup":1.50,"dodge_window":0.68,"perfect_window":0.21,"cue_before":0.43},
-	{"name":"Heavy Knight","counters":2,"windup":2.35,"dodge_window":0.72,"perfect_window":0.22,"cue_before":0.47},
-	{"name":"Rogue","counters":2,"windup":1.05,"dodge_window":0.52,"perfect_window":0.17,"cue_before":0.33},
-	{"name":"Duelist","counters":3,"windup":1.20,"dodge_window":0.50,"perfect_window":0.16,"cue_before":0.31},
-	{"name":"Executioner","counters":4,"windup":1.85,"dodge_window":0.56,"perfect_window":0.17,"cue_before":0.36}
+	{"name":"Swordsman","counters":1,"windup":1.50,"dodge_window":0.68,"perfect_window":0.21,"cue_before":0.43,"high_chance":0.00},
+	{"name":"Heavy Knight","counters":2,"windup":2.35,"dodge_window":0.72,"perfect_window":0.22,"cue_before":0.47,"high_chance":0.30},
+	{"name":"Rogue","counters":2,"windup":1.05,"dodge_window":0.52,"perfect_window":0.17,"cue_before":0.33,"high_chance":0.20},
+	{"name":"Duelist","counters":3,"windup":1.20,"dodge_window":0.50,"perfect_window":0.16,"cue_before":0.31,"high_chance":0.35},
+	{"name":"Executioner","counters":4,"windup":1.85,"dodge_window":0.56,"perfect_window":0.17,"cue_before":0.36,"high_chance":0.45}
 ]
 
 var hp := MAX_HP
@@ -42,6 +44,10 @@ var skill_levels: Dictionary = {}
 var perfect_count := 0
 var guardian_charges := 0
 var choice_mode := ""
+var touch_start_pos := Vector2.ZERO
+var touch_tracking := false
+var touch_action_fired := false
+var last_touch_event_ms := -10000
 
 var hp_label: Label
 var flow_label: Label
@@ -109,7 +115,7 @@ func _build_ui() -> void:
 	header.add_child(info)
 	enemy_name_label = _label("Combat Sandbox", 22, C.text)
 	info.add_child(enemy_name_label)
-	enemy_counter_label = _label("Left / Right only", 14, C.muted)
+	enemy_counter_label = _label("Left / Right + Duck", 14, C.muted)
 	info.add_child(enemy_counter_label)
 	build_label = _label("Build: none", 12, C.perfect)
 	build_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -133,7 +139,7 @@ func _build_ui() -> void:
 	timing_bar.show_percentage = false
 	arena.add_child(timing_bar)
 
-	hint_label = _label("Keyboard: A/D or arrows. Phone: tap left/right half.", 14, C.muted)
+	hint_label = _label("A/D = dodge • S/↓ = duck • Phone: tap or swipe down.", 14, C.muted)
 	hint_label.position = Vector2(22, 52)
 	hint_label.size = Vector2(460, 28)
 	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -167,17 +173,23 @@ func _build_ui() -> void:
 	player_text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	player_body.add_child(player_text)
 
-	var left_hint := _label("TAP LEFT\nA / ←", 17, C.muted)
+	var left_hint := _label("TAP LEFT\nA / ←", 16, C.muted)
 	left_hint.position = Vector2(18, 405)
 	left_hint.size = Vector2(150, 66)
 	left_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	arena.add_child(left_hint)
 
-	var right_hint := _label("TAP RIGHT\nD / →", 17, C.muted)
+	var right_hint := _label("TAP RIGHT\nD / →", 16, C.muted)
 	right_hint.position = Vector2(372, 405)
 	right_hint.size = Vector2(150, 66)
 	right_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	arena.add_child(right_hint)
+
+	var duck_hint := _label("SWIPE ↓  •  S / ↓  = DUCK", 15, C.perfect)
+	duck_hint.position = Vector2(155, 470)
+	duck_hint.size = Vector2(230, 30)
+	duck_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	arena.add_child(duck_hint)
 
 	message_label = _label("Start the run and learn the telegraphs.", 18, C.text)
 	message_label.custom_minimum_size = Vector2(0, 48)
@@ -464,6 +476,7 @@ func _load_audio() -> void:
 		"windup":[170.0,0.14,0.30],
 		"cue":[760.0,0.07,0.28],
 		"dodge":[310.0,0.08,0.22],
+		"duck":[240.0,0.09,0.23],
 		"perfect":[980.0,0.14,0.30],
 		"hit":[95.0,0.18,0.34],
 		"kill":[620.0,0.16,0.28]
@@ -504,21 +517,45 @@ func _input(event: InputEvent) -> void:
 
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_A or event.keycode == KEY_LEFT:
-			_try_dodge("left")
+			_try_action("left")
 		elif event.keycode == KEY_D or event.keycode == KEY_RIGHT:
-			_try_dodge("right")
+			_try_action("right")
+		elif event.keycode == KEY_S or event.keycode == KEY_DOWN:
+			_try_action("duck")
 		elif event.keycode == KEY_R:
 			_begin_new_run()
 
-	elif event is InputEventScreenTouch and event.pressed and run_active:
-		var half := get_viewport_rect().size.x * 0.5
-		_try_dodge("left" if event.position.x < half else "right")
+	elif event is InputEventScreenTouch and run_active:
+		last_touch_event_ms = Time.get_ticks_msec()
+		if event.pressed:
+			touch_start_pos = event.position
+			touch_tracking = true
+			touch_action_fired = false
+		elif touch_tracking:
+			if not touch_action_fired:
+				var delta := event.position - touch_start_pos
+				if delta.y >= SWIPE_DOWN_THRESHOLD and abs(delta.y) > abs(delta.x):
+					_try_action("duck")
+				else:
+					var half := get_viewport_rect().size.x * 0.5
+					_try_action("left" if touch_start_pos.x < half else "right")
+			touch_tracking = false
+			touch_action_fired = false
 		get_viewport().set_input_as_handled()
 
+	elif event is InputEventScreenDrag and run_active and touch_tracking and not touch_action_fired:
+		last_touch_event_ms = Time.get_ticks_msec()
+		var delta := event.position - touch_start_pos
+		if delta.y >= SWIPE_DOWN_THRESHOLD and abs(delta.y) > abs(delta.x):
+			touch_action_fired = true
+			_try_action("duck")
+			get_viewport().set_input_as_handled()
+
 	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT and run_active:
-		# Web/mobile fallback: some browsers/devices may surface a tap as a mouse click.
-		var half := get_viewport_rect().size.x * 0.5
-		_try_dodge("left" if event.position.x < half else "right")
+		# Desktop/Web fallback. Suppress synthetic mouse clicks immediately after a real touch.
+		if Time.get_ticks_msec() - last_touch_event_ms > TOUCH_MOUSE_SUPPRESS_MS:
+			var half := get_viewport_rect().size.x * 0.5
+			_try_action("left" if event.position.x < half else "right")
 
 func _reset_run(start_now: bool) -> void:
 	attack_generation += 1
@@ -529,9 +566,12 @@ func _reset_run(start_now: bool) -> void:
 	attack_side = ""
 	last_dodge_direction = ""
 	last_dodge_time = -99.0
+	touch_tracking = false
+	touch_action_fired = false
 	dodge_locked_until = 0.0
 	timing_bar.value = 0.0
 	player_body.position = Vector2(235, 380)
+	player_body.size = Vector2(70, 90)
 	player_body.modulate = Color.WHITE
 	enemy_body.position = Vector2(210, 185)
 	enemy_body.modulate = Color.WHITE
@@ -563,7 +603,7 @@ func _load_enemy() -> void:
 	if int(skill_levels.get("guardian", 0)) >= 2:
 		guardian_charges = max(guardian_charges, 1)
 	enemy_name_label.text = str(enemy.name)
-	enemy_counter_label.text = "Counter needed: %d" % enemy_counters_left
+	enemy_counter_label.text = "Counter needed: %d  •  High chance: %d%%" % [enemy_counters_left, int(float(enemy.high_chance) * 100.0)]
 	state_label.text = "READY"
 	state_label.add_theme_color_override("font_color", C.accent)
 	hint_label.text = "Watch the stance. Don't panic-dodge."
@@ -577,21 +617,39 @@ func _begin_attack() -> void:
 	attack_generation += 1
 	var generation := attack_generation
 	var enemy: Dictionary = enemies[enemy_index]
-	attack_side = "left" if randf() < 0.5 else "right"
+
+	if randf() < float(enemy.high_chance):
+		attack_side = "high"
+	else:
+		attack_side = "left" if randf() < 0.5 else "right"
+
 	last_dodge_direction = ""
 	last_dodge_time = -99.0
 	attack_resolve_time = Time.get_ticks_msec() / 1000.0 + float(enemy.windup)
 
 	state_label.text = "WIND-UP"
 	state_label.add_theme_color_override("font_color", C.accent)
-	weapon_indicator.text = "ATTACK FROM LEFT" if attack_side == "left" else "ATTACK FROM RIGHT"
-	hint_label.text = "Dodge to the OPPOSITE side."
+
+	if attack_side == "high":
+		weapon_indicator.text = "HIGH SWEEP"
+		hint_label.text = "DUCK under it — S / ↓ / swipe down."
+	else:
+		weapon_indicator.text = "ATTACK FROM LEFT" if attack_side == "left" else "ATTACK FROM RIGHT"
+		hint_label.text = "Dodge to the OPPOSITE side."
+
 	_play("windup")
 
-	var target_x := 185.0 if attack_side == "left" else 235.0
+	var target_x := 210.0
+	if attack_side == "left":
+		target_x = 185.0
+	elif attack_side == "right":
+		target_x = 235.0
+
 	var wind := create_tween()
 	wind.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	wind.tween_property(enemy_body, "position:x", target_x, min(float(enemy.windup) * 0.45, 0.55))
+	if attack_side == "high":
+		wind.parallel().tween_property(enemy_body, "position:y", 160.0, min(float(enemy.windup) * 0.45, 0.55))
 
 	timing_bar.value = 0.0
 	var bar := create_tween()
@@ -602,37 +660,52 @@ func _begin_attack() -> void:
 		return
 	state_label.text = "NOW"
 	state_label.add_theme_color_override("font_color", C.danger)
-	hint_label.text = "NOW!"
+	hint_label.text = "DUCK NOW!" if attack_side == "high" else "NOW!"
 	_play("cue")
 
 	await get_tree().create_timer(float(enemy.cue_before)).timeout
 	if run_active and generation == attack_generation:
 		_resolve_attack()
 
-func _try_dodge(direction: String) -> void:
+func _try_action(action: String) -> void:
 	if not run_active or attack_side == "":
 		return
+
 	var now := Time.get_ticks_msec() / 1000.0
 	if now < dodge_locked_until:
-		message_label.text = "Committed — cannot dodge again yet."
+		message_label.text = "Committed — cannot act again yet."
 		return
-	dodge_locked_until = now + DODGE_COMMIT_SECONDS
-	last_dodge_direction = direction
-	last_dodge_time = now
-	_play("dodge")
 
-	var target_x := 170.0 if direction == "left" else 300.0
+	dodge_locked_until = now + DODGE_COMMIT_SECONDS
+	last_dodge_direction = action
+	last_dodge_time = now
+
+	if action == "duck":
+		_play("duck")
+		_duck_animation()
+	else:
+		_play("dodge")
+		var target_x := 170.0 if action == "left" else 300.0
+		var tween := create_tween()
+		tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		tween.tween_property(player_body, "position:x", target_x, 0.11)
+		tween.set_ease(Tween.EASE_IN)
+		tween.tween_property(player_body, "position:x", 235.0, 0.18)
+
+func _duck_animation() -> void:
 	var tween := create_tween()
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(player_body, "position:x", target_x, 0.11)
+	tween.tween_property(player_body, "position:y", 414.0, 0.09)
+	tween.parallel().tween_property(player_body, "size:y", 56.0, 0.09)
 	tween.set_ease(Tween.EASE_IN)
-	tween.tween_property(player_body, "position:x", 235.0, 0.18)
+	tween.tween_property(player_body, "position:y", 380.0, 0.18)
+	tween.parallel().tween_property(player_body, "size:y", 90.0, 0.18)
 
 func _resolve_attack() -> void:
 	if not run_active:
 		return
 	var enemy: Dictionary = enemies[enemy_index]
-	var correct := "right" if attack_side == "left" else "left"
+	var correct := "duck" if attack_side == "high" else ("right" if attack_side == "left" else "left")
 	var success := false
 	var perfect := false
 
@@ -653,13 +726,13 @@ func _resolve_attack() -> void:
 			perfect_count += 1
 			state_label.text = "PERFECT"
 			state_label.add_theme_color_override("font_color", C.perfect)
-			message_label.text = "PERFECT DODGE — AUTO COUNTER!"
+			message_label.text = "PERFECT %s — AUTO COUNTER!" % ("DUCK" if correct == "duck" else "DODGE")
 			_play("perfect")
 			_flash(player_body, C.perfect)
 		else:
 			state_label.text = "DODGED"
 			state_label.add_theme_color_override("font_color", C.good)
-			message_label.text = "Dodge — Auto Counter"
+			message_label.text = ("%s — Auto Counter" % ("Duck" if correct == "duck" else "Dodge"))
 
 		var damage := _counter_damage(perfect)
 		enemy_counters_left -= damage
