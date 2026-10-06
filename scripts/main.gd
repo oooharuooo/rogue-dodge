@@ -1642,7 +1642,11 @@ func _preview_counter_damage(perfect: bool) -> int:
 				if _has_weapon_upgrade("crushing_release") and greatsword_charge >= _greatsword_max_charge():
 					damage += 1
 		"bow":
-			if not perfect and bow_aim > 0:
+			if perfect and bow_aim >= _bow_max_aim():
+				damage += bow_aim
+				if _has_weapon_upgrade("piercing_shot"):
+					damage += 1
+			elif not perfect and bow_aim > 0:
 				damage += bow_aim
 				if _has_weapon_upgrade("piercing_shot"):
 					damage += 1
@@ -1743,7 +1747,12 @@ func _counter_damage(perfect: bool) -> int:
 			else:
 				greatsword_charge = mini(max_charge, greatsword_charge + 1)
 		"bow":
-			if perfect:
+			if perfect and bow_aim >= _bow_max_aim():
+				damage += bow_aim
+				if _has_weapon_upgrade("piercing_shot"):
+					damage += 1
+				bow_aim = 0
+			elif perfect:
 				var aim_gain := 2 if _has_weapon_upgrade("steady_aim") else 1
 				bow_aim = mini(_bow_max_aim(), bow_aim + aim_gain)
 			elif bow_aim > 0:
