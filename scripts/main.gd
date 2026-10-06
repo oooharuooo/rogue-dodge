@@ -77,6 +77,7 @@ var choice_title: Label
 var choice_buttons: Array[Button] = []
 var version_button: Button
 var update_overlay: ColorRect
+var duck_touch_zone: PanelContainer
 
 var audio_players: Dictionary = {}
 
@@ -147,7 +148,7 @@ func _build_ui() -> void:
 	timing_bar.show_percentage = false
 	arena.add_child(timing_bar)
 
-	hint_label = _label("A/D = dodge • S/↓ = duck • Phone: tap or swipe down.", 14, C.muted)
+	hint_label = _label("A/D = dodge • S/↓ = duck • Phone: tap DUCK or swipe down.", 14, C.muted)
 	hint_label.position = Vector2(22, 52)
 	hint_label.size = Vector2(460, 28)
 	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -193,11 +194,30 @@ func _build_ui() -> void:
 	right_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	arena.add_child(right_hint)
 
-	var duck_hint := _label("SWIPE ↓  •  S / ↓  = DUCK", 15, C.perfect)
-	duck_hint.position = Vector2(155, 470)
-	duck_hint.size = Vector2(230, 30)
+	duck_touch_zone = PanelContainer.new()
+	duck_touch_zone.position = Vector2(165, 438)
+	duck_touch_zone.size = Vector2(210, 58)
+	duck_touch_zone.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var duck_style := StyleBoxFlat.new()
+	duck_style.bg_color = Color(0.18, 0.30, 0.42, 0.92)
+	duck_style.border_width_left = 2
+	duck_style.border_width_top = 2
+	duck_style.border_width_right = 2
+	duck_style.border_width_bottom = 2
+	duck_style.border_color = C.perfect
+	duck_style.corner_radius_top_left = 14
+	duck_style.corner_radius_top_right = 14
+	duck_style.corner_radius_bottom_left = 14
+	duck_style.corner_radius_bottom_right = 14
+	duck_touch_zone.add_theme_stylebox_override("panel", duck_style)
+	arena.add_child(duck_touch_zone)
+
+	var duck_hint := _label("DUCK  ↓\nTap here • S / ↓ • swipe down", 14, C.text)
+	duck_hint.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	duck_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	arena.add_child(duck_hint)
+	duck_hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	duck_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	duck_touch_zone.add_child(duck_hint)
 
 	message_label = _label("Start the run and learn the telegraphs.", 18, C.text)
 	message_label.custom_minimum_size = Vector2(0, 48)
@@ -519,6 +539,9 @@ func _play(name: String) -> void:
 	if audio_players.has(name):
 		audio_players[name].play()
 
+func _point_is_duck_zone(point: Vector2) -> bool:
+	return duck_touch_zone != null and duck_touch_zone.get_global_rect().has_point(point)
+
 func _input(event: InputEvent) -> void:
 	if update_overlay != null and update_overlay.visible:
 		return
@@ -541,6 +564,13 @@ func _input(event: InputEvent) -> void:
 			touch_action_fired = false
 			touch_had_drag = false
 			touch_down_accum = 0.0
+
+			if _point_is_duck_zone(event.position):
+				touch_action_fired = true
+				touch_tracking = false
+				_try_action("duck")
+				get_viewport().set_input_as_handled()
+				return
 		elif touch_tracking:
 			if not touch_action_fired:
 				if touch_had_drag:
@@ -571,10 +601,13 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 
 	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT and run_active:
-		# Desktop/Web fallback. Suppress synthetic mouse clicks immediately after a real touch.
+		# Desktop/Web fallback. Duck zone always wins over side-tap classification.
 		if Time.get_ticks_msec() - last_touch_event_ms > TOUCH_MOUSE_SUPPRESS_MS:
-			var half := get_viewport_rect().size.x * 0.5
-			_try_action("left" if event.position.x < half else "right")
+			if _point_is_duck_zone(event.position):
+				_try_action("duck")
+			else:
+				var half := get_viewport_rect().size.x * 0.5
+				_try_action("left" if event.position.x < half else "right")
 
 func _reset_run(start_now: bool) -> void:
 	attack_generation += 1
@@ -790,7 +823,7 @@ func _begin_fake_step(step: String) -> void:
 func _show_attack_telegraph(action: String) -> void:
 	if action == "high":
 		weapon_indicator.text = "HIGH SWEEP"
-		hint_label.text = "DUCK under it — S / ↓ / swipe down."
+		hint_label.text = "DUCK under it — tap DUCK / S / ↓ / swipe down."
 	else:
 		weapon_indicator.text = "ATTACK FROM LEFT" if action == "left" else "ATTACK FROM RIGHT"
 		hint_label.text = "Dodge to the OPPOSITE side."
