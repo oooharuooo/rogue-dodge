@@ -935,6 +935,8 @@ func _dev_next_attack() -> void:
 		return
 	if attack_side != "":
 		return
+	if dev_step_button != null:
+		dev_step_button.disabled = true
 	if current_pattern.is_empty():
 		_start_pattern()
 	else:
@@ -1839,8 +1841,16 @@ func _begin_fake_step(step: String) -> void:
 
 	pattern_step_index += 1
 	await get_tree().create_timer(0.16).timeout
-	if run_active:
-		_begin_pattern_step()
+	if not run_active:
+		return
+	if dev_test_active and dev_turn_based:
+		state_label.text = "WAITING"
+		state_label.add_theme_color_override("font_color", C.perfect)
+		message_label.text = "Fake resolved — press NEXT ATTACK"
+		if dev_step_button != null:
+			dev_step_button.disabled = false
+		return
+	_begin_pattern_step()
 
 func _show_attack_telegraph(action: String) -> void:
 	if action == "high":
@@ -1954,8 +1964,16 @@ func _animate_enemy_retract() -> void:
 func _advance_pattern_after_exchange(delay: float) -> void:
 	pattern_step_index += 1
 	await get_tree().create_timer(delay).timeout
-	if run_active:
-		_begin_pattern_step()
+	if not run_active:
+		return
+	if dev_test_active and dev_turn_based:
+		state_label.text = "WAITING"
+		state_label.add_theme_color_override("font_color", C.perfect)
+		message_label.text = "Exchange resolved — press NEXT ATTACK"
+		if dev_step_button != null:
+			dev_step_button.disabled = false
+		return
+	_begin_pattern_step()
 
 func _try_action(action: String) -> void:
 	if not run_active or attack_side == "":
@@ -2065,6 +2083,14 @@ func _resolve_attack() -> void:
 			_update_hud()
 			_advance_pattern_after_exchange(0.30)
 		else:
+			if dev_test_active and dev_god_mode:
+				flow = 0
+				state_label.text = "DEV GOD"
+				state_label.add_theme_color_override("font_color", C.perfect)
+				message_label.text = "Mistake ignored by God Mode."
+				_update_hud()
+				_advance_pattern_after_exchange(0.20)
+				return
 			hp -= 1
 			encounter_took_damage = true
 			flow = 0
@@ -2096,6 +2122,18 @@ func _defeat_enemy() -> void:
 	run_active = false
 	attack_generation += 1
 	attack_side = ""
+
+	if dev_test_active:
+		state_label.text = "DEV KO"
+		state_label.add_theme_color_override("font_color", C.good)
+		message_label.text = "DEV TEST COMPLETE — Enemy HP reached 0. Open DEV MODE to restart or change setup."
+		restart_button.text = "DEV TEST"
+		restart_button.disabled = true
+		if dev_step_button != null:
+			dev_step_button.disabled = true
+		_update_hud()
+		return
+
 	gold += current_gold_reward
 	if not encounter_took_damage:
 		_add_meta_progress("no_damage_encounters")
