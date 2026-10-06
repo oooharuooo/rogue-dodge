@@ -31,7 +31,7 @@ const WEAPONS := {
 		"counter_power": 3,
 		"hits": 3,
 		"perfect_bonus": 4,
-		"description": "Perfect stores Aim (max 2). Next normal counter spends it for bonus damage."
+		"description": "Perfect stores Aim. At max Aim, the next Perfect or Normal counter releases bonus arrow damage."
 	}
 }
 
