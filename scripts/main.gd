@@ -1186,6 +1186,11 @@ func _build_weapon_overlay() -> void:
 		stat.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		vb.add_child(stat)
 
+		var mastery_label := _label("", 12, C.perfect)
+		mastery_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		vb.add_child(mastery_label)
+		weapon_mastery_labels[weapon_id] = mastery_label
+
 		var desc := _label(WeaponCatalog.description(weapon_id), 12, C.muted)
 		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -1200,6 +1205,7 @@ func _build_weapon_overlay() -> void:
 		weapon_buttons.append(select)
 
 func _show_weapon_choices() -> void:
+	_refresh_weapon_mastery_ui()
 	run_active = false
 	attack_generation += 1
 	attack_side = ""
@@ -1217,6 +1223,8 @@ func _choose_weapon(weapon_id: String) -> void:
 	if not WeaponCatalog.WEAPONS.has(weapon_id):
 		return
 	current_weapon_id = weapon_id
+	run_weapon_mastery_level = _weapon_mastery_level(weapon_id)
+	weapon_upgrades.clear()
 	dagger_hit_bank = 0
 	greatsword_charge = 0
 	bow_aim = 0
