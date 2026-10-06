@@ -11,7 +11,7 @@ const FLOORS := [
 	],
 	[
 		{"id":"rogue","type":"normal","label":"NORMAL\nRogue","enemy_index":2,"gold":2},
-		{"id":"shop","type":"shop","label":"SHOP\n2 Gold → Skill"}
+		{"id":"shop","type":"shop","label":"SHOP\n2 Gold to Skill"}
 	],
 	[
 		{"id":"elite","type":"elite","label":"ELITE\nDuelist","enemy_index":3,"gold":4}

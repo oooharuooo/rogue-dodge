@@ -113,6 +113,7 @@ var choice_title: Label
 var choice_buttons: Array[Button] = []
 var version_button: Button
 var update_overlay: ColorRect
+var update_pause_started_at := 0.0
 var duck_touch_zone: PanelContainer
 var jump_touch_zone: PanelContainer
 var map_overlay: ColorRect
@@ -216,7 +217,7 @@ func _build_ui() -> void:
 	timing_bar.show_percentage = false
 	arena.add_child(timing_bar)
 
-	hint_label = _label("A/D dodge • S/↓ duck • W/↑ jump • Phone: use center buttons.", 14, C.muted)
+	hint_label = _label("A/D dodge • S duck • W jump • Tap center buttons.", 14, C.muted)
 	hint_label.position = Vector2(22, 52)
 	hint_label.size = Vector2(460, 28)
 	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -291,13 +292,13 @@ func _build_ui() -> void:
 	player_text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	player_body.add_child(player_text)
 
-	var left_hint := _label("TAP LEFT\nA / ←", 16, C.muted)
+	var left_hint := _label("TAP LEFT\nA / Left", 16, C.muted)
 	left_hint.position = Vector2(18, 405)
 	left_hint.size = Vector2(150, 66)
 	left_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	arena.add_child(left_hint)
 
-	var right_hint := _label("TAP RIGHT\nD / →", 16, C.muted)
+	var right_hint := _label("TAP RIGHT\nD / Right", 16, C.muted)
 	right_hint.position = Vector2(372, 405)
 	right_hint.size = Vector2(150, 66)
 	right_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -321,7 +322,7 @@ func _build_ui() -> void:
 	jump_touch_zone.add_theme_stylebox_override("panel", jump_style)
 	arena.add_child(jump_touch_zone)
 
-	var jump_hint := _label("JUMP  ↑   •   W / ↑   •   swipe up", 13, C.text)
+	var jump_hint := _label("JUMP  •  W / Up  •  swipe up", 13, C.text)
 	jump_hint.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	jump_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	jump_hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -346,7 +347,7 @@ func _build_ui() -> void:
 	duck_touch_zone.add_theme_stylebox_override("panel", duck_style)
 	arena.add_child(duck_touch_zone)
 
-	var duck_hint := _label("DUCK  ↓   •   S / ↓   •   swipe down", 13, C.text)
+	var duck_hint := _label("DUCK  •  S / Down  •  swipe down", 13, C.text)
 	duck_hint.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	duck_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	duck_hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -645,6 +646,7 @@ func _add_weapon_mastery_xp(amount: int = 1) -> void:
 	meta_data["weapon_mastery"] = mastery
 
 	var new_level := WeaponUpgradeCatalog.mastery_level(new_xp)
+	run_weapon_mastery_level = new_level
 	if new_level > old_level:
 		var notice := "%s MASTERY Lv.%d unlocked" % [WeaponCatalog.display_name(current_weapon_id).to_upper(), new_level]
 		pending_unlock_notice = notice if pending_unlock_notice == "" else pending_unlock_notice + "\n" + notice
@@ -1130,6 +1132,7 @@ func _build_update_overlay() -> void:
 	update_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	update_overlay.visible = false
 	update_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	update_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(update_overlay)
 
 	var margin := MarginContainer.new()
@@ -1173,6 +1176,9 @@ func _build_update_overlay() -> void:
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.custom_minimum_size = Vector2(0, 220)
+	scroll.name = "ChangelogScroll"
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.mouse_force_pass_scroll_events = false
 	box.add_child(scroll)
 
 	var scroll_margin := MarginContainer.new()
@@ -1197,14 +1203,22 @@ func _build_update_overlay() -> void:
 	box.add_child(close)
 
 func _show_update_popup() -> void:
-	if update_overlay == null:
+	if update_overlay == null or update_overlay.visible:
 		return
+	update_pause_started_at = Time.get_ticks_msec() / 1000.0
 	update_overlay.visible = true
 	update_overlay.move_to_front()
+	get_tree().paused = true
 
 func _hide_update_popup() -> void:
-	if update_overlay != null:
+	if update_overlay != null and update_overlay.visible:
+		var paused_seconds := Time.get_ticks_msec() / 1000.0 - update_pause_started_at
+		if run_active:
+			attack_resolve_time += paused_seconds
+			last_dodge_time += paused_seconds
+			dodge_locked_until += paused_seconds
 		update_overlay.visible = false
+	get_tree().paused = false
 
 func _build_weapon_overlay() -> void:
 	weapon_overlay = ColorRect.new()
@@ -1833,6 +1847,10 @@ func _input(event: InputEvent) -> void:
 		return
 	if weapon_upgrade_overlay != null and weapon_upgrade_overlay.visible:
 		return
+	if map_overlay != null and map_overlay.visible:
+		return
+	if choice_overlay != null and choice_overlay.visible:
+		return
 
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_A or event.keycode == KEY_LEFT:
@@ -1847,6 +1865,8 @@ func _input(event: InputEvent) -> void:
 			_begin_new_run()
 
 	elif event is InputEventScreenTouch and run_active:
+		if event.pressed and not arena.get_global_rect().has_point(event.position):
+			return
 		last_touch_event_ms = Time.get_ticks_msec()
 		if event.pressed:
 			touch_start_pos = event.position
@@ -1906,6 +1926,8 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 
 	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT and run_active:
+		if not arena.get_global_rect().has_point(event.position):
+			return
 		# Desktop/Web fallback. Duck zone always wins over side-tap classification.
 		if Time.get_ticks_msec() - last_touch_event_ms > TOUCH_MOUSE_SUPPRESS_MS:
 			if _point_is_jump_zone(event.position):
@@ -1970,6 +1992,8 @@ func _update_hud() -> void:
 func _load_enemy() -> void:
 	if not run_active:
 		return
+	attack_generation += 1
+	var generation := attack_generation
 	var enemy: Dictionary = enemies[enemy_index]
 	if dev_test_active:
 		enemy_hp = dev_enemy_hp
@@ -1999,8 +2023,8 @@ func _load_enemy() -> void:
 	state_label.text = "READY"
 	state_label.add_theme_color_override("font_color", C.accent)
 	hint_label.text = "Learn the moveset. Patterns now repeat."
-	await get_tree().create_timer(0.65).timeout
-	if run_active:
+	await get_tree().create_timer(0.65, false).timeout
+	if run_active and generation == attack_generation:
 		_start_pattern()
 
 func _update_enemy_pattern_label() -> void:
@@ -2014,6 +2038,7 @@ func _update_enemy_pattern_label() -> void:
 func _start_pattern() -> void:
 	if not run_active:
 		return
+	var generation := attack_generation
 
 	var enemy: Dictionary = enemies[enemy_index]
 	var patterns: Array = MovesetCatalog.patterns_for(str(enemy.id), boss_phase)
@@ -2037,8 +2062,8 @@ func _start_pattern() -> void:
 	state_label.text = "PATTERN"
 	state_label.add_theme_color_override("font_color", C.accent)
 	message_label.text = current_pattern_name
-	await get_tree().create_timer(0.28).timeout
-	if not run_active:
+	await get_tree().create_timer(0.28, false).timeout
+	if not run_active or generation != attack_generation:
 		return
 	if dev_test_active and dev_turn_based:
 		state_label.text = "WAITING"
@@ -2054,11 +2079,12 @@ func _begin_pattern_step() -> void:
 		return
 
 	if pattern_step_index >= current_pattern.size():
+		var generation := attack_generation
 		state_label.text = "RESET"
 		state_label.add_theme_color_override("font_color", C.muted)
 		message_label.text = "Pattern complete."
-		await get_tree().create_timer(0.52).timeout
-		if run_active:
+		await get_tree().create_timer(0.52, false).timeout
+		if run_active and generation == attack_generation:
 			_start_pattern()
 		return
 
@@ -2112,7 +2138,7 @@ func _begin_real_step(step: String) -> void:
 	var bar := create_tween()
 	bar.tween_property(timing_bar, "value", 1.0, windup)
 
-	await get_tree().create_timer(max(0.0, windup - float(enemy.cue_before))).timeout
+	await get_tree().create_timer(max(0.0, windup - float(enemy.cue_before)), false).timeout
 	if not run_active or generation != attack_generation:
 		return
 
@@ -2131,7 +2157,7 @@ func _begin_real_step(step: String) -> void:
 		_animate_enemy_strike(action, float(enemy.cue_before))
 	_dev_apply_auto_dodge(action, enemy)
 
-	await get_tree().create_timer(float(enemy.cue_before)).timeout
+	await get_tree().create_timer(float(enemy.cue_before), false).timeout
 	if run_active and generation == attack_generation:
 		_resolve_attack()
 
@@ -2159,7 +2185,7 @@ func _begin_fake_step(step: String) -> void:
 	var bar := create_tween()
 	bar.tween_property(timing_bar, "value", 0.82, fake_duration)
 
-	await get_tree().create_timer(fake_duration).timeout
+	await get_tree().create_timer(fake_duration, false).timeout
 	if not run_active or generation != attack_generation:
 		return
 
@@ -2174,8 +2200,8 @@ func _begin_fake_step(step: String) -> void:
 	message_label.text = "Panic dodge!" if panic_dodged else "You held your nerve."
 
 	pattern_step_index += 1
-	await get_tree().create_timer(0.16).timeout
-	if not run_active:
+	await get_tree().create_timer(0.16, false).timeout
+	if not run_active or generation != attack_generation:
 		return
 	if dev_test_active and dev_turn_based:
 		state_label.text = "WAITING"
@@ -2201,10 +2227,10 @@ func _show_attack_telegraph(action: String, projectile: bool = false) -> void:
 
 	if action == "high":
 		weapon_indicator.text = "HIGH SWEEP"
-		hint_label.text = "DUCK under it — tap DUCK / S / ↓."
+		hint_label.text = "DUCK under it — tap DUCK / S / Down."
 	elif action == "low":
 		weapon_indicator.text = "LOW SWEEP"
-		hint_label.text = "JUMP over it — tap JUMP / W / ↑."
+		hint_label.text = "JUMP over it — tap JUMP / W / Up."
 	else:
 		weapon_indicator.text = "ATTACK FROM LEFT" if action == "left" else "ATTACK FROM RIGHT"
 		hint_label.text = "Dodge to the OPPOSITE side."
@@ -2354,9 +2380,10 @@ func _animate_enemy_retract() -> void:
 	retract.parallel().tween_property(enemy_weapon, "modulate", Color.WHITE, 0.12)
 
 func _advance_pattern_after_exchange(delay: float) -> void:
+	var generation := attack_generation
 	pattern_step_index += 1
-	await get_tree().create_timer(delay).timeout
-	if not run_active:
+	await get_tree().create_timer(delay, false).timeout
+	if not run_active or generation != attack_generation:
 		return
 	if dev_test_active and dev_turn_based:
 		state_label.text = "WAITING"
@@ -2495,11 +2522,14 @@ func _resolve_attack() -> void:
 		_update_hud()
 
 		if enemy_hp <= 0:
-			await get_tree().create_timer(0.48).timeout
-			_defeat_enemy()
+			var generation := attack_generation
+			await get_tree().create_timer(0.48, false).timeout
+			if run_active and generation == attack_generation:
+				_defeat_enemy()
 		elif _check_boss_phase_transition():
-			await get_tree().create_timer(0.70).timeout
-			if run_active:
+			var generation := attack_generation
+			await get_tree().create_timer(0.70, false).timeout
+			if run_active and generation == attack_generation:
 				_start_pattern()
 		else:
 			_advance_pattern_after_exchange(0.24)
@@ -2567,6 +2597,7 @@ func _defeat_enemy() -> void:
 		return
 
 	gold += current_gold_reward
+	var generation := attack_generation
 	if not encounter_took_damage:
 		_add_meta_progress("no_damage_encounters")
 		if current_node_type == "elite":
@@ -2577,8 +2608,9 @@ func _defeat_enemy() -> void:
 		_add_meta_progress("boss_clears")
 		_add_meta_progress("runs_completed")
 		message_label.text = _consume_unlock_notice("BOSS DEFEATED")
-		await get_tree().create_timer(0.45).timeout
-		_end_run(true)
+		await get_tree().create_timer(0.45, false).timeout
+		if generation == attack_generation:
+			_end_run(true)
 		return
 
 	if current_node_type == "elite":
@@ -2586,7 +2618,9 @@ func _defeat_enemy() -> void:
 	else:
 		message_label.text = "COUNTER KILL — +%d Gold" % current_gold_reward
 
-	await get_tree().create_timer(0.40).timeout
+	await get_tree().create_timer(0.40, false).timeout
+	if generation != attack_generation:
+		return
 	if current_node_type == "elite" and _show_weapon_upgrade_choices():
 		return
 	_show_skill_choices("reward")
