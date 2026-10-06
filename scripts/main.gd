@@ -64,6 +64,7 @@ var enemy_name_label: Label
 var enemy_counter_label: Label
 var state_label: Label
 var enemy_body: ColorRect
+var enemy_weapon: ColorRect
 var weapon_indicator: Label
 var player_body: ColorRect
 var message_label: Label
@@ -154,7 +155,7 @@ func _build_ui() -> void:
 	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	arena.add_child(hint_label)
 
-	weapon_indicator = _label("", 24, C.accent)
+	weapon_indicator = _label("", 17, C.muted)
 	weapon_indicator.position = Vector2(45, 130)
 	weapon_indicator.size = Vector2(450, 42)
 	weapon_indicator.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -170,6 +171,15 @@ func _build_ui() -> void:
 	enemy_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	enemy_text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	enemy_body.add_child(enemy_text)
+
+	enemy_weapon = ColorRect.new()
+	enemy_weapon.color = Color("d8c17c")
+	enemy_weapon.size = Vector2(14, 112)
+	enemy_weapon.position = Vector2(300, 180)
+	enemy_weapon.pivot_offset = Vector2(7, 98)
+	enemy_weapon.rotation = deg_to_rad(18.0)
+	enemy_weapon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	arena.add_child(enemy_weapon)
 
 	player_body = ColorRect.new()
 	player_body.color = C.player
@@ -632,7 +642,7 @@ func _reset_run(start_now: bool) -> void:
 	player_body.position = Vector2(235, 380)
 	player_body.size = Vector2(70, 90)
 	player_body.modulate = Color.WHITE
-	enemy_body.position = Vector2(210, 185)
+	_reset_enemy_pose()
 	enemy_body.modulate = Color.WHITE
 	weapon_indicator.text = ""
 	_update_hud()
@@ -758,7 +768,7 @@ func _begin_real_step(step: String) -> void:
 
 	_show_attack_telegraph(action)
 	_play("windup")
-	_animate_enemy_windup(action, windup)
+	_animate_enemy_windup(action, windup, step)
 
 	timing_bar.value = 0.0
 	var bar := create_tween()
@@ -772,6 +782,7 @@ func _begin_real_step(step: String) -> void:
 	state_label.add_theme_color_override("font_color", C.danger)
 	hint_label.text = "DUCK NOW!" if action == "high" else "NOW!"
 	_play("cue")
+	_animate_enemy_strike(action, float(enemy.cue_before))
 
 	await get_tree().create_timer(float(enemy.cue_before)).timeout
 	if run_active and generation == attack_generation:
@@ -795,7 +806,7 @@ func _begin_fake_step(step: String) -> void:
 
 	_show_attack_telegraph(action)
 	_play("windup")
-	_animate_enemy_windup(action, fake_duration)
+	_animate_enemy_windup(action, fake_duration, step)
 
 	timing_bar.value = 0.0
 	var bar := create_tween()
@@ -808,7 +819,7 @@ func _begin_fake_step(step: String) -> void:
 	var panic_dodged := last_dodge_direction != ""
 	attack_side = ""
 	timing_bar.value = 0.0
-	enemy_body.position = Vector2(210, 185)
+	_animate_enemy_retract()
 	weapon_indicator.text = "FEINT"
 	state_label.text = "CANCEL"
 	state_label.add_theme_color_override("font_color", C.muted)
@@ -816,7 +827,7 @@ func _begin_fake_step(step: String) -> void:
 	message_label.text = "Panic dodge!" if panic_dodged else "You held your nerve."
 
 	pattern_step_index += 1
-	await get_tree().create_timer(0.10).timeout
+	await get_tree().create_timer(0.16).timeout
 	if run_active:
 		_begin_pattern_step()
 
@@ -828,19 +839,93 @@ func _show_attack_telegraph(action: String) -> void:
 		weapon_indicator.text = "ATTACK FROM LEFT" if action == "left" else "ATTACK FROM RIGHT"
 		hint_label.text = "Dodge to the OPPOSITE side."
 
-func _animate_enemy_windup(action: String, windup: float) -> void:
-	enemy_body.position = Vector2(210, 185)
-	var target_x := 210.0
-	if action == "left":
-		target_x = 185.0
-	elif action == "right":
-		target_x = 235.0
+func _reset_enemy_pose() -> void:
+	if enemy_body != null:
+		enemy_body.position = Vector2(210, 185)
+		enemy_body.rotation = 0.0
+		enemy_body.scale = Vector2.ONE
+		enemy_body.pivot_offset = Vector2(60, 96)
+	if enemy_weapon != null:
+		enemy_weapon.position = Vector2(300, 180)
+		enemy_weapon.size = Vector2(14, 112)
+		enemy_weapon.pivot_offset = Vector2(7, 98)
+		enemy_weapon.rotation = deg_to_rad(18.0)
+		enemy_weapon.modulate = Color.WHITE
+		enemy_weapon.visible = true
 
-	var wind := create_tween()
-	wind.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	wind.tween_property(enemy_body, "position:x", target_x, min(windup * 0.45, 0.55))
-	if action == "high":
-		wind.parallel().tween_property(enemy_body, "position:y", 160.0, min(windup * 0.45, 0.55))
+func _animate_enemy_windup(action: String, windup: float, step: String) -> void:
+	_reset_enemy_pose()
+
+	var pose_time: float = min(windup * 0.44, 0.58)
+	var body_target := Vector2(210, 185)
+	var body_rotation := 0.0
+	var weapon_target := Vector2(300, 180)
+	var weapon_rotation := deg_to_rad(18.0)
+
+	if action == "left":
+		body_target = Vector2(188, 190)
+		body_rotation = deg_to_rad(-9.0)
+		weapon_target = Vector2(176, 176)
+		weapon_rotation = deg_to_rad(-58.0)
+	elif action == "right":
+		body_target = Vector2(232, 190)
+		body_rotation = deg_to_rad(9.0)
+		weapon_target = Vector2(350, 176)
+		weapon_rotation = deg_to_rad(58.0)
+	elif action == "high":
+		body_target = Vector2(210, 172)
+		body_rotation = deg_to_rad(-3.0)
+		weapon_target = Vector2(264, 118)
+		weapon_rotation = deg_to_rad(88.0)
+
+	var wind_tween := create_tween()
+	wind_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	wind_tween.tween_property(enemy_body, "position", body_target, pose_time)
+	wind_tween.parallel().tween_property(enemy_body, "rotation", body_rotation, pose_time)
+	wind_tween.parallel().tween_property(enemy_weapon, "position", weapon_target, pose_time)
+	wind_tween.parallel().tween_property(enemy_weapon, "rotation", weapon_rotation, pose_time)
+
+	if step.begins_with("delay_"):
+		enemy_weapon.modulate = C.accent
+		var hold_tween := create_tween()
+		hold_tween.set_loops(3)
+		hold_tween.tween_property(enemy_body, "scale", Vector2(1.035, 0.97), 0.10)
+		hold_tween.tween_property(enemy_body, "scale", Vector2.ONE, 0.10)
+	elif step.begins_with("quick_"):
+		enemy_weapon.modulate = C.danger
+	else:
+		enemy_weapon.modulate = Color.WHITE
+
+func _animate_enemy_strike(action: String, strike_time: float) -> void:
+	var duration: float = maxf(0.08, strike_time * 0.82)
+	var strike := create_tween()
+	strike.set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_IN)
+
+	if action == "left":
+		strike.tween_property(enemy_weapon, "position", Vector2(318, 286), duration)
+		strike.parallel().tween_property(enemy_weapon, "rotation", deg_to_rad(74.0), duration)
+		strike.parallel().tween_property(enemy_body, "position", Vector2(226, 202), duration)
+		strike.parallel().tween_property(enemy_body, "rotation", deg_to_rad(7.0), duration)
+	elif action == "right":
+		strike.tween_property(enemy_weapon, "position", Vector2(208, 286), duration)
+		strike.parallel().tween_property(enemy_weapon, "rotation", deg_to_rad(-74.0), duration)
+		strike.parallel().tween_property(enemy_body, "position", Vector2(194, 202), duration)
+		strike.parallel().tween_property(enemy_body, "rotation", deg_to_rad(-7.0), duration)
+	elif action == "high":
+		strike.tween_property(enemy_weapon, "position", Vector2(272, 314), duration)
+		strike.parallel().tween_property(enemy_weapon, "rotation", deg_to_rad(90.0), duration)
+		strike.parallel().tween_property(enemy_body, "position", Vector2(210, 198), duration)
+		strike.parallel().tween_property(enemy_body, "scale", Vector2(1.08, 0.94), duration)
+
+func _animate_enemy_retract() -> void:
+	var retract := create_tween()
+	retract.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	retract.tween_property(enemy_body, "position", Vector2(210, 185), 0.12)
+	retract.parallel().tween_property(enemy_body, "rotation", 0.0, 0.12)
+	retract.parallel().tween_property(enemy_body, "scale", Vector2.ONE, 0.12)
+	retract.parallel().tween_property(enemy_weapon, "position", Vector2(300, 180), 0.12)
+	retract.parallel().tween_property(enemy_weapon, "rotation", deg_to_rad(18.0), 0.12)
+	retract.parallel().tween_property(enemy_weapon, "modulate", Color.WHITE, 0.12)
 
 func _advance_pattern_after_exchange(delay: float) -> void:
 	pattern_step_index += 1
@@ -899,7 +984,7 @@ func _resolve_attack() -> void:
 	attack_side = ""
 	timing_bar.value = 0.0
 	weapon_indicator.text = ""
-	enemy_body.position = Vector2(210, 185)
+	_reset_enemy_pose()
 
 	if success:
 		if perfect:
