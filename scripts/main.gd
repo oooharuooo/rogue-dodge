@@ -630,7 +630,7 @@ func _refresh_collection() -> void:
 	var skill_ids: Array[String] = []
 	for raw_id in SkillCatalog.SKILLS.keys():
 		skill_ids.append(str(raw_id))
-	skill_ids.sort_custom(func(a: String, b: String): return SkillCatalog.display_name(a) < SkillCatalog.display_name(b))
+	skill_ids.sort()
 
 	for skill_id in skill_ids:
 		var unlocked := _is_skill_unlocked(skill_id)
@@ -845,6 +845,19 @@ func _show_skill_choices(mode: String) -> void:
 			if current < SkillCatalog.max_level(skill_id):
 				candidates.append(skill_id)
 		candidates.shuffle()
+
+	if candidates.is_empty():
+		choice_overlay.visible = false
+		restart_button.disabled = false
+		if mode == "shop":
+			gold += 2
+			_show_dungeon_map(_consume_unlock_notice("SHOP: no eligible unlocked skills. 2 Gold refunded."))
+		elif mode == "upgrade":
+			_show_dungeon_map(_consume_unlock_notice("SHRINE: no owned skill can upgrade."))
+		elif mode == "reward":
+			gold += 1
+			_show_dungeon_map(_consume_unlock_notice("REWARD: build pool maxed. Converted to +1 Gold."))
+		return
 
 	for i in range(choice_buttons.size()):
 		var button: Button = choice_buttons[i]
