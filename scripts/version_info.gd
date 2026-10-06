@@ -1,20 +1,20 @@
 extends RefCounted
 
-const VERSION := "v0.7.0"
-const BUILD_NAME := "Dungeon Map & Route Choice"
+const VERSION := "v0.8.0"
+const BUILD_NAME := "Permanent Collection & Save"
 
 const CHANGES := [
-	"Added a visible 5-floor branching dungeon map between encounters.",
-	"Runs now begin with a starter skill, then route through map nodes instead of a fixed enemy sequence.",
-	"Floor 1 offers two Normal fights: Swordsman or Heavy Knight.",
-	"Floor 2 offers Rest or Upgrade Shrine.",
-	"Rest heals 1 HP and resets Flow; Upgrade Shrine only upgrades a skill already owned in the current run.",
-	"Floor 3 offers a Rogue fight or Shop.",
-	"Normal fights award 2 Gold; Shop spends 2 Gold to acquire or upgrade a current-run skill.",
-	"Floor 4 is an Elite Duelist that awards 4 Gold plus a combat reward.",
-	"Floor 5 is the Executioner boss; defeating it clears the dungeon.",
-	"Completed route nodes remain visible on the map so the chosen path can be reviewed.",
-	"No map node permanently unlocks new collection content; all rewards remain current-run only."
+	"Added persistent meta progression saved locally on the device/browser.",
+	"Added a Permanent Collection screen showing locked/unlocked skills, rarity, requirements and progress.",
+	"Flame Counter and Focus are now the two default permanently unlocked starter skills.",
+	"Momentum permanently unlocks after 12 total Perfect Dodges across runs.",
+	"Guardian permanently unlocks after 3 encounters completed without losing HP.",
+	"Bloodlust permanently unlocks after defeating an Elite without losing HP in that encounter.",
+	"Each run snapshots the permanent unlocked pool at Start Run, so newly unlocked skills enter rewards starting next run.",
+	"Starter, combat reward and Shop choices now only use permanently unlocked skills.",
+	"Upgrade Shrine still only upgrades skills already owned in the current run.",
+	"Permanent unlocks never come directly from map nodes or normal rewards; they come only from explicit achievement conditions.",
+	"Added fallback handling when a run has maxed every eligible skill: rewards convert to Gold and Shop refunds instead of getting stuck."
 ]
 
 static func changelog_text() -> String:
