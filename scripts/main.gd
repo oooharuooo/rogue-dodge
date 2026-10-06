@@ -1656,8 +1656,12 @@ func _load_enemy() -> void:
 	if not run_active:
 		return
 	var enemy: Dictionary = enemies[enemy_index]
-	enemy_counters_left = int(enemy.counters)
-	enemy_max_hp = int(enemy.counters)
+	if dev_test_active:
+		enemy_counters_left = dev_enemy_hp
+		enemy_max_hp = dev_enemy_hp
+	else:
+		enemy_counters_left = int(enemy.counters)
+		enemy_max_hp = int(enemy.counters)
 	last_counter_damage = 0
 	encounter_took_damage = false
 	current_pattern.clear()
@@ -1711,8 +1715,16 @@ func _start_pattern() -> void:
 	state_label.add_theme_color_override("font_color", C.accent)
 	message_label.text = current_pattern_name
 	await get_tree().create_timer(0.28).timeout
-	if run_active:
-		_begin_pattern_step()
+	if not run_active:
+		return
+	if dev_test_active and dev_turn_based:
+		state_label.text = "WAITING"
+		state_label.add_theme_color_override("font_color", C.perfect)
+		message_label.text = current_pattern_name + " — press NEXT ATTACK"
+		if dev_step_button != null:
+			dev_step_button.disabled = false
+		return
+	_begin_pattern_step()
 
 func _begin_pattern_step() -> void:
 	if not run_active:
@@ -1781,6 +1793,7 @@ func _begin_real_step(step: String) -> void:
 		hint_label.text = "NOW!"
 	_play("cue")
 	_animate_enemy_strike(action, float(enemy.cue_before))
+	_dev_apply_auto_dodge(action, enemy)
 
 	await get_tree().create_timer(float(enemy.cue_before)).timeout
 	if run_active and generation == attack_generation:
