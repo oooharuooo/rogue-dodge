@@ -1636,10 +1636,13 @@ func _preview_counter_damage(perfect: bool) -> int:
 func _update_combat_stats() -> void:
 	if combat_stat_label == null:
 		return
-	var normal_damage := _preview_counter_damage(false)
-	var perfect_damage := _preview_counter_damage(true)
+	var normal_damage := maxi(1, _preview_counter_damage(false))
+	var perfect_damage := maxi(1, _preview_counter_damage(true))
 	var last_text := "-" if last_counter_damage <= 0 else str(last_counter_damage)
-	combat_stat_label.text = "Counter ATK: Normal %d / Perfect %d  •  Last %s" % [normal_damage, perfect_damage, last_text]
+	var current_hp := maxi(enemy_counters_left, 0)
+	var normal_hits := ceili(float(current_hp) / float(normal_damage)) if current_hp > 0 else 0
+	var perfect_hits := ceili(float(current_hp) / float(perfect_damage)) if current_hp > 0 else 0
+	combat_stat_label.text = "ATK N%d / P%d  •  KO N%d / P%d  •  Last %s" % [normal_damage, perfect_damage, normal_hits, perfect_hits, last_text]
 
 func _update_build_label() -> void:
 	var weapon_name := "No Weapon" if current_weapon_id == "" else WeaponCatalog.display_name(current_weapon_id)
