@@ -485,6 +485,8 @@ func _show_dungeon_map(status_text: String = "Choose your route.") -> void:
 		choice_overlay.visible = false
 	if weapon_overlay != null:
 		weapon_overlay.visible = false
+	if weapon_upgrade_overlay != null:
+		weapon_upgrade_overlay.visible = false
 	attack_side = ""
 	timing_bar.value = 0.0
 	weapon_indicator.text = ""
@@ -978,6 +980,12 @@ func _start_dev_test() -> void:
 	var weapon_index := clampi(dev_weapon_select.selected, 0, weapon_ids.size() - 1)
 	enemy_index = clampi(dev_enemy_select.selected, 0, enemies.size() - 1)
 	current_weapon_id = weapon_ids[weapon_index]
+	run_weapon_mastery_level = 3
+	weapon_upgrades.clear()
+	if dev_upgrade_select != null and dev_upgrade_select.selected >= 0:
+		var selected_upgrade := str(dev_upgrade_select.get_item_metadata(dev_upgrade_select.selected))
+		if selected_upgrade != "":
+			weapon_upgrades.append(selected_upgrade)
 	dev_enemy_hp = int(dev_hp_spin.value)
 	dev_turn_based = dev_turn_toggle.button_pressed
 	dev_auto_dodge = dev_auto_toggle.button_pressed
@@ -1020,7 +1028,12 @@ func _start_dev_test() -> void:
 	dev_step_button.visible = dev_turn_based
 	dev_step_button.disabled = false
 	dev_button.text = "DEV MODE *"
-	message_label.text = "DEV TEST: %s vs %s" % [WeaponCatalog.display_name(current_weapon_id), str(enemies[enemy_index].name)]
+	var dev_upgrade_text := _weapon_upgrade_text()
+	message_label.text = "DEV TEST: %s%s vs %s" % [
+		WeaponCatalog.display_name(current_weapon_id),
+		"" if dev_upgrade_text == "" else " <" + dev_upgrade_text + ">",
+		str(enemies[enemy_index].name)
+	]
 	_update_hud()
 	_load_enemy()
 
