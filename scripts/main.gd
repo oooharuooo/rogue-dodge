@@ -257,7 +257,6 @@ func _build_choice_overlay() -> void:
 		var button := Button.new()
 		button.custom_minimum_size = Vector2(0, 112)
 		button.add_theme_font_size_override("font_size", 16)
-		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		box.add_child(button)
 		choice_buttons.append(button)
 
@@ -423,7 +422,7 @@ func _input(event: InputEvent) -> void:
 		elif event.keycode == KEY_D or event.keycode == KEY_RIGHT:
 			_try_dodge("right")
 		elif event.keycode == KEY_R:
-			_reset_run(true)
+			_begin_new_run()
 
 	elif event is InputEventScreenTouch and event.pressed and run_active:
 		var half := get_viewport_rect().size.x * 0.5
