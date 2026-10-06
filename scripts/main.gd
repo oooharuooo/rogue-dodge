@@ -28,11 +28,11 @@ const C := {
 }
 
 var enemies := [
-	{"id":"swordsman","name":"Swordsman","counters":1,"windup":1.50,"dodge_window":0.68,"perfect_window":0.21,"cue_before":0.43},
-	{"id":"heavy_knight","name":"Heavy Knight","counters":2,"windup":2.35,"dodge_window":0.72,"perfect_window":0.22,"cue_before":0.47},
-	{"id":"rogue","name":"Rogue","counters":2,"windup":1.05,"dodge_window":0.52,"perfect_window":0.17,"cue_before":0.33},
-	{"id":"duelist","name":"Duelist","counters":3,"windup":1.20,"dodge_window":0.50,"perfect_window":0.16,"cue_before":0.31},
-	{"id":"executioner","name":"Executioner","counters":4,"windup":1.85,"dodge_window":0.56,"perfect_window":0.17,"cue_before":0.36}
+	{"id":"swordsman","name":"Swordsman","max_hp":5,"windup":1.50,"dodge_window":0.68,"perfect_window":0.21,"cue_before":0.43},
+	{"id":"heavy_knight","name":"Heavy Knight","max_hp":8,"windup":2.35,"dodge_window":0.72,"perfect_window":0.22,"cue_before":0.47},
+	{"id":"rogue","name":"Rogue","max_hp":7,"windup":1.05,"dodge_window":0.52,"perfect_window":0.17,"cue_before":0.33},
+	{"id":"duelist","name":"Duelist","max_hp":12,"windup":1.20,"dodge_window":0.50,"perfect_window":0.16,"cue_before":0.31},
+	{"id":"executioner","name":"Executioner","max_hp":18,"windup":1.85,"dodge_window":0.56,"perfect_window":0.17,"cue_before":0.36}
 ]
 
 var hp := MAX_HP
@@ -93,6 +93,7 @@ var flow_label: Label
 var progress_label: Label
 var enemy_name_label: Label
 var enemy_counter_label: Label
+var enemy_hp_bar: ProgressBar
 var state_label: Label
 var enemy_body: ColorRect
 var enemy_weapon: ColorRect
@@ -218,6 +219,15 @@ func _build_ui() -> void:
 	hint_label.size = Vector2(460, 28)
 	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	arena.add_child(hint_label)
+
+	enemy_hp_bar = ProgressBar.new()
+	enemy_hp_bar.position = Vector2(70, 88)
+	enemy_hp_bar.size = Vector2(400, 18)
+	enemy_hp_bar.min_value = 0.0
+	enemy_hp_bar.max_value = 1.0
+	enemy_hp_bar.value = 1.0
+	enemy_hp_bar.show_percentage = false
+	arena.add_child(enemy_hp_bar)
 
 	weapon_indicator = _label("", 17, C.muted)
 	weapon_indicator.position = Vector2(45, 130)
@@ -1926,8 +1936,8 @@ func _load_enemy() -> void:
 		enemy_counters_left = dev_enemy_hp
 		enemy_max_hp = dev_enemy_hp
 	else:
-		enemy_counters_left = int(enemy.counters)
-		enemy_max_hp = int(enemy.counters)
+		enemy_counters_left = int(enemy.max_hp)
+		enemy_max_hp = int(enemy.max_hp)
 	last_counter_damage = 0
 	encounter_took_damage = false
 	current_pattern.clear()
@@ -1952,7 +1962,11 @@ func _load_enemy() -> void:
 
 func _update_enemy_pattern_label() -> void:
 	var pattern_text := current_pattern_name if current_pattern_name != "" else "..."
-	enemy_counter_label.text = "Enemy HP: %d / %d  •  Pattern: %s" % [max(enemy_counters_left, 0), enemy_max_hp, pattern_text]
+	var shown_hp := maxi(enemy_counters_left, 0)
+	enemy_counter_label.text = "Enemy HP: %d / %d  •  Pattern: %s" % [shown_hp, enemy_max_hp, pattern_text]
+	if enemy_hp_bar != null:
+		enemy_hp_bar.max_value = maxf(1.0, float(enemy_max_hp))
+		enemy_hp_bar.value = float(shown_hp)
 
 func _start_pattern() -> void:
 	if not run_active:
