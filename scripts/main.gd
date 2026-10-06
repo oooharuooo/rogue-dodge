@@ -98,6 +98,7 @@ var enemy_hp_bar: ProgressBar
 var state_label: Label
 var enemy_body: ColorRect
 var enemy_weapon: ColorRect
+var projectile_body: ColorRect
 var weapon_indicator: Label
 var player_body: ColorRect
 var message_label: Label
@@ -269,6 +270,15 @@ func _build_ui() -> void:
 	enemy_weapon.rotation = deg_to_rad(18.0)
 	enemy_weapon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	arena.add_child(enemy_weapon)
+
+	projectile_body = ColorRect.new()
+	projectile_body.color = C.accent
+	projectile_body.size = Vector2(24, 24)
+	projectile_body.position = Vector2(258, 232)
+	projectile_body.pivot_offset = Vector2(12, 12)
+	projectile_body.visible = false
+	projectile_body.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	arena.add_child(projectile_body)
 
 	player_body = ColorRect.new()
 	player_body.color = C.player
@@ -2090,9 +2100,13 @@ func _begin_real_step(step: String) -> void:
 		state_label.text = "WIND-UP"
 	state_label.add_theme_color_override("font_color", C.accent)
 
-	_show_attack_telegraph(action)
+	var projectile := MovesetCatalog.is_projectile(step)
+	_show_attack_telegraph(action, projectile)
 	_play("windup")
-	_animate_enemy_windup(action, windup, step)
+	if projectile:
+		_animate_projectile_windup(action, windup)
+	else:
+		_animate_enemy_windup(action, windup, step)
 
 	timing_bar.value = 0.0
 	var bar := create_tween()
@@ -2111,7 +2125,10 @@ func _begin_real_step(step: String) -> void:
 	else:
 		hint_label.text = "NOW!"
 	_play("cue")
-	_animate_enemy_strike(action, float(enemy.cue_before))
+	if projectile:
+		_animate_projectile_strike(action, float(enemy.cue_before))
+	else:
+		_animate_enemy_strike(action, float(enemy.cue_before))
 	_dev_apply_auto_dodge(action, enemy)
 
 	await get_tree().create_timer(float(enemy.cue_before)).timeout
@@ -2134,7 +2151,7 @@ func _begin_fake_step(step: String) -> void:
 	state_label.text = "WIND-UP"
 	state_label.add_theme_color_override("font_color", C.accent)
 
-	_show_attack_telegraph(action)
+	_show_attack_telegraph(action, false)
 	_play("windup")
 	_animate_enemy_windup(action, fake_duration, step)
 
@@ -2169,7 +2186,19 @@ func _begin_fake_step(step: String) -> void:
 		return
 	_begin_pattern_step()
 
-func _show_attack_telegraph(action: String) -> void:
+func _show_attack_telegraph(action: String, projectile: bool = false) -> void:
+	if projectile:
+		if action == "high":
+			weapon_indicator.text = "PROJECTILE HIGH"
+			hint_label.text = "DUCK under the projectile."
+		elif action == "low":
+			weapon_indicator.text = "PROJECTILE LOW"
+			hint_label.text = "JUMP over the projectile."
+		else:
+			weapon_indicator.text = "PROJECTILE FROM LEFT" if action == "left" else "PROJECTILE FROM RIGHT"
+			hint_label.text = "Dodge to the opposite side."
+		return
+
 	if action == "high":
 		weapon_indicator.text = "HIGH SWEEP"
 		hint_label.text = "DUCK under it — tap DUCK / S / ↓."
@@ -2193,6 +2222,52 @@ func _reset_enemy_pose() -> void:
 		enemy_weapon.rotation = deg_to_rad(18.0)
 		enemy_weapon.modulate = Color.WHITE
 		enemy_weapon.visible = true
+	if projectile_body != null:
+		projectile_body.visible = false
+		projectile_body.position = Vector2(258, 232)
+		projectile_body.scale = Vector2.ONE
+		projectile_body.rotation = 0.0
+		projectile_body.modulate = Color.WHITE
+
+func _animate_projectile_windup(action: String, windup: float) -> void:
+	_reset_enemy_pose()
+	projectile_body.visible = true
+	projectile_body.modulate = C.accent
+	projectile_body.position = Vector2(258, 232)
+	projectile_body.scale = Vector2(0.55, 0.55)
+
+	if action == "left":
+		projectile_body.position.x = 210
+	elif action == "right":
+		projectile_body.position.x = 306
+	elif action == "high":
+		projectile_body.position.y = 198
+	elif action == "low":
+		projectile_body.position.y = 278
+
+	var charge := create_tween()
+	charge.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	charge.tween_property(projectile_body, "scale", Vector2(1.25, 1.25), minf(0.42, windup * 0.45))
+	charge.parallel().tween_property(projectile_body, "rotation", deg_to_rad(180.0), minf(0.42, windup * 0.45))
+	charge.tween_property(projectile_body, "scale", Vector2.ONE, 0.10)
+
+func _animate_projectile_strike(action: String, strike_time: float) -> void:
+	if projectile_body == null:
+		return
+	var target := Vector2(258, 300)
+	if action == "left":
+		target = Vector2(210, 306)
+	elif action == "right":
+		target = Vector2(306, 306)
+	elif action == "high":
+		target = Vector2(258, 258)
+	elif action == "low":
+		target = Vector2(258, 346)
+
+	var travel := create_tween()
+	travel.set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_IN)
+	travel.tween_property(projectile_body, "position", target, maxf(0.08, strike_time * 0.88))
+	travel.parallel().tween_property(projectile_body, "rotation", projectile_body.rotation + deg_to_rad(270.0), maxf(0.08, strike_time * 0.88))
 
 func _animate_enemy_windup(action: String, windup: float, step: String) -> void:
 	_reset_enemy_pose()
