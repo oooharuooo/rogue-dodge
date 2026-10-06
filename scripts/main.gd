@@ -1589,8 +1589,8 @@ func _preview_counter_damage(perfect: bool) -> int:
 		"katana":
 			if perfect:
 				damage += 1
-				var next_perfect_count := perfect_count + 1
-				if _has_weapon_upgrade("iaido") and next_perfect_count % 3 == 0:
+				var katana_perfect_count := perfect_count + 1
+				if _has_weapon_upgrade("iaido") and katana_perfect_count % 3 == 0:
 					damage += 2
 			if _has_weapon_upgrade("flow_edge") and preview_flow >= 3:
 				damage += 1
