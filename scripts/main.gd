@@ -2,7 +2,9 @@ extends Control
 
 const MAX_HP := 3
 const DODGE_COMMIT_SECONDS := 0.35
-const SWIPE_DOWN_THRESHOLD := 72.0
+const SWIPE_DOWN_THRESHOLD := 40.0
+const TAP_MAX_MOVE := 26.0
+const SWIPE_VERTICAL_BIAS := 0.55
 const TOUCH_MOUSE_SUPPRESS_MS := 450
 const SkillCatalog = preload("res://scripts/skill_catalog.gd")
 const VersionInfo = preload("res://scripts/version_info.gd")
@@ -534,11 +536,14 @@ func _input(event: InputEvent) -> void:
 		elif touch_tracking:
 			if not touch_action_fired:
 				var delta: Vector2 = event.position - touch_start_pos
-				if delta.y >= SWIPE_DOWN_THRESHOLD and abs(delta.y) > abs(delta.x):
+				if _is_duck_swipe(delta):
 					_try_action("duck")
-				else:
+				elif delta.length() <= TAP_MAX_MOVE:
 					var half := get_viewport_rect().size.x * 0.5
 					_try_action("left" if touch_start_pos.x < half else "right")
+				else:
+					# A real drag that is not a valid duck should never become an accidental side dodge.
+					message_label.text = "Gesture ignored — tap for Left/Right, swipe down for Duck."
 			touch_tracking = false
 			touch_action_fired = false
 		get_viewport().set_input_as_handled()
@@ -546,7 +551,7 @@ func _input(event: InputEvent) -> void:
 	elif event is InputEventScreenDrag and run_active and touch_tracking and not touch_action_fired:
 		last_touch_event_ms = Time.get_ticks_msec()
 		var delta: Vector2 = event.position - touch_start_pos
-		if delta.y >= SWIPE_DOWN_THRESHOLD and abs(delta.y) > abs(delta.x):
+		if _is_duck_swipe(delta):
 			touch_action_fired = true
 			_try_action("duck")
 			get_viewport().set_input_as_handled()
@@ -556,6 +561,11 @@ func _input(event: InputEvent) -> void:
 		if Time.get_ticks_msec() - last_touch_event_ms > TOUCH_MOUSE_SUPPRESS_MS:
 			var half := get_viewport_rect().size.x * 0.5
 			_try_action("left" if event.position.x < half else "right")
+
+func _is_duck_swipe(delta: Vector2) -> bool:
+	if delta.y < SWIPE_DOWN_THRESHOLD:
+		return false
+	return delta.y >= abs(delta.x) * SWIPE_VERTICAL_BIAS
 
 func _reset_run(start_now: bool) -> void:
 	attack_generation += 1
