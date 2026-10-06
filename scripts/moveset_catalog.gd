@@ -23,17 +23,29 @@ const MOVESETS := {
 		{"name":"High Line","steps":["left","high","right"]},
 		{"name":"Reverse High","steps":["right","high","left"]},
 		{"name":"Floor Line","steps":["left","low","right"]}
-	],
-	"executioner": [
-		{"name":"Judgment","steps":["left","delay_high","right"]},
-		{"name":"False Mercy","steps":["fake_high","quick_left","right"]},
-		{"name":"Headsman Chain","steps":["right","fake_left","quick_high"]},
-		{"name":"Grave Sweep","steps":["low","fake_high","quick_right"]},
-		{"name":"Final Sentence","steps":["high","left","low","delay_high"]}
 	]
 }
 
-static func patterns_for(enemy_id: String) -> Array:
+const EXECUTIONER_PHASES := {
+	1: [
+		{"name":"Judgment","steps":["left","delay_high","right"]},
+		{"name":"Grave Sweep","steps":["low","right","delay_high"]}
+	],
+	2: [
+		{"name":"False Mercy","steps":["fake_high","quick_left","right"]},
+		{"name":"Headsman Chain","steps":["right","fake_left","quick_high"]},
+		{"name":"Broken Oath","steps":["left","low","fake_right","quick_left"]}
+	],
+	3: [
+		{"name":"Final Sentence","steps":["high","left","low","delay_high"]},
+		{"name":"Last Rites","steps":["fake_left","quick_right","low","quick_high"]},
+		{"name":"No Mercy","steps":["right","quick_left","fake_high","quick_right","low"]}
+	]
+}
+
+static func patterns_for(enemy_id: String, phase: int = 1) -> Array:
+	if enemy_id == "executioner":
+		return EXECUTIONER_PHASES.get(clampi(phase, 1, 3), EXECUTIONER_PHASES[1])
 	return MOVESETS.get(enemy_id, [])
 
 static func base_action(step: String) -> String:
