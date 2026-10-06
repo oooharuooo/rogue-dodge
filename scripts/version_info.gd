@@ -1,14 +1,14 @@
 extends RefCounted
 
-const VERSION := "v0.4.3"
-const BUILD_NAME := "Duck Input Tuning"
+const VERSION := "v0.4.4"
+const BUILD_NAME := "Duck Gesture Reliability"
 
 const CHANGES := [
-	"Made mobile Duck easier to trigger by reducing the swipe distance required.",
-	"Downward diagonal swipes are now accepted instead of requiring an almost perfectly vertical swipe.",
-	"Side dodge now only triggers from a true tap with very little finger movement.",
-	"A failed/ambiguous drag is ignored instead of accidentally becoming Left or Right.",
-	"Kept the cache-safe deployment and CI parse-error protection."
+	"Changed mobile gesture classification so any detected drag can never fall back into Left/Right tap.",
+	"Reduced Duck swipe distance to 28 px.",
+	"Downward movement is now accumulated during the drag, making quick short swipes more reliable.",
+	"Increased synthetic mouse-click suppression after touch to reduce accidental Right actions on mobile Web.",
+	"Kept cache-safe deployment and CI parse-error protection."
 ]
 
 static func changelog_text() -> String:
