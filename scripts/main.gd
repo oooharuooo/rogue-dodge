@@ -936,9 +936,9 @@ func _refresh_dev_upgrade_options(_selected_weapon_index: int = -1) -> void:
 	dev_upgrade_select.add_item("None")
 	dev_upgrade_select.set_item_metadata(0, "")
 
-	var weapon_ids := ["katana", "daggers", "greatsword", "bow"]
+	var weapon_ids: Array[String] = ["katana", "daggers", "greatsword", "bow"]
 	var weapon_index := clampi(dev_weapon_select.selected, 0, weapon_ids.size() - 1)
-	var weapon_id := weapon_ids[weapon_index]
+	var weapon_id: String = weapon_ids[weapon_index]
 	for raw_upgrade in WeaponUpgradeCatalog.upgrades_for(weapon_id):
 		var upgrade: Dictionary = raw_upgrade
 		var item_index := dev_upgrade_select.item_count
@@ -976,7 +976,7 @@ func _start_dev_test() -> void:
 	_reset_enemy_pose()
 	enemy_body.modulate = Color.WHITE
 
-	var weapon_ids := ["katana", "daggers", "greatsword", "bow"]
+	var weapon_ids: Array[String] = ["katana", "daggers", "greatsword", "bow"]
 	var weapon_index := clampi(dev_weapon_select.selected, 0, weapon_ids.size() - 1)
 	enemy_index = clampi(dev_enemy_select.selected, 0, enemies.size() - 1)
 	current_weapon_id = weapon_ids[weapon_index]
