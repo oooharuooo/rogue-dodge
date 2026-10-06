@@ -533,7 +533,7 @@ func _input(event: InputEvent) -> void:
 			touch_action_fired = false
 		elif touch_tracking:
 			if not touch_action_fired:
-				var delta := event.position - touch_start_pos
+				var delta: Vector2 = event.position - touch_start_pos
 				if delta.y >= SWIPE_DOWN_THRESHOLD and abs(delta.y) > abs(delta.x):
 					_try_action("duck")
 				else:
@@ -545,7 +545,7 @@ func _input(event: InputEvent) -> void:
 
 	elif event is InputEventScreenDrag and run_active and touch_tracking and not touch_action_fired:
 		last_touch_event_ms = Time.get_ticks_msec()
-		var delta := event.position - touch_start_pos
+		var delta: Vector2 = event.position - touch_start_pos
 		if delta.y >= SWIPE_DOWN_THRESHOLD and abs(delta.y) > abs(delta.x):
 			touch_action_fired = true
 			_try_action("duck")
