@@ -40,6 +40,7 @@ var flow := 0
 var enemy_index := 0
 var enemy_hp := 1
 var enemy_max_hp := 1
+var boss_phase := 1
 var last_counter_damage := 0
 var run_active := false
 var attack_side := ""
@@ -1966,6 +1967,7 @@ func _load_enemy() -> void:
 	else:
 		enemy_hp = int(enemy.max_hp)
 		enemy_max_hp = int(enemy.max_hp)
+	boss_phase = 1
 	last_counter_damage = 0
 	encounter_took_damage = false
 	current_pattern.clear()
@@ -1977,7 +1979,7 @@ func _load_enemy() -> void:
 	if int(skill_levels.get("guardian", 0)) >= 2:
 		guardian_charges = max(guardian_charges, 1)
 
-	enemy_name_label.text = str(enemy.name)
+	enemy_name_label.text = str(enemy.name) + (" — PHASE 1" if str(enemy.id) == "executioner" else "")
 	if enemy_hp_bar != null:
 		enemy_hp_bar.visible = true
 	if collection_button != null:
@@ -2004,7 +2006,7 @@ func _start_pattern() -> void:
 		return
 
 	var enemy: Dictionary = enemies[enemy_index]
-	var patterns: Array = MovesetCatalog.patterns_for(str(enemy.id))
+	var patterns: Array = MovesetCatalog.patterns_for(str(enemy.id), boss_phase)
 	if patterns.is_empty():
 		return
 
@@ -2067,7 +2069,13 @@ func _begin_real_step(step: String) -> void:
 	var enemy: Dictionary = enemies[enemy_index]
 	var action: String = MovesetCatalog.base_action(step)
 	var windup_multiplier: float = MovesetCatalog.windup_multiplier(step)
-	var windup: float = float(enemy.windup) * windup_multiplier
+	var boss_speed_multiplier := 1.0
+	if str(enemy.id) == "executioner":
+		if boss_phase == 2:
+			boss_speed_multiplier = 0.90
+		elif boss_phase >= 3:
+			boss_speed_multiplier = 0.78
+	var windup: float = float(enemy.windup) * windup_multiplier * boss_speed_multiplier
 
 	attack_side = action
 	last_dodge_direction = ""
@@ -2328,6 +2336,41 @@ func _jump_animation() -> void:
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.tween_property(player_body, "position:y", 280.0, 0.18)
 
+func _boss_phase_for_hp() -> int:
+	if enemy_max_hp <= 0:
+		return 1
+	var ratio := float(enemy_hp) / float(enemy_max_hp)
+	if ratio <= 0.33:
+		return 3
+	if ratio <= 0.66:
+		return 2
+	return 1
+
+func _check_boss_phase_transition() -> bool:
+	var enemy: Dictionary = enemies[enemy_index]
+	if str(enemy.id) != "executioner" or enemy_hp <= 0:
+		return false
+
+	var next_phase := _boss_phase_for_hp()
+	if next_phase <= boss_phase:
+		return false
+
+	boss_phase = next_phase
+	current_pattern.clear()
+	current_pattern_name = ""
+	last_pattern_name = ""
+	pattern_step_index = 0
+	current_attack_step = ""
+	attack_generation += 1
+	attack_side = ""
+	enemy_name_label.text = "Executioner — PHASE %d" % boss_phase
+	state_label.text = "PHASE %d" % boss_phase
+	state_label.add_theme_color_override("font_color", C.danger)
+	message_label.text = "EXECUTIONER PHASE %d — moveset changed." % boss_phase
+	_flash(enemy_body, C.danger)
+	_update_enemy_pattern_label()
+	return true
+
 func _resolve_attack() -> void:
 	if not run_active:
 		return
@@ -2379,6 +2422,10 @@ func _resolve_attack() -> void:
 		if enemy_hp <= 0:
 			await get_tree().create_timer(0.48).timeout
 			_defeat_enemy()
+		elif _check_boss_phase_transition():
+			await get_tree().create_timer(0.70).timeout
+			if run_active:
+				_start_pattern()
 		else:
 			_advance_pattern_after_exchange(0.24)
 	else:
