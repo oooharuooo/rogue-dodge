@@ -1,126 +1,46 @@
-name: Deploy Web Test
-
+name: Deploy 2D Dungeon
 on:
   push:
     branches: [main]
   workflow_dispatch:
-
 permissions:
   contents: read
   pages: write
   id-token: write
-
 concurrency:
   group: pages
   cancel-in-progress: true
-
 jobs:
   build:
-    runs-on: ubuntu-24.04
-    container:
-      image: barichello/godot-ci:4.7.2
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Godot export templates
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Gameplay and timing checks
         run: |
-          mkdir -p ~/.local/share/godot/export_templates/
-          mv /root/.local/share/godot/export_templates/4.7.2.stable ~/.local/share/godot/export_templates/4.7.2.stable
-
-      - name: Run gameplay regression checks
+          node tests/full-2d.cjs
+          node tests/release-2d.cjs
+      - name: Package versioned game
         shell: bash
         run: |
-          set -euo pipefail
-          godot --headless --path . --script tests/regression.gd 2>&1 | tee regression.log
-          if grep -E "SCRIPT ERROR:|Parse Error:|^ERROR:|FAIL:" regression.log; then
-            exit 1
-          fi
-          grep -E "REGRESSION: [0-9]+ checks, 0 failures" regression.log
-
-      - name: Export cache-safe Web build
-        shell: bash
-        run: |
-          set -e
-          mkdir -p build/web
-          SHORT_SHA="${GITHUB_SHA::8}"
-          EXPORT_BASENAME="game-${SHORT_SHA}"
-
-          set +e
-          godot --headless --path . --export-release "Web" "build/web/${EXPORT_BASENAME}.html" 2>&1 | tee godot-export.log
-          GODOT_EXIT=${PIPESTATUS[0]}
-          set -e
-
-          if grep -E "SCRIPT ERROR:|Parse Error:|Failed to load script" godot-export.log; then
-            echo "Godot script validation failed."
-            exit 1
-          fi
-
-          if [ "${GODOT_EXIT}" -ne 0 ]; then
-            echo "Godot export failed with exit code ${GODOT_EXIT}."
-            exit "${GODOT_EXIT}"
-          fi
-
-          cat > build/web/latest.json <<EOF
-          {"url":"${EXPORT_BASENAME}.html","build":"${SHORT_SHA}"}
-          EOF
-
-          cat > build/web/index.html <<'EOF'
-          <!doctype html>
-          <html lang="en">
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-            <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-            <meta http-equiv="Pragma" content="no-cache">
-            <meta http-equiv="Expires" content="0">
-            <title>Rogue Dodge — Latest Build</title>
-            <style>
-              html,body{margin:0;width:100%;height:100%;background:#111318;color:#f3f4f6;font-family:system-ui,sans-serif}
-              body{display:grid;place-items:center;text-align:center}
-              .box{padding:24px}.muted{opacity:.65;font-size:14px}
-            </style>
-          </head>
-          <body>
-            <div class="box">
-              <div>Loading latest Rogue Dodge build…</div>
-              <div class="muted">Checking for updates</div>
-            </div>
-            <script>
-              (async () => {
-                try {
-                  const response = await fetch('latest.json?t=' + Date.now(), {
-                    cache: 'no-store',
-                    headers: { 'Cache-Control': 'no-cache' }
-                  });
-                  if (!response.ok) throw new Error('latest.json ' + response.status);
-                  const latest = await response.json();
-                  location.replace(latest.url + '?build=' + encodeURIComponent(latest.build));
-                } catch (error) {
-                  document.querySelector('.box').innerHTML =
-                    '<div>Could not load the latest build.</div><div class="muted">Refresh once when you have a connection.</div>';
-                  console.error(error);
-                }
-              })();
-            </script>
-          </body>
-          </html>
-          EOF
-
+          BUILD="${GITHUB_SHA::8}"
+          mkdir -p "build/web/game-$BUILD"
+          cp -R web-2d/. "build/web/game-$BUILD/"
+          printf '<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=game-%s/"><title>Rogue Dodge</title><a href="game-%s/">Open latest game</a>' "$BUILD" "$BUILD" > build/web/index.html
+          printf '{"build":"%s","url":"game-%s/"}' "$BUILD" "$BUILD" > build/web/latest.json
           touch build/web/.nojekyll
-
-      - name: Upload GitHub Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
-
   deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
