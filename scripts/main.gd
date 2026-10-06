@@ -54,6 +54,12 @@ var current_weapon_id := ""
 var dagger_hit_bank := 0
 var greatsword_charge := 0
 var bow_aim := 0
+var dev_test_active := false
+var dev_auto_dodge := false
+var dev_force_perfect := false
+var dev_god_mode := false
+var dev_turn_based := false
+var dev_enemy_hp := 20
 var choice_mode := ""
 var dungeon_floor := 0
 var current_floor_number := 0
@@ -113,6 +119,17 @@ var collection_list: VBoxContainer
 var collection_summary_label: Label
 var weapon_overlay: ColorRect
 var weapon_buttons: Array[Button] = []
+var dev_button: Button
+var dev_step_button: Button
+var dev_overlay: ColorRect
+var dev_weapon_select: OptionButton
+var dev_enemy_select: OptionButton
+var dev_hp_spin: SpinBox
+var dev_auto_toggle: CheckButton
+var dev_perfect_toggle: CheckButton
+var dev_god_toggle: CheckButton
+var dev_turn_toggle: CheckButton
+var dev_status_label: Label
 
 var audio_players: Dictionary = {}
 
@@ -301,6 +318,25 @@ func _build_ui() -> void:
 	message_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(message_label)
 
+	var dev_row := HBoxContainer.new()
+	dev_row.add_theme_constant_override("separation", 8)
+	column.add_child(dev_row)
+
+	dev_button = Button.new()
+	dev_button.text = "DEV MODE"
+	dev_button.custom_minimum_size = Vector2(0, 38)
+	dev_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	dev_button.pressed.connect(_show_dev_overlay)
+	dev_row.add_child(dev_button)
+
+	dev_step_button = Button.new()
+	dev_step_button.text = "NEXT ATTACK"
+	dev_step_button.custom_minimum_size = Vector2(0, 38)
+	dev_step_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	dev_step_button.visible = false
+	dev_step_button.pressed.connect(_dev_next_attack)
+	dev_row.add_child(dev_step_button)
+
 	collection_button = Button.new()
 	collection_button.text = "COLLECTION  %d / %d" % [unlocked_skills.size(), SkillCatalog.SKILLS.size()]
 	collection_button.custom_minimum_size = Vector2(0, 38)
@@ -325,6 +361,7 @@ func _build_ui() -> void:
 	_build_choice_overlay()
 	_build_dungeon_map()
 	_build_collection_overlay()
+	_build_dev_overlay()
 	_build_update_overlay()
 
 func _stat(parent: HBoxContainer, title: String, value: String) -> Label:
