@@ -1539,15 +1539,26 @@ func _preview_counter_damage(perfect: bool) -> int:
 		"katana":
 			if perfect:
 				damage += 1
+				var next_perfect_count := perfect_count + 1
+				if _has_weapon_upgrade("iaido") and next_perfect_count % 3 == 0:
+					damage += 2
+			if _has_weapon_upgrade("flow_edge") and preview_flow >= 3:
+				damage += 1
 		"daggers":
-			var added_hits := 3 if perfect else 2
-			damage += int((dagger_hit_bank + added_hits) / 4)
+			var added_hits := (4 if _has_weapon_upgrade("flurry") else 3) if perfect else 2
+			var triggers := int((dagger_hit_bank + added_hits) / 4)
+			if triggers > 0:
+				damage += triggers * (2 if _has_weapon_upgrade("serrated") else 1)
 		"greatsword":
 			if perfect and greatsword_charge > 0:
 				damage += greatsword_charge
+				if _has_weapon_upgrade("crushing_release") and greatsword_charge >= _greatsword_max_charge():
+					damage += 1
 		"bow":
 			if not perfect and bow_aim > 0:
 				damage += bow_aim
+				if _has_weapon_upgrade("piercing_shot"):
+					damage += 1
 
 	return damage
 
@@ -1563,6 +1574,9 @@ func _update_build_label() -> void:
 	var weapon_name := "No Weapon" if current_weapon_id == "" else WeaponCatalog.display_name(current_weapon_id)
 	var weapon_state := _weapon_state_text()
 	var weapon_text := weapon_name if weapon_state == "" else "%s [%s]" % [weapon_name, weapon_state]
+	var upgrade_text := _weapon_upgrade_text()
+	if upgrade_text != "":
+		weapon_text += " <" + upgrade_text + ">"
 
 	if skill_levels.is_empty():
 		build_label.text = "Weapon: %s  •  Skills: none" % weapon_text
