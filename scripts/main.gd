@@ -8,6 +8,7 @@ const TOUCH_MOUSE_SUPPRESS_MS := 1200
 const SkillCatalog = preload("res://scripts/skill_catalog.gd")
 const MovesetCatalog = preload("res://scripts/moveset_catalog.gd")
 const DungeonCatalog = preload("res://scripts/dungeon_catalog.gd")
+const SaveManager = preload("res://scripts/save_manager.gd")
 const VersionInfo = preload("res://scripts/version_info.gd")
 
 const C := {
@@ -53,6 +54,11 @@ var gold := 0
 var current_node_type := ""
 var current_gold_reward := 0
 var route_history: Dictionary = {}
+var meta_data: Dictionary = {}
+var unlocked_skills: Array[String] = []
+var run_unlocked_pool: Array[String] = []
+var encounter_took_damage := false
+var pending_unlock_notice := ""
 var current_pattern: Array[String] = []
 var current_pattern_name := ""
 var last_pattern_name := ""
@@ -93,13 +99,19 @@ var map_overlay: ColorRect
 var map_status_label: Label
 var map_resource_label: Label
 var map_buttons: Dictionary = {}
+var collection_button: Button
+var collection_overlay: ColorRect
+var collection_list: VBoxContainer
+var collection_summary_label: Label
 
 var audio_players: Dictionary = {}
 
 func _ready() -> void:
+	_load_meta_progress()
 	_build_ui()
 	_load_audio()
 	_reset_run(false)
+	_refresh_collection()
 	_show_update_popup()
 
 func _build_ui() -> void:
@@ -275,6 +287,13 @@ func _build_ui() -> void:
 	message_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(message_label)
 
+	collection_button = Button.new()
+	collection_button.text = "COLLECTION  %d / %d" % [unlocked_skills.size(), SkillCatalog.SKILLS.size()]
+	collection_button.custom_minimum_size = Vector2(0, 38)
+	collection_button.add_theme_font_size_override("font_size", 13)
+	collection_button.pressed.connect(_show_collection)
+	column.add_child(collection_button)
+
 	version_button = Button.new()
 	version_button.text = VersionInfo.VERSION + "  •  WHAT'S NEW"
 	version_button.custom_minimum_size = Vector2(0, 38)
@@ -290,6 +309,7 @@ func _build_ui() -> void:
 
 	_build_choice_overlay()
 	_build_dungeon_map()
+	_build_collection_overlay()
 	_build_update_overlay()
 
 func _stat(parent: HBoxContainer, title: String, value: String) -> Label:
@@ -404,7 +424,7 @@ func _show_dungeon_map(status_text: String = "Choose your route.") -> void:
 	timing_bar.value = 0.0
 	weapon_indicator.text = ""
 	map_status_label.text = status_text
-	map_resource_label.text = "HP %d/%d   •   GOLD %d   •   BUILD: %s" % [hp, MAX_HP, gold, "none" if skill_levels.is_empty() else "%d skill(s)" % skill_levels.size()]
+	map_resource_label.text = "HP %d/%d   •   GOLD %d   •   BUILD %d   •   COLLECTION %d/%d" % [hp, MAX_HP, gold, skill_levels.size(), unlocked_skills.size(), SkillCatalog.SKILLS.size()]
 
 	for floor_index in range(DungeonCatalog.floor_count()):
 		for node in DungeonCatalog.nodes_for_floor(floor_index):
@@ -447,6 +467,8 @@ func _select_map_node(floor_index: int, node_id: String) -> void:
 			run_active = true
 			restart_button.text = "RUNNING"
 			restart_button.disabled = true
+			if collection_button != null:
+				collection_button.disabled = true
 			message_label.text = "Entering %s..." % current_node_type.to_upper()
 			_load_enemy()
 		"rest":
@@ -476,6 +498,197 @@ func _owned_upgrade_candidates() -> Array[String]:
 		if int(skill_levels[skill_id]) < SkillCatalog.max_level(skill_id):
 			candidates.append(skill_id)
 	return candidates
+
+func _load_meta_progress() -> void:
+	meta_data = SaveManager.load_data()
+	unlocked_skills.clear()
+
+	var saved_unlocked: Array = meta_data.get("unlocked_skills", [])
+	for id in saved_unlocked:
+		var skill_id := str(id)
+		if SkillCatalog.SKILLS.has(skill_id) and skill_id not in unlocked_skills:
+			unlocked_skills.append(skill_id)
+
+	for skill_id in SkillCatalog.default_unlocked_ids():
+		if skill_id not in unlocked_skills:
+			unlocked_skills.append(skill_id)
+
+	unlocked_skills.sort()
+	meta_data["unlocked_skills"] = unlocked_skills.duplicate()
+	_save_meta_progress()
+
+func _save_meta_progress() -> void:
+	meta_data["unlocked_skills"] = unlocked_skills.duplicate()
+	SaveManager.save_data(meta_data)
+
+func _meta_progress_value(key: String) -> int:
+	var progress: Dictionary = meta_data.get("progress", {})
+	return int(progress.get(key, 0))
+
+func _add_meta_progress(key: String, amount: int = 1) -> void:
+	var progress: Dictionary = meta_data.get("progress", {})
+	progress[key] = int(progress.get(key, 0)) + amount
+	meta_data["progress"] = progress
+	_check_permanent_unlocks()
+	_save_meta_progress()
+
+func _is_skill_unlocked(skill_id: String) -> bool:
+	return skill_id in unlocked_skills
+
+func _check_permanent_unlocks() -> void:
+	var newly_unlocked: Array[String] = []
+	for raw_id in SkillCatalog.SKILLS.keys():
+		var skill_id := str(raw_id)
+		if _is_skill_unlocked(skill_id):
+			continue
+		var requirement := SkillCatalog.unlock_type(skill_id)
+		var target := SkillCatalog.unlock_target(skill_id)
+		if requirement == "default":
+			continue
+		if _meta_progress_value(requirement) >= target:
+			unlocked_skills.append(skill_id)
+			newly_unlocked.append(skill_id)
+
+	if newly_unlocked.is_empty():
+		return
+
+	unlocked_skills.sort()
+	var names: Array[String] = []
+	for skill_id in newly_unlocked:
+		names.append(SkillCatalog.display_name(skill_id))
+	pending_unlock_notice = "PERMANENT UNLOCK: " + ", ".join(names)
+	_refresh_collection()
+
+func _build_collection_overlay() -> void:
+	collection_overlay = ColorRect.new()
+	collection_overlay.color = Color(0.025, 0.03, 0.045, 0.985)
+	collection_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	collection_overlay.visible = false
+	collection_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(collection_overlay)
+
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 22)
+	margin.add_theme_constant_override("margin_right", 22)
+	margin.add_theme_constant_override("margin_top", 42)
+	margin.add_theme_constant_override("margin_bottom", 42)
+	collection_overlay.add_child(margin)
+
+	var panel := PanelContainer.new()
+	_style_panel(panel, C.panel)
+	margin.add_child(panel)
+
+	var inner := MarginContainer.new()
+	inner.add_theme_constant_override("margin_left", 18)
+	inner.add_theme_constant_override("margin_right", 18)
+	inner.add_theme_constant_override("margin_top", 18)
+	inner.add_theme_constant_override("margin_bottom", 18)
+	panel.add_child(inner)
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 10)
+	inner.add_child(box)
+
+	var title := _label("PERMANENT COLLECTION", 24, C.text)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(title)
+
+	collection_summary_label = _label("", 12, C.perfect)
+	collection_summary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(collection_summary_label)
+
+	var note := _label("Unlock = permanent collection. Acquire/upgrade = current run only.", 12, C.muted)
+	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(note)
+
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.custom_minimum_size = Vector2(0, 560)
+	box.add_child(scroll)
+
+	collection_list = VBoxContainer.new()
+	collection_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	collection_list.add_theme_constant_override("separation", 8)
+	scroll.add_child(collection_list)
+
+	var close := Button.new()
+	close.text = "CLOSE"
+	close.custom_minimum_size = Vector2(0, 48)
+	close.pressed.connect(_hide_collection)
+	box.add_child(close)
+
+func _refresh_collection() -> void:
+	if collection_list == null:
+		return
+
+	for child in collection_list.get_children():
+		child.queue_free()
+
+	var skill_ids: Array[String] = []
+	for raw_id in SkillCatalog.SKILLS.keys():
+		skill_ids.append(str(raw_id))
+	skill_ids.sort_custom(func(a: String, b: String): return SkillCatalog.display_name(a) < SkillCatalog.display_name(b))
+
+	for skill_id in skill_ids:
+		var unlocked := _is_skill_unlocked(skill_id)
+		var card := PanelContainer.new()
+		_style_panel(card, C.panel2)
+		collection_list.add_child(card)
+
+		var card_margin := MarginContainer.new()
+		card_margin.add_theme_constant_override("margin_left", 12)
+		card_margin.add_theme_constant_override("margin_right", 12)
+		card_margin.add_theme_constant_override("margin_top", 10)
+		card_margin.add_theme_constant_override("margin_bottom", 10)
+		card.add_child(card_margin)
+
+		var vb := VBoxContainer.new()
+		vb.add_theme_constant_override("separation", 4)
+		card_margin.add_child(vb)
+
+		var status := "UNLOCKED" if unlocked else "LOCKED"
+		var title := _label("%s  •  %s  •  %s" % [SkillCatalog.display_name(skill_id), SkillCatalog.rarity(skill_id), status], 15, C.good if unlocked else C.muted)
+		vb.add_child(title)
+
+		var desc := _label(SkillCatalog.description(skill_id, 1), 12, C.text if unlocked else C.muted)
+		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		vb.add_child(desc)
+
+		if not unlocked:
+			var key := SkillCatalog.unlock_type(skill_id)
+			var current := _meta_progress_value(key)
+			var target := SkillCatalog.unlock_target(skill_id)
+			var req := _label("%s  [%d / %d]" % [SkillCatalog.unlock_text(skill_id), mini(current, target), target], 12, C.accent)
+			req.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			vb.add_child(req)
+		else:
+			var req := _label(SkillCatalog.unlock_text(skill_id), 11, C.muted)
+			req.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			vb.add_child(req)
+
+	collection_summary_label.text = "Unlocked %d / %d  •  Progress saves locally on this device/browser" % [unlocked_skills.size(), SkillCatalog.SKILLS.size()]
+	if collection_button != null:
+		collection_button.text = "COLLECTION  %d / %d" % [unlocked_skills.size(), SkillCatalog.SKILLS.size()]
+
+func _show_collection() -> void:
+	if run_active:
+		return
+	_refresh_collection()
+	collection_overlay.visible = true
+	collection_overlay.move_to_front()
+
+func _hide_collection() -> void:
+	if collection_overlay != null:
+		collection_overlay.visible = false
+
+func _consume_unlock_notice(prefix: String = "") -> String:
+	if pending_unlock_notice == "":
+		return prefix
+	var result := pending_unlock_notice if prefix == "" else prefix + "\n" + pending_unlock_notice
+	pending_unlock_notice = ""
+	return result
 
 func _build_update_overlay() -> void:
 	update_overlay = ColorRect.new()
@@ -573,7 +786,7 @@ func _build_choice_overlay() -> void:
 	choice_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(choice_title)
 
-	var sub := _label("Prototype pool: all 5 skills are temporarily available.", 13, C.muted)
+	var sub := _label("Only permanently unlocked collection skills can appear in this run.", 13, C.muted)
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(sub)
@@ -596,6 +809,8 @@ func _begin_new_run() -> void:
 	current_node_type = ""
 	current_gold_reward = 0
 	route_history.clear()
+	run_unlocked_pool = unlocked_skills.duplicate()
+	pending_unlock_notice = ""
 	_update_build_label()
 	_show_skill_choices("starter")
 
@@ -617,6 +832,8 @@ func _show_skill_choices(mode: String) -> void:
 	state_label.text = "BUILD"
 	state_label.add_theme_color_override("font_color", C.perfect)
 	restart_button.disabled = true
+	if collection_button != null:
+		collection_button.disabled = false
 
 	var candidates: Array[String] = []
 	if mode == "upgrade":
@@ -662,13 +879,13 @@ func _choose_skill(skill_id: String) -> void:
 		_show_dungeon_map("Starter chosen. Choose your first route.")
 	elif choice_mode == "upgrade":
 		message_label.text = "Shrine upgrade complete."
-		_show_dungeon_map("UPGRADE SHRINE: skill upgraded.")
+		_show_dungeon_map(_consume_unlock_notice("UPGRADE SHRINE: skill upgraded."))
 	elif choice_mode == "shop":
 		message_label.text = "Purchase complete."
-		_show_dungeon_map("SHOP: skill acquired for this run.")
+		_show_dungeon_map(_consume_unlock_notice("SHOP: skill acquired for this run."))
 	else:
 		message_label.text = "Combat reward chosen."
-		_show_dungeon_map("Reward acquired. Choose the next route.")
+		_show_dungeon_map(_consume_unlock_notice("Reward acquired. Choose the next route."))
 
 func _update_build_label() -> void:
 	if skill_levels.is_empty():
@@ -769,6 +986,8 @@ func _point_is_jump_zone(point: Vector2) -> bool:
 func _input(event: InputEvent) -> void:
 	if update_overlay != null and update_overlay.visible:
 		return
+	if collection_overlay != null and collection_overlay.visible:
+		return
 
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_A or event.keycode == KEY_LEFT:
@@ -861,6 +1080,7 @@ func _reset_run(start_now: bool) -> void:
 	attack_side = ""
 	last_dodge_direction = ""
 	last_dodge_time = -99.0
+	encounter_took_damage = false
 	current_pattern.clear()
 	current_pattern_name = ""
 	last_pattern_name = ""
@@ -915,6 +1135,8 @@ func _load_enemy() -> void:
 		guardian_charges = max(guardian_charges, 1)
 
 	enemy_name_label.text = str(enemy.name)
+	if collection_button != null:
+		collection_button.disabled = true
 	_update_enemy_pattern_label()
 	state_label.text = "READY"
 	state_label.add_theme_color_override("font_color", C.accent)
@@ -1254,6 +1476,7 @@ func _resolve_attack() -> void:
 		if perfect:
 			flow += 1
 			perfect_count += 1
+			_add_meta_progress("perfect_dodges")
 			state_label.text = "PERFECT"
 			state_label.add_theme_color_override("font_color", C.perfect)
 			var perfect_action := "DUCK" if correct == "duck" else ("JUMP" if correct == "jump" else "DODGE")
@@ -1292,6 +1515,7 @@ func _resolve_attack() -> void:
 			_advance_pattern_after_exchange(0.30)
 		else:
 			hp -= 1
+			encounter_took_damage = true
 			flow = 0
 			state_label.text = "HIT"
 			state_label.add_theme_color_override("font_color", C.danger)
@@ -1322,10 +1546,16 @@ func _defeat_enemy() -> void:
 	attack_generation += 1
 	attack_side = ""
 	gold += current_gold_reward
+	if not encounter_took_damage:
+		_add_meta_progress("no_damage_encounters")
+		if current_node_type == "elite":
+			_add_meta_progress("elite_no_damage_clears")
 	_update_hud()
 
 	if current_node_type == "boss":
-		message_label.text = "BOSS DEFEATED"
+		_add_meta_progress("boss_clears")
+		_add_meta_progress("runs_completed")
+		message_label.text = _consume_unlock_notice("BOSS DEFEATED")
 		await get_tree().create_timer(0.45).timeout
 		_end_run(true)
 		return
@@ -1346,6 +1576,8 @@ func _end_run(victory: bool) -> void:
 	timing_bar.value = 0.0
 	restart_button.text = "TRY AGAIN"
 	restart_button.disabled = false
+	if collection_button != null:
+		collection_button.disabled = false
 	if victory:
 		state_label.text = "CLEARED"
 		state_label.add_theme_color_override("font_color", C.good)
