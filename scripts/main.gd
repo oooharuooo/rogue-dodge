@@ -587,6 +587,37 @@ func _save_meta_progress() -> void:
 	meta_data["unlocked_skills"] = unlocked_skills.duplicate()
 	SaveManager.save_data(meta_data)
 
+func _weapon_mastery_xp(weapon_id: String) -> int:
+	var mastery: Dictionary = meta_data.get("weapon_mastery", {})
+	return int(mastery.get(weapon_id, 0))
+
+func _weapon_mastery_level(weapon_id: String) -> int:
+	return WeaponUpgradeCatalog.mastery_level(_weapon_mastery_xp(weapon_id))
+
+func _add_weapon_mastery_xp(amount: int = 1) -> void:
+	if dev_test_active or current_weapon_id == "":
+		return
+
+	var mastery: Dictionary = meta_data.get("weapon_mastery", {})
+	var old_xp := int(mastery.get(current_weapon_id, 0))
+	var old_level := WeaponUpgradeCatalog.mastery_level(old_xp)
+	var new_xp := old_xp + amount
+	mastery[current_weapon_id] = new_xp
+	meta_data["weapon_mastery"] = mastery
+
+	var new_level := WeaponUpgradeCatalog.mastery_level(new_xp)
+	if new_level > old_level:
+		var notice := "%s MASTERY Lv.%d unlocked" % [WeaponCatalog.display_name(current_weapon_id).to_upper(), new_level]
+		pending_unlock_notice = notice if pending_unlock_notice == "" else pending_unlock_notice + "\n" + notice
+
+	_save_meta_progress()
+	_refresh_weapon_mastery_ui()
+
+func _refresh_weapon_mastery_ui() -> void:
+	for weapon_id in weapon_mastery_labels.keys():
+		var label: Label = weapon_mastery_labels[weapon_id]
+		label.text = WeaponUpgradeCatalog.mastery_progress_text(_weapon_mastery_xp(str(weapon_id)))
+
 func _meta_progress_value(key: String) -> int:
 	var progress: Dictionary = meta_data.get("progress", {})
 	return int(progress.get(key, 0))
