@@ -731,7 +731,7 @@ func _refresh_collection() -> void:
 
 	collection_summary_label.text = "Unlocked %d / %d  •  Progress saves locally on this device/browser" % [unlocked_skills.size(), SkillCatalog.SKILLS.size()]
 	if collection_button != null:
-		collection_button.text = "COLLECTION  %d / %d" % [unlocked_skills.size(), SkillCatalog.SKILLS.size()]
+		collection_button.text = "COLLECTION %d/%d" % [unlocked_skills.size(), SkillCatalog.SKILLS.size()]
 
 func _show_collection() -> void:
 	if run_active:
