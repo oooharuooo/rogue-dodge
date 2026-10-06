@@ -972,6 +972,8 @@ func _start_dev_test() -> void:
 		weapon_overlay.visible = false
 	if choice_overlay != null:
 		choice_overlay.visible = false
+	if weapon_upgrade_overlay != null:
+		weapon_upgrade_overlay.visible = false
 	if map_overlay != null:
 		map_overlay.visible = false
 	if collection_overlay != null:
@@ -1380,6 +1382,8 @@ func _begin_new_run() -> void:
 	guardian_charges = 0
 	last_counter_damage = 0
 	current_weapon_id = ""
+	run_weapon_mastery_level = 1
+	weapon_upgrades.clear()
 	dagger_hit_bank = 0
 	greatsword_charge = 0
 	bow_aim = 0
@@ -1720,6 +1724,8 @@ func _input(event: InputEvent) -> void:
 	if collection_overlay != null and collection_overlay.visible:
 		return
 	if weapon_overlay != null and weapon_overlay.visible:
+		return
+	if weapon_upgrade_overlay != null and weapon_upgrade_overlay.visible:
 		return
 
 	if event is InputEventKey and event.pressed and not event.echo:
