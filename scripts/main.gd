@@ -38,6 +38,8 @@ var hp := MAX_HP
 var flow := 0
 var enemy_index := 0
 var enemy_counters_left := 1
+var enemy_max_hp := 1
+var last_counter_damage := 0
 var run_active := false
 var attack_side := ""
 var attack_resolve_time := 0.0
@@ -93,6 +95,7 @@ var hint_label: Label
 var restart_button: Button
 var arena: Panel
 var build_label: Label
+var combat_stat_label: Label
 var choice_overlay: ColorRect
 var choice_title: Label
 var choice_buttons: Array[Button] = []
@@ -163,6 +166,10 @@ func _build_ui() -> void:
 	build_label = _label("Build: none", 12, C.perfect)
 	build_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	info.add_child(build_label)
+
+	combat_stat_label = _label("Counter ATK: N 1 / P 1  •  Last: -", 12, C.accent)
+	combat_stat_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.add_child(combat_stat_label)
 
 	state_label = _label("READY", 14, C.accent)
 	state_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -817,7 +824,7 @@ func _build_weapon_overlay() -> void:
 		var button := Button.new()
 		button.custom_minimum_size = Vector2(0, 106)
 		button.add_theme_font_size_override("font_size", 14)
-		button.text = "%s — %s\n%s\n%s" % [
+		button.text = "%s - %s\n%s\n%s" % [
 			WeaponCatalog.display_name(weapon_id),
 			WeaponCatalog.tagline(weapon_id),
 			WeaponCatalog.stat_line(weapon_id),
@@ -895,6 +902,7 @@ func _begin_new_run() -> void:
 	skill_levels.clear()
 	perfect_count = 0
 	guardian_charges = 0
+	last_counter_damage = 0
 	current_weapon_id = ""
 	dagger_hit_bank = 0
 	greatsword_charge = 0
@@ -1007,6 +1015,60 @@ func _weapon_state_text() -> String:
 		return "Perfect +1"
 	return ""
 
+func _preview_counter_damage(perfect: bool) -> int:
+	var damage := 1
+	var preview_flow := flow + (1 if perfect else 0)
+
+	var momentum_level := int(skill_levels.get("momentum", 0))
+	var momentum_threshold := 999
+	if momentum_level == 1:
+		momentum_threshold = 3
+	elif momentum_level >= 2:
+		momentum_threshold = 2
+	if preview_flow >= momentum_threshold:
+		damage += 1
+
+	var bloodlust_level := int(skill_levels.get("bloodlust", 0))
+	var bloodlust_threshold := 999
+	if bloodlust_level == 1:
+		bloodlust_threshold = 4
+	elif bloodlust_level >= 2:
+		bloodlust_threshold = 3
+	if preview_flow >= bloodlust_threshold:
+		damage += 1
+
+	if perfect:
+		var flame_level := int(skill_levels.get("flame_counter", 0))
+		var next_perfect_count := perfect_count + 1
+		if flame_level >= 2:
+			damage += 1
+		elif flame_level == 1 and next_perfect_count % 2 == 0:
+			damage += 1
+
+	match current_weapon_id:
+		"katana":
+			if perfect:
+				damage += 1
+		"daggers":
+			var added_hits := 3 if perfect else 2
+			damage += int((dagger_hit_bank + added_hits) / 4)
+		"greatsword":
+			if perfect and greatsword_charge > 0:
+				damage += greatsword_charge
+		"bow":
+			if not perfect and bow_aim > 0:
+				damage += bow_aim
+
+	return damage
+
+func _update_combat_stats() -> void:
+	if combat_stat_label == null:
+		return
+	var normal_damage := _preview_counter_damage(false)
+	var perfect_damage := _preview_counter_damage(true)
+	var last_text := "-" if last_counter_damage <= 0 else str(last_counter_damage)
+	combat_stat_label.text = "Counter ATK: Normal %d / Perfect %d  •  Last %s" % [normal_damage, perfect_damage, last_text]
+
 func _update_build_label() -> void:
 	var weapon_name := "No Weapon" if current_weapon_id == "" else WeaponCatalog.display_name(current_weapon_id)
 	var weapon_state := _weapon_state_text()
@@ -1014,6 +1076,7 @@ func _update_build_label() -> void:
 
 	if skill_levels.is_empty():
 		build_label.text = "Weapon: %s  •  Skills: none" % weapon_text
+		_update_combat_stats()
 		return
 
 	var parts: Array[String] = []
@@ -1021,6 +1084,7 @@ func _update_build_label() -> void:
 		parts.append("%s Lv.%d" % [SkillCatalog.display_name(str(id)), int(skill_levels[id])])
 	parts.sort()
 	build_label.text = "Weapon: %s  •  %s" % [weapon_text, " • ".join(parts)]
+	_update_combat_stats()
 
 func _effective_perfect_window(enemy: Dictionary) -> float:
 	var bonus := 0.0
@@ -1227,6 +1291,8 @@ func _reset_run(start_now: bool) -> void:
 	hp = MAX_HP
 	flow = 0
 	enemy_index = 0
+	enemy_max_hp = 1
+	last_counter_damage = 0
 	run_active = start_now
 	attack_side = ""
 	last_dodge_direction = ""
@@ -1276,6 +1342,8 @@ func _load_enemy() -> void:
 		return
 	var enemy: Dictionary = enemies[enemy_index]
 	enemy_counters_left = int(enemy.counters)
+	enemy_max_hp = int(enemy.counters)
+	last_counter_damage = 0
 	encounter_took_damage = false
 	current_pattern.clear()
 	current_pattern_name = ""
@@ -1299,7 +1367,7 @@ func _load_enemy() -> void:
 
 func _update_enemy_pattern_label() -> void:
 	var pattern_text := current_pattern_name if current_pattern_name != "" else "..."
-	enemy_counter_label.text = "Counter needed: %d  •  Pattern: %s" % [max(enemy_counters_left, 0), pattern_text]
+	enemy_counter_label.text = "Enemy HP: %d / %d  •  Pattern: %s" % [max(enemy_counters_left, 0), enemy_max_hp, pattern_text]
 
 func _start_pattern() -> void:
 	if not run_active:
@@ -1642,10 +1710,13 @@ func _resolve_attack() -> void:
 			message_label.text = "%s — Auto Counter" % action_name
 
 		var damage := _counter_damage(perfect)
+		last_counter_damage = damage
 		enemy_counters_left -= damage
 		_update_enemy_pattern_label()
+		_update_combat_stats()
+		message_label.text += "  [Counter Damage: %d]" % damage
 		if damage > 1:
-			message_label.text += "  [+%d BONUS COUNTER]" % (damage - 1)
+			message_label.text += "  [+%d Bonus]" % (damage - 1)
 		_counter_animation()
 		_update_hud()
 
