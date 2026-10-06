@@ -556,7 +556,8 @@ func _check_permanent_unlocks() -> void:
 	var names: Array[String] = []
 	for skill_id in newly_unlocked:
 		names.append(SkillCatalog.display_name(skill_id))
-	pending_unlock_notice = "PERMANENT UNLOCK: " + ", ".join(names)
+	var notice := "PERMANENT UNLOCK: " + ", ".join(names)
+	pending_unlock_notice = notice if pending_unlock_notice == "" else pending_unlock_notice + "\n" + notice
 	_refresh_collection()
 
 func _build_collection_overlay() -> void:
@@ -1125,6 +1126,7 @@ func _load_enemy() -> void:
 		return
 	var enemy: Dictionary = enemies[enemy_index]
 	enemy_counters_left = int(enemy.counters)
+	encounter_took_damage = false
 	current_pattern.clear()
 	current_pattern_name = ""
 	last_pattern_name = ""
