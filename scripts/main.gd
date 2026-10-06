@@ -2,6 +2,7 @@ extends Control
 
 const MAX_HP := 3
 const DODGE_COMMIT_SECONDS := 0.35
+const SkillCatalog = preload("res://scripts/skill_catalog.gd")
 
 const C := {
 	"bg": Color("111318"),
@@ -20,7 +21,9 @@ const C := {
 var enemies := [
 	{"name":"Swordsman","counters":1,"windup":1.50,"dodge_window":0.68,"perfect_window":0.21,"cue_before":0.43},
 	{"name":"Heavy Knight","counters":2,"windup":2.35,"dodge_window":0.72,"perfect_window":0.22,"cue_before":0.47},
-	{"name":"Rogue","counters":2,"windup":1.05,"dodge_window":0.52,"perfect_window":0.17,"cue_before":0.33}
+	{"name":"Rogue","counters":2,"windup":1.05,"dodge_window":0.52,"perfect_window":0.17,"cue_before":0.33},
+	{"name":"Duelist","counters":3,"windup":1.20,"dodge_window":0.50,"perfect_window":0.16,"cue_before":0.31},
+	{"name":"Executioner","counters":4,"windup":1.85,"dodge_window":0.56,"perfect_window":0.17,"cue_before":0.36}
 ]
 
 var hp := MAX_HP
@@ -34,6 +37,10 @@ var last_dodge_direction := ""
 var last_dodge_time := -99.0
 var dodge_locked_until := 0.0
 var attack_generation := 0
+var skill_levels: Dictionary = {}
+var perfect_count := 0
+var guardian_charges := 0
+var choice_mode := ""
 
 var hp_label: Label
 var flow_label: Label
@@ -49,6 +56,10 @@ var timing_bar: ProgressBar
 var hint_label: Label
 var restart_button: Button
 var arena: Panel
+var build_label: Label
+var choice_overlay: ColorRect
+var choice_title: Label
+var choice_buttons: Array[Button] = []
 
 var audio_players: Dictionary = {}
 
@@ -96,6 +107,9 @@ func _build_ui() -> void:
 	info.add_child(enemy_name_label)
 	enemy_counter_label = _label("Left / Right only", 14, C.muted)
 	info.add_child(enemy_counter_label)
+	build_label = _label("Build: none", 12, C.perfect)
+	build_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.add_child(build_label)
 
 	state_label = _label("READY", 14, C.accent)
 	state_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -171,8 +185,10 @@ func _build_ui() -> void:
 	restart_button = Button.new()
 	restart_button.text = "START RUN"
 	restart_button.custom_minimum_size = Vector2(0, 54)
-	restart_button.pressed.connect(func(): _reset_run(true))
+	restart_button.pressed.connect(_begin_new_run)
 	column.add_child(restart_button)
+
+	_build_choice_overlay()
 
 func _stat(parent: HBoxContainer, title: String, value: String) -> Label:
 	var box := PanelContainer.new()
@@ -206,6 +222,160 @@ func _style_panel(control: Control, color: Color) -> void:
 	style.corner_radius_bottom_left = 14
 	style.corner_radius_bottom_right = 14
 	control.add_theme_stylebox_override("panel", style)
+
+func _build_choice_overlay() -> void:
+	choice_overlay = ColorRect.new()
+	choice_overlay.color = Color(0.035, 0.04, 0.055, 0.97)
+	choice_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	choice_overlay.visible = false
+	choice_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(choice_overlay)
+
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 24)
+	margin.add_theme_constant_override("margin_right", 24)
+	margin.add_theme_constant_override("margin_top", 90)
+	margin.add_theme_constant_override("margin_bottom", 70)
+	choice_overlay.add_child(margin)
+
+	var box := VBoxContainer.new()
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 14)
+	margin.add_child(box)
+
+	choice_title = _label("CHOOSE STARTER SKILL", 24, C.text)
+	choice_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(choice_title)
+
+	var sub := _label("Prototype pool: all 5 skills are temporarily available.", 13, C.muted)
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(sub)
+
+	for i in range(3):
+		var button := Button.new()
+		button.custom_minimum_size = Vector2(0, 112)
+		button.add_theme_font_size_override("font_size", 16)
+		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		box.add_child(button)
+		choice_buttons.append(button)
+
+func _begin_new_run() -> void:
+	_reset_run(false)
+	skill_levels.clear()
+	perfect_count = 0
+	guardian_charges = 0
+	_update_build_label()
+	_show_skill_choices("starter")
+
+func _show_skill_choices(mode: String) -> void:
+	run_active = false
+	attack_generation += 1
+	attack_side = ""
+	timing_bar.value = 0.0
+	weapon_indicator.text = ""
+	choice_mode = mode
+	choice_title.text = "CHOOSE STARTER SKILL" if mode == "starter" else "CHOOSE A SKILL"
+	state_label.text = "BUILD"
+	state_label.add_theme_color_override("font_color", C.perfect)
+	restart_button.disabled = true
+
+	var candidates: Array[String] = []
+	for id in SkillCatalog.SKILLS.keys():
+		var current := int(skill_levels.get(id, 0))
+		if current < SkillCatalog.max_level(id):
+			candidates.append(str(id))
+	candidates.shuffle()
+
+	for i in range(choice_buttons.size()):
+		var button: Button = choice_buttons[i]
+		for connection in button.pressed.get_connections():
+			button.pressed.disconnect(connection.callable)
+		if i < min(3, candidates.size()):
+			var skill_id := candidates[i]
+			var next_level := int(skill_levels.get(skill_id, 0)) + 1
+			var prefix := "NEW" if next_level == 1 else "UPGRADE"
+			button.visible = true
+			button.text = "%s — %s Lv.%d\n%s" % [prefix, SkillCatalog.display_name(skill_id), next_level, SkillCatalog.description(skill_id, next_level)]
+			button.pressed.connect(func(): _choose_skill(skill_id))
+		else:
+			button.visible = false
+
+	choice_overlay.visible = true
+
+func _choose_skill(skill_id: String) -> void:
+	var new_level := int(skill_levels.get(skill_id, 0)) + 1
+	skill_levels[skill_id] = new_level
+
+	if skill_id == "guardian" and new_level == 1:
+		guardian_charges += 1
+
+	_update_build_label()
+	choice_overlay.visible = false
+	restart_button.disabled = false
+
+	if choice_mode == "starter":
+		run_active = true
+		restart_button.text = "RUNNING"
+		restart_button.disabled = true
+		message_label.text = "Starter chosen. Enemy approaching..."
+		_load_enemy()
+	else:
+		run_active = true
+		restart_button.text = "RUNNING"
+		restart_button.disabled = true
+		message_label.text = "Build upgraded. Next enemy..."
+		_load_enemy()
+
+func _update_build_label() -> void:
+	if skill_levels.is_empty():
+		build_label.text = "Build: none"
+		return
+	var parts: Array[String] = []
+	for id in skill_levels:
+		parts.append("%s Lv.%d" % [SkillCatalog.display_name(str(id)), int(skill_levels[id])])
+	parts.sort()
+	build_label.text = "Build: " + " • ".join(parts)
+
+func _effective_perfect_window(enemy: Dictionary) -> float:
+	var bonus := 0.0
+	var focus_level := int(skill_levels.get("focus", 0))
+	if focus_level == 1:
+		bonus = 0.05
+	elif focus_level >= 2:
+		bonus = 0.09
+	return float(enemy.perfect_window) + bonus
+
+func _counter_damage(perfect: bool) -> int:
+	var damage := 1
+
+	var momentum_level := int(skill_levels.get("momentum", 0))
+	var momentum_threshold := 999
+	if momentum_level == 1:
+		momentum_threshold = 3
+	elif momentum_level >= 2:
+		momentum_threshold = 2
+	if flow >= momentum_threshold:
+		damage += 1
+
+	var bloodlust_level := int(skill_levels.get("bloodlust", 0))
+	var bloodlust_threshold := 999
+	if bloodlust_level == 1:
+		bloodlust_threshold = 4
+	elif bloodlust_level >= 2:
+		bloodlust_threshold = 3
+	if flow >= bloodlust_threshold:
+		damage += 1
+
+	if perfect:
+		var flame_level := int(skill_levels.get("flame_counter", 0))
+		if flame_level >= 2:
+			damage += 1
+		elif flame_level == 1 and perfect_count % 2 == 0:
+			damage += 1
+
+	return damage
 
 func _load_audio() -> void:
 	var tones := {
@@ -283,23 +453,30 @@ func _reset_run(start_now: bool) -> void:
 	weapon_indicator.text = ""
 	_update_hud()
 
+	choice_overlay.visible = false
 	if start_now:
-		restart_button.text = "RESTART RUN"
+		run_active = true
+		restart_button.text = "RUNNING"
+		restart_button.disabled = true
 		message_label.text = "Enemy approaching..."
 		_load_enemy()
 	else:
 		restart_button.text = "START RUN"
+		restart_button.disabled = false
 
 func _update_hud() -> void:
 	hp_label.text = "%d / %d" % [hp, MAX_HP]
 	flow_label.text = "x%d" % flow
 	progress_label.text = "%d / %d" % [min(enemy_index + 1, enemies.size()), enemies.size()]
+	_update_build_label()
 
 func _load_enemy() -> void:
 	if not run_active:
 		return
 	var enemy: Dictionary = enemies[enemy_index]
 	enemy_counters_left = int(enemy.counters)
+	if int(skill_levels.get("guardian", 0)) >= 2:
+		guardian_charges = max(guardian_charges, 1)
 	enemy_name_label.text = str(enemy.name)
 	enemy_counter_label.text = "Counter needed: %d" % enemy_counters_left
 	state_label.text = "READY"
@@ -378,7 +555,7 @@ func _resolve_attack() -> void:
 		var early := attack_resolve_time - last_dodge_time
 		if early >= 0.0 and early <= float(enemy.dodge_window):
 			success = true
-			perfect = early <= float(enemy.perfect_window)
+			perfect = early <= _effective_perfect_window(enemy)
 
 	attack_side = ""
 	timing_bar.value = 0.0
@@ -388,6 +565,7 @@ func _resolve_attack() -> void:
 	if success:
 		if perfect:
 			flow += 1
+			perfect_count += 1
 			state_label.text = "PERFECT"
 			state_label.add_theme_color_override("font_color", C.perfect)
 			message_label.text = "PERFECT DODGE — AUTO COUNTER!"
@@ -398,8 +576,11 @@ func _resolve_attack() -> void:
 			state_label.add_theme_color_override("font_color", C.good)
 			message_label.text = "Dodge — Auto Counter"
 
-		enemy_counters_left -= 1
+		var damage := _counter_damage(perfect)
+		enemy_counters_left -= damage
 		enemy_counter_label.text = "Counter needed: %d" % max(enemy_counters_left, 0)
+		if damage > 1:
+			message_label.text += "  [+%d BUILD DAMAGE]" % (damage - 1)
 		_counter_animation()
 		_update_hud()
 
@@ -411,20 +592,33 @@ func _resolve_attack() -> void:
 			if run_active:
 				_begin_attack()
 	else:
-		hp -= 1
-		flow = 0
-		state_label.text = "HIT"
-		state_label.add_theme_color_override("font_color", C.danger)
-		message_label.text = "HIT — Flow lost."
-		_play("hit")
-		_flash(player_body, C.danger)
-		_update_hud()
-		if hp <= 0:
-			_end_run(false)
-		else:
+		if guardian_charges > 0:
+			guardian_charges -= 1
+			flow = 0
+			state_label.text = "BLOCKED"
+			state_label.add_theme_color_override("font_color", C.perfect)
+			message_label.text = "GUARDIAN blocked the hit — Flow lost."
+			_play("perfect")
+			_flash(player_body, C.perfect)
+			_update_hud()
 			await get_tree().create_timer(0.85).timeout
 			if run_active:
 				_begin_attack()
+		else:
+			hp -= 1
+			flow = 0
+			state_label.text = "HIT"
+			state_label.add_theme_color_override("font_color", C.danger)
+			message_label.text = "HIT — Flow lost."
+			_play("hit")
+			_flash(player_body, C.danger)
+			_update_hud()
+			if hp <= 0:
+				_end_run(false)
+			else:
+				await get_tree().create_timer(0.85).timeout
+				if run_active:
+					_begin_attack()
 
 func _counter_animation() -> void:
 	var start_y := player_body.position.y
@@ -444,9 +638,9 @@ func _defeat_enemy() -> void:
 	if enemy_index >= enemies.size():
 		_end_run(true)
 		return
-	await get_tree().create_timer(0.65).timeout
+	await get_tree().create_timer(0.45).timeout
 	if run_active:
-		_load_enemy()
+		_show_skill_choices("reward")
 
 func _end_run(victory: bool) -> void:
 	run_active = false
@@ -455,6 +649,7 @@ func _end_run(victory: bool) -> void:
 	weapon_indicator.text = ""
 	timing_bar.value = 0.0
 	restart_button.text = "TRY AGAIN"
+	restart_button.disabled = false
 	if victory:
 		state_label.text = "CLEARED"
 		state_label.add_theme_color_override("font_color", C.good)
