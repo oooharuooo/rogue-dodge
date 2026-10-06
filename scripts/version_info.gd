@@ -1,13 +1,14 @@
 extends RefCounted
 
-const VERSION := "v0.4.2"
-const BUILD_NAME := "Mobile Swipe Hotfix"
+const VERSION := "v0.4.3"
+const BUILD_NAME := "Duck Input Tuning"
 
 const CHANGES := [
-	"Fixed a Godot parse error in the mobile swipe-down input handler that caused a blank gray screen.",
-	"DUCK remains available with S/Down Arrow on PC and swipe down on mobile.",
-	"Cache-safe Web deployment remains enabled.",
-	"GitHub Actions now fails automatically if Godot reports a script parse error, preventing broken builds from being deployed as successful."
+	"Made mobile Duck easier to trigger by reducing the swipe distance required.",
+	"Downward diagonal swipes are now accepted instead of requiring an almost perfectly vertical swipe.",
+	"Side dodge now only triggers from a true tap with very little finger movement.",
+	"A failed/ambiguous drag is ignored instead of accidentally becoming Left or Right.",
+	"Kept the cache-safe deployment and CI parse-error protection."
 ]
 
 static func changelog_text() -> String:
