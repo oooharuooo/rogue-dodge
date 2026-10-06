@@ -1,14 +1,13 @@
 extends RefCounted
 
-const VERSION := "v0.4.1"
-const BUILD_NAME := "Cache-Safe Mobile Test"
+const VERSION := "v0.4.2"
+const BUILD_NAME := "Mobile Swipe Hotfix"
 
 const CHANGES := [
-	"Web test deployment now uses a unique build filename for every commit.",
-	"The fixed game URL now checks latest.json with cache disabled before launching.",
-	"Mobile testing should no longer require manually clearing browser cache after each update.",
-	"Kept DUCK controls: S/Down Arrow on PC and swipe down on mobile.",
-	"Kept High Sweep attacks and the v0.3 skill-build system."
+	"Fixed a Godot parse error in the mobile swipe-down input handler that caused a blank gray screen.",
+	"DUCK remains available with S/Down Arrow on PC and swipe down on mobile.",
+	"Cache-safe Web deployment remains enabled.",
+	"GitHub Actions now fails automatically if Godot reports a script parse error, preventing broken builds from being deployed as successful."
 ]
 
 static func changelog_text() -> String:
