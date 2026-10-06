@@ -7,6 +7,7 @@ const SWIPE_UP_THRESHOLD := 32.0
 const TOUCH_MOUSE_SUPPRESS_MS := 1200
 const SkillCatalog = preload("res://scripts/skill_catalog.gd")
 const MovesetCatalog = preload("res://scripts/moveset_catalog.gd")
+const DungeonCatalog = preload("res://scripts/dungeon_catalog.gd")
 const VersionInfo = preload("res://scripts/version_info.gd")
 
 const C := {
@@ -46,6 +47,12 @@ var skill_levels: Dictionary = {}
 var perfect_count := 0
 var guardian_charges := 0
 var choice_mode := ""
+var dungeon_floor := 0
+var current_floor_number := 0
+var gold := 0
+var current_node_type := ""
+var current_gold_reward := 0
+var route_history: Dictionary = {}
 var current_pattern: Array[String] = []
 var current_pattern_name := ""
 var last_pattern_name := ""
@@ -82,6 +89,10 @@ var version_button: Button
 var update_overlay: ColorRect
 var duck_touch_zone: PanelContainer
 var jump_touch_zone: PanelContainer
+var map_overlay: ColorRect
+var map_status_label: Label
+var map_resource_label: Label
+var map_buttons: Dictionary = {}
 
 var audio_players: Dictionary = {}
 
@@ -117,7 +128,7 @@ func _build_ui() -> void:
 	column.add_child(stats)
 	hp_label = _stat(stats, "HP", "3 / 3")
 	flow_label = _stat(stats, "FLOW", "x0")
-	progress_label = _stat(stats, "ENEMY", "1 / 5")
+	progress_label = _stat(stats, "FLOOR", "0 / 5")
 
 	var header := HBoxContainer.new()
 	header.add_theme_constant_override("separation", 8)
@@ -278,6 +289,7 @@ func _build_ui() -> void:
 	column.add_child(restart_button)
 
 	_build_choice_overlay()
+	_build_dungeon_map()
 	_build_update_overlay()
 
 func _stat(parent: HBoxContainer, title: String, value: String) -> Label:
@@ -312,6 +324,158 @@ func _style_panel(control: Control, color: Color) -> void:
 	style.corner_radius_bottom_left = 14
 	style.corner_radius_bottom_right = 14
 	control.add_theme_stylebox_override("panel", style)
+
+func _build_dungeon_map() -> void:
+	map_overlay = ColorRect.new()
+	map_overlay.color = Color(0.025, 0.03, 0.045, 0.985)
+	map_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	map_overlay.visible = false
+	map_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(map_overlay)
+
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 20)
+	margin.add_theme_constant_override("margin_right", 20)
+	margin.add_theme_constant_override("margin_top", 34)
+	margin.add_theme_constant_override("margin_bottom", 34)
+	map_overlay.add_child(margin)
+
+	var panel := PanelContainer.new()
+	_style_panel(panel, C.panel)
+	margin.add_child(panel)
+
+	var inner := MarginContainer.new()
+	inner.add_theme_constant_override("margin_left", 18)
+	inner.add_theme_constant_override("margin_right", 18)
+	inner.add_theme_constant_override("margin_top", 18)
+	inner.add_theme_constant_override("margin_bottom", 18)
+	panel.add_child(inner)
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 10)
+	inner.add_child(box)
+
+	var title := _label("DUNGEON MAP", 26, C.text)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(title)
+
+	map_resource_label = _label("", 13, C.perfect)
+	map_resource_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(map_resource_label)
+
+	map_status_label = _label("Choose your route.", 13, C.muted)
+	map_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	map_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(map_status_label)
+
+	var separator := HSeparator.new()
+	box.add_child(separator)
+
+	for floor_index in range(DungeonCatalog.floor_count() - 1, -1, -1):
+		var floor_title := _label("FLOOR %d" % (floor_index + 1), 11, C.muted)
+		floor_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		box.add_child(floor_title)
+
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 10)
+		row.alignment = BoxContainer.ALIGNMENT_CENTER
+		box.add_child(row)
+
+		for node in DungeonCatalog.nodes_for_floor(floor_index):
+			var button := Button.new()
+			var node_id := str(node.id)
+			button.text = str(node.label)
+			button.custom_minimum_size = Vector2(0, 62)
+			button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			button.add_theme_font_size_override("font_size", 13)
+			button.pressed.connect(_select_map_node.bind(floor_index, node_id))
+			row.add_child(button)
+			map_buttons["%d:%s" % [floor_index, node_id]] = button
+
+func _show_dungeon_map(status_text: String = "Choose your route.") -> void:
+	run_active = false
+	attack_generation += 1
+	if map_overlay != null:
+		map_overlay.visible = false
+	if choice_overlay != null:
+		choice_overlay.visible = false
+	attack_side = ""
+	timing_bar.value = 0.0
+	weapon_indicator.text = ""
+	map_status_label.text = status_text
+	map_resource_label.text = "HP %d/%d   •   GOLD %d   •   BUILD: %s" % [hp, MAX_HP, gold, "none" if skill_levels.is_empty() else "%d skill(s)" % skill_levels.size()]
+
+	for floor_index in range(DungeonCatalog.floor_count()):
+		for node in DungeonCatalog.nodes_for_floor(floor_index):
+			var node_id := str(node.id)
+			var key := "%d:%s" % [floor_index, node_id]
+			var button: Button = map_buttons[key]
+			var completed := route_history.has(floor_index)
+			button.disabled = floor_index != dungeon_floor
+			if completed:
+				var picked := str(route_history[floor_index]) == node_id
+				button.text = ("✓ " if picked else "· ") + str(node.label)
+				button.modulate = Color(0.75, 0.75, 0.75, 0.72)
+			else:
+				button.text = str(node.label)
+				button.modulate = Color.WHITE if floor_index == dungeon_floor else Color(0.62, 0.62, 0.62, 0.58)
+
+	map_overlay.visible = true
+	map_overlay.move_to_front()
+	_update_hud()
+
+func _select_map_node(floor_index: int, node_id: String) -> void:
+	if floor_index != dungeon_floor:
+		return
+
+	var node := DungeonCatalog.node_by_id(floor_index, node_id)
+	if node.is_empty():
+		return
+
+	route_history[floor_index] = node_id
+	current_floor_number = floor_index + 1
+	dungeon_floor = floor_index + 1
+	current_node_type = str(node.type)
+	current_gold_reward = int(node.get("gold", 0))
+	map_overlay.visible = false
+	_update_hud()
+
+	match current_node_type:
+		"normal", "elite", "boss":
+			enemy_index = int(node.enemy_index)
+			run_active = true
+			restart_button.text = "RUNNING"
+			restart_button.disabled = true
+			message_label.text = "Entering %s..." % current_node_type.to_upper()
+			_load_enemy()
+		"rest":
+			var before := hp
+			hp = mini(MAX_HP, hp + 1)
+			flow = 0
+			_show_dungeon_map("REST: healed %d HP. Flow reset." % (hp - before))
+		"shrine":
+			if _owned_upgrade_candidates().is_empty():
+				gold += 1
+				_show_dungeon_map("SHRINE: no owned skill can upgrade. Converted to +1 Gold.")
+			else:
+				_show_skill_choices("upgrade")
+		"shop":
+			if gold >= 2:
+				gold -= 2
+				_show_skill_choices("shop")
+			else:
+				_show_dungeon_map("SHOP: need 2 Gold. You move on without buying.")
+		_:
+			_show_dungeon_map("Unknown node.")
+
+func _owned_upgrade_candidates() -> Array[String]:
+	var candidates: Array[String] = []
+	for id in skill_levels.keys():
+		var skill_id := str(id)
+		if int(skill_levels[skill_id]) < SkillCatalog.max_level(skill_id):
+			candidates.append(skill_id)
+	return candidates
 
 func _build_update_overlay() -> void:
 	update_overlay = ColorRect.new()
@@ -426,6 +590,12 @@ func _begin_new_run() -> void:
 	skill_levels.clear()
 	perfect_count = 0
 	guardian_charges = 0
+	dungeon_floor = 0
+	current_floor_number = 0
+	gold = 0
+	current_node_type = ""
+	current_gold_reward = 0
+	route_history.clear()
 	_update_build_label()
 	_show_skill_choices("starter")
 
@@ -436,16 +606,26 @@ func _show_skill_choices(mode: String) -> void:
 	timing_bar.value = 0.0
 	weapon_indicator.text = ""
 	choice_mode = mode
-	choice_title.text = "CHOOSE STARTER SKILL" if mode == "starter" else "CHOOSE A SKILL"
+	if mode == "starter":
+		choice_title.text = "CHOOSE STARTER SKILL"
+	elif mode == "upgrade":
+		choice_title.text = "UPGRADE ONE OWNED SKILL"
+	elif mode == "shop":
+		choice_title.text = "SHOP — CHOOSE A RUN SKILL"
+	else:
+		choice_title.text = "CHOOSE A SKILL"
 	state_label.text = "BUILD"
 	state_label.add_theme_color_override("font_color", C.perfect)
 	restart_button.disabled = true
 
 	var candidates: Array[String] = []
-	for id in SkillCatalog.SKILLS.keys():
-		var current := int(skill_levels.get(id, 0))
-		if current < SkillCatalog.max_level(id):
-			candidates.append(str(id))
+	if mode == "upgrade":
+		candidates = _owned_upgrade_candidates()
+	else:
+		for id in SkillCatalog.SKILLS.keys():
+			var current := int(skill_levels.get(id, 0))
+			if current < SkillCatalog.max_level(id):
+				candidates.append(str(id))
 	candidates.shuffle()
 
 	for i in range(choice_buttons.size()):
@@ -476,17 +656,19 @@ func _choose_skill(skill_id: String) -> void:
 	restart_button.disabled = false
 
 	if choice_mode == "starter":
-		run_active = true
 		restart_button.text = "RUNNING"
 		restart_button.disabled = true
-		message_label.text = "Starter chosen. Enemy approaching..."
-		_load_enemy()
+		message_label.text = "Starter chosen. Pick a route."
+		_show_dungeon_map("Starter chosen. Choose your first route.")
+	elif choice_mode == "upgrade":
+		message_label.text = "Shrine upgrade complete."
+		_show_dungeon_map("UPGRADE SHRINE: skill upgraded.")
+	elif choice_mode == "shop":
+		message_label.text = "Purchase complete."
+		_show_dungeon_map("SHOP: skill acquired for this run.")
 	else:
-		run_active = true
-		restart_button.text = "RUNNING"
-		restart_button.disabled = true
-		message_label.text = "Build upgraded. Next enemy..."
-		_load_enemy()
+		message_label.text = "Combat reward chosen."
+		_show_dungeon_map("Reward acquired. Choose the next route.")
 
 func _update_build_label() -> void:
 	if skill_levels.is_empty():
@@ -700,6 +882,8 @@ func _reset_run(start_now: bool) -> void:
 	_update_hud()
 
 	choice_overlay.visible = false
+	if map_overlay != null:
+		map_overlay.visible = false
 	if start_now:
 		run_active = true
 		restart_button.text = "RUNNING"
@@ -713,7 +897,7 @@ func _reset_run(start_now: bool) -> void:
 func _update_hud() -> void:
 	hp_label.text = "%d / %d" % [hp, MAX_HP]
 	flow_label.text = "x%d" % flow
-	progress_label.text = "%d / %d" % [min(enemy_index + 1, enemies.size()), enemies.size()]
+	progress_label.text = "%d / %d" % [current_floor_number, DungeonCatalog.floor_count()]
 	_update_build_label()
 
 func _load_enemy() -> void:
@@ -1132,15 +1316,27 @@ func _counter_animation() -> void:
 func _defeat_enemy() -> void:
 	if not run_active:
 		return
+
 	_play("kill")
-	message_label.text = "COUNTER KILL"
-	enemy_index += 1
-	if enemy_index >= enemies.size():
+	run_active = false
+	attack_generation += 1
+	attack_side = ""
+	gold += current_gold_reward
+	_update_hud()
+
+	if current_node_type == "boss":
+		message_label.text = "BOSS DEFEATED"
+		await get_tree().create_timer(0.45).timeout
 		_end_run(true)
 		return
-	await get_tree().create_timer(0.45).timeout
-	if run_active:
-		_show_skill_choices("reward")
+
+	if current_node_type == "elite":
+		message_label.text = "ELITE KILL — +%d Gold" % current_gold_reward
+	else:
+		message_label.text = "COUNTER KILL — +%d Gold" % current_gold_reward
+
+	await get_tree().create_timer(0.40).timeout
+	_show_skill_choices("reward")
 
 func _end_run(victory: bool) -> void:
 	run_active = false
