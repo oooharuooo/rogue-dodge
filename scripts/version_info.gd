@@ -1,16 +1,17 @@
 extends RefCounted
 
-const VERSION := "v0.3.1"
-const BUILD_NAME := "Roguelike Build"
+const VERSION := "v0.4.0"
+const BUILD_NAME := "Duck & High Attack"
 
 const CHANGES := [
-	"Added starter skill selection before each run.",
-	"Added skill/upgrade choice after every defeated enemy.",
-	"Added 5 working prototype skills: Flame Counter, Momentum, Guardian, Focus, Bloodlust.",
-	"Expanded the run from 3 to 5 enemies; Executioner is the current mini-boss.",
-	"Run restart now resets the build and returns to starter selection.",
-	"Fixed mobile Web tap input for left/right dodge.",
-	"Added in-game version display and What's New popup."
+	"Unlocked DUCK as the third combat action.",
+	"PC controls: S or Down Arrow = Duck.",
+	"Mobile controls: swipe down = Duck; tap left/right still dodges.",
+	"Added High Sweep enemy attacks that must be ducked instead of side-dodged.",
+	"Heavy Knight, Rogue, Duelist and Executioner can now mix High attacks into their patterns.",
+	"Added a duck animation and separate duck sound cue.",
+	"Executioner now has the highest High Attack chance in the current prototype.",
+	"Kept the v0.3 skill-build system and mobile tap fix."
 ]
 
 static func changelog_text() -> String:
