@@ -874,6 +874,13 @@ func _show_dev_overlay() -> void:
 		attack_generation += 1
 		attack_side = ""
 		timing_bar.value = 0.0
+		message_label.text = "Combat stopped for Dev Mode."
+		restart_button.text = "START RUN"
+		restart_button.disabled = false
+	if dev_step_button != null:
+		dev_step_button.visible = false
+	dev_test_active = false
+	dev_button.text = "DEV MODE"
 	dev_overlay.visible = true
 	dev_overlay.move_to_front()
 
@@ -882,6 +889,16 @@ func _hide_dev_overlay() -> void:
 		dev_overlay.visible = false
 
 func _start_dev_test() -> void:
+	attack_generation += 1
+	run_active = false
+	attack_side = ""
+	timing_bar.value = 0.0
+	player_body.position = Vector2(235, 280)
+	player_body.size = Vector2(70, 90)
+	player_body.modulate = Color.WHITE
+	_reset_enemy_pose()
+	enemy_body.modulate = Color.WHITE
+
 	var weapon_ids := ["katana", "daggers", "greatsword", "bow"]
 	var weapon_index := clampi(dev_weapon_select.selected, 0, weapon_ids.size() - 1)
 	enemy_index = clampi(dev_enemy_select.selected, 0, enemies.size() - 1)
@@ -2163,6 +2180,17 @@ func _end_run(victory: bool) -> void:
 	attack_side = ""
 	weapon_indicator.text = ""
 	timing_bar.value = 0.0
+
+	if dev_test_active:
+		state_label.text = "DEV END"
+		state_label.add_theme_color_override("font_color", C.danger)
+		message_label.text = "DEV TEST ENDED — open DEV MODE to restart or change setup."
+		restart_button.text = "DEV TEST"
+		restart_button.disabled = true
+		if dev_step_button != null:
+			dev_step_button.disabled = true
+		return
+
 	restart_button.text = "TRY AGAIN"
 	restart_button.disabled = false
 	if collection_button != null:
