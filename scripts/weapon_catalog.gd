@@ -7,7 +7,7 @@ const WEAPONS := {
 		"counter_power": 3,
 		"hits": 1,
 		"perfect_bonus": 5,
-		"description": "Perfect Dodge adds +1 counter damage. Built for precise timing."
+		"description": "Perfect: +1 counter damage."
 	},
 	"daggers": {
 		"name": "Daggers",
@@ -15,7 +15,7 @@ const WEAPONS := {
 		"counter_power": 2,
 		"hits": 5,
 		"perfect_bonus": 3,
-		"description": "Counters build hit events. Every 4 dagger hits adds +1 counter damage."
+		"description": "2 hits normally, 3 on Perfect. Every 4 hits: +1 damage."
 	},
 	"greatsword": {
 		"name": "Greatsword",
@@ -23,7 +23,7 @@ const WEAPONS := {
 		"counter_power": 5,
 		"hits": 1,
 		"perfect_bonus": 4,
-		"description": "Successful counters build Charge. Perfect Dodge consumes Charge for heavy bonus damage."
+		"description": "Counters build Charge (max 2). Perfect spends it for bonus damage."
 	},
 	"bow": {
 		"name": "Bow",
@@ -31,7 +31,7 @@ const WEAPONS := {
 		"counter_power": 3,
 		"hits": 3,
 		"perfect_bonus": 4,
-		"description": "Perfect Dodge stores Aim. The next successful counter consumes Aim for bonus arrow damage."
+		"description": "Perfect stores Aim (max 2). Next normal counter spends it for bonus damage."
 	}
 }
 
