@@ -1,20 +1,18 @@
 extends RefCounted
 
-const VERSION := "v0.8.0"
-const BUILD_NAME := "Permanent Collection & Save"
+const VERSION := "v0.9.0"
+const BUILD_NAME := "Weapons & Starter Loadout"
 
 const CHANGES := [
-	"Added persistent meta progression saved locally on the device/browser.",
-	"Added a Permanent Collection screen showing locked/unlocked skills, rarity, requirements and progress.",
-	"Flame Counter and Focus are now the two default permanently unlocked starter skills.",
-	"Momentum permanently unlocks after 12 total Perfect Dodges across runs.",
-	"Guardian permanently unlocks after 3 encounters completed without losing HP.",
-	"Bloodlust permanently unlocks after defeating an Elite without losing HP in that encounter.",
-	"Each run snapshots the permanent unlocked pool at Start Run, so newly unlocked skills enter rewards starting next run.",
-	"Starter, combat reward and Shop choices now only use permanently unlocked skills.",
-	"Upgrade Shrine still only upgrades skills already owned in the current run.",
-	"Permanent unlocks never come directly from map nodes or normal rewards; they come only from explicit achievement conditions.",
-	"Added fallback handling when a run has maxed every eligible skill: rewards convert to Gold and Shop refunds instead of getting stuck."
+	"Runs now begin with Weapon Selection before choosing a Starter Skill.",
+	"Added Katana, Daggers, Greatsword and Bow as four distinct weapon identities.",
+	"Katana — Precision: every Perfect Dodge adds +1 counter damage.",
+	"Daggers — Combo: normal counters add 2 hit events, Perfect counters add 3; every 4 dagger hits adds +1 counter damage.",
+	"Greatsword — Burst: successful counters build up to 2 Charge; a Perfect Dodge consumes stored Charge for heavy bonus counter damage.",
+	"Bow — Aim: Perfect Dodges store up to 2 Aim; the next non-Perfect successful counter consumes Aim for bonus arrow damage.",
+	"Weapon state is shown live in the build HUD so Hits, Charge and Aim are easy to track.",
+	"Weapon choice changes only the automatic counter. There is still no Attack button.",
+	"All four weapons are temporarily available for prototype testing. Permanent Weapon Mastery progression will be added in a later update."
 ]
 
 static func changelog_text() -> String:
