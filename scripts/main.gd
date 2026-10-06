@@ -227,6 +227,20 @@ func _build_ui() -> void:
 	enemy_hp_bar.max_value = 1.0
 	enemy_hp_bar.value = 1.0
 	enemy_hp_bar.show_percentage = false
+	var hp_bg := StyleBoxFlat.new()
+	hp_bg.bg_color = Color(0.12, 0.13, 0.16, 1.0)
+	hp_bg.corner_radius_top_left = 8
+	hp_bg.corner_radius_top_right = 8
+	hp_bg.corner_radius_bottom_left = 8
+	hp_bg.corner_radius_bottom_right = 8
+	enemy_hp_bar.add_theme_stylebox_override("background", hp_bg)
+	var hp_fill := StyleBoxFlat.new()
+	hp_fill.bg_color = C.danger
+	hp_fill.corner_radius_top_left = 8
+	hp_fill.corner_radius_top_right = 8
+	hp_fill.corner_radius_bottom_left = 8
+	hp_fill.corner_radius_bottom_right = 8
+	enemy_hp_bar.add_theme_stylebox_override("fill", hp_fill)
 	arena.add_child(enemy_hp_bar)
 
 	weapon_indicator = _label("", 17, C.muted)
@@ -1956,6 +1970,7 @@ func _load_enemy() -> void:
 	if collection_button != null:
 		collection_button.disabled = true
 	_update_enemy_pattern_label()
+	_update_combat_stats()
 	state_label.text = "READY"
 	state_label.add_theme_color_override("font_color", C.accent)
 	hint_label.text = "Learn the moveset. Patterns now repeat."
