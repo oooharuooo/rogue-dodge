@@ -8,24 +8,28 @@ const MOVESETS := {
 	"heavy_knight": [
 		{"name":"Crushing Arc","steps":["left","delay_high"]},
 		{"name":"Heavy Return","steps":["right","delay_left"]},
-		{"name":"Crown Breaker","steps":["high","right"]}
+		{"name":"Crown Breaker","steps":["high","right"]},
+		{"name":"Earthsplitter","steps":["low","delay_high"]}
 	],
 	"rogue": [
 		{"name":"Three Knives","steps":["left","right","left"]},
 		{"name":"Slipstream","steps":["right","left","high"]},
-		{"name":"Bait & Cut","steps":["fake_left","quick_right"]}
+		{"name":"Bait & Cut","steps":["fake_left","quick_right"]},
+		{"name":"Low Trick","steps":["right","low","quick_left"]}
 	],
 	"duelist": [
 		{"name":"False Opening","steps":["fake_left","quick_right"]},
 		{"name":"Mirror Feint","steps":["fake_right","quick_left"]},
 		{"name":"High Line","steps":["left","high","right"]},
-		{"name":"Reverse High","steps":["right","high","left"]}
+		{"name":"Reverse High","steps":["right","high","left"]},
+		{"name":"Floor Line","steps":["left","low","right"]}
 	],
 	"executioner": [
 		{"name":"Judgment","steps":["left","delay_high","right"]},
 		{"name":"False Mercy","steps":["fake_high","quick_left","right"]},
 		{"name":"Headsman Chain","steps":["right","fake_left","quick_high"]},
-		{"name":"Final Sentence","steps":["high","left","right","delay_high"]}
+		{"name":"Grave Sweep","steps":["low","fake_high","quick_right"]},
+		{"name":"Final Sentence","steps":["high","left","low","delay_high"]}
 	]
 }
 
