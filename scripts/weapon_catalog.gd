@@ -53,8 +53,8 @@ static func description(id: String) -> String:
 
 static func stat_line(id: String) -> String:
 	var data: Dictionary = WEAPONS[id]
-	return "Power %s  •  Hits %s  •  Perfect %s" % [
-		"★".repeat(int(data["counter_power"])),
-		"★".repeat(int(data["hits"])),
-		"★".repeat(int(data["perfect_bonus"]))
+	return "Style: Power %d/5  |  Hits %d/5  |  Perfect %d/5" % [
+		int(data["counter_power"]),
+		int(data["hits"]),
+		int(data["perfect_bonus"])
 	]
