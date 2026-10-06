@@ -186,7 +186,7 @@ func _build_ui() -> void:
 
 	player_body = ColorRect.new()
 	player_body.color = C.player
-	player_body.position = Vector2(235, 310)
+	player_body.position = Vector2(235, 280)
 	player_body.size = Vector2(70, 90)
 	arena.add_child(player_body)
 	var player_text := _label("YOU", 16, C.bg)
@@ -691,7 +691,7 @@ func _reset_run(start_now: bool) -> void:
 	touch_up_accum = 0.0
 	dodge_locked_until = 0.0
 	timing_bar.value = 0.0
-	player_body.position = Vector2(235, 310)
+	player_body.position = Vector2(235, 280)
 	player_body.size = Vector2(70, 90)
 	player_body.modulate = Color.WHITE
 	_reset_enemy_pose()
@@ -982,7 +982,7 @@ func _animate_enemy_strike(action: String, strike_time: float) -> void:
 		strike.parallel().tween_property(enemy_body, "position", Vector2(210, 198), duration)
 		strike.parallel().tween_property(enemy_body, "scale", Vector2(1.08, 0.94), duration)
 	elif action == "low":
-		strike.tween_property(enemy_weapon, "position", Vector2(214, 388), duration)
+		strike.tween_property(enemy_weapon, "position", Vector2(214, 356), duration)
 		strike.parallel().tween_property(enemy_weapon, "rotation", deg_to_rad(90.0), duration)
 		strike.parallel().tween_property(enemy_body, "position", Vector2(205, 220), duration)
 		strike.parallel().tween_property(enemy_body, "rotation", deg_to_rad(-10.0), duration)
@@ -1034,18 +1034,18 @@ func _try_action(action: String) -> void:
 func _duck_animation() -> void:
 	var tween := create_tween()
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(player_body, "position:y", 338.0, 0.09)
+	tween.tween_property(player_body, "position:y", 308.0, 0.09)
 	tween.parallel().tween_property(player_body, "size:y", 56.0, 0.09)
 	tween.set_ease(Tween.EASE_IN)
-	tween.tween_property(player_body, "position:y", 310.0, 0.18)
+	tween.tween_property(player_body, "position:y", 280.0, 0.18)
 	tween.parallel().tween_property(player_body, "size:y", 90.0, 0.18)
 
 func _jump_animation() -> void:
 	var tween := create_tween()
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(player_body, "position:y", 228.0, 0.13)
+	tween.tween_property(player_body, "position:y", 198.0, 0.13)
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	tween.tween_property(player_body, "position:y", 310.0, 0.18)
+	tween.tween_property(player_body, "position:y", 280.0, 0.18)
 
 func _resolve_attack() -> void:
 	if not run_active:
