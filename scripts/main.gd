@@ -839,11 +839,11 @@ func _show_skill_choices(mode: String) -> void:
 	if mode == "upgrade":
 		candidates = _owned_upgrade_candidates()
 	else:
-		for id in SkillCatalog.SKILLS.keys():
-			var current := int(skill_levels.get(id, 0))
-			if current < SkillCatalog.max_level(id):
-				candidates.append(str(id))
-	candidates.shuffle()
+		for skill_id in run_unlocked_pool:
+			var current := int(skill_levels.get(skill_id, 0))
+			if current < SkillCatalog.max_level(skill_id):
+				candidates.append(skill_id)
+		candidates.shuffle()
 
 	for i in range(choice_buttons.size()):
 		var button: Button = choice_buttons[i]
