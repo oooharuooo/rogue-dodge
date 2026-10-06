@@ -1,14 +1,17 @@
 extends RefCounted
 
-const VERSION := "v0.4.4"
-const BUILD_NAME := "Duck Gesture Reliability"
+const VERSION := "v0.5.0"
+const BUILD_NAME := "Enemy Moveset System"
 
 const CHANGES := [
-	"Changed mobile gesture classification so any detected drag can never fall back into Left/Right tap.",
-	"Reduced Duck swipe distance to 28 px.",
-	"Downward movement is now accumulated during the drag, making quick short swipes more reliable.",
-	"Increased synthetic mouse-click suppression after touch to reduce accidental Right actions on mobile Web.",
-	"Kept cache-safe deployment and CI parse-error protection."
+	"Replaced independent random attacks with named, learnable enemy attack patterns.",
+	"Added multi-step combos that chain Left, Right and High attacks.",
+	"Added delayed attacks that hold the wind-up longer before impact.",
+	"Added quick follow-up attacks inside selected combos.",
+	"Added fake/cancel attacks for Rogue, Duelist and Executioner.",
+	"Fake attacks can bait an early dodge before a faster real follow-up.",
+	"Each enemy now has its own data-driven moveset, making future enemies and bosses easier to expand.",
+	"Prototype UI shows the current pattern name for testing; final builds can hide this once animation/audio tells are strong enough."
 ]
 
 static func changelog_text() -> String:
