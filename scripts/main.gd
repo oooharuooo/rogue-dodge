@@ -368,6 +368,7 @@ func _build_ui() -> void:
 	column.add_child(restart_button)
 
 	_build_weapon_overlay()
+	_build_weapon_upgrade_overlay()
 	_build_choice_overlay()
 	_build_dungeon_map()
 	_build_collection_overlay()
