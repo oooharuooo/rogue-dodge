@@ -5,6 +5,7 @@ const DODGE_COMMIT_SECONDS := 0.35
 const SWIPE_DOWN_THRESHOLD := 28.0
 const TOUCH_MOUSE_SUPPRESS_MS := 1200
 const SkillCatalog = preload("res://scripts/skill_catalog.gd")
+const MovesetCatalog = preload("res://scripts/moveset_catalog.gd")
 const VersionInfo = preload("res://scripts/version_info.gd")
 
 const C := {
@@ -22,11 +23,11 @@ const C := {
 }
 
 var enemies := [
-	{"name":"Swordsman","counters":1,"windup":1.50,"dodge_window":0.68,"perfect_window":0.21,"cue_before":0.43,"high_chance":0.00},
-	{"name":"Heavy Knight","counters":2,"windup":2.35,"dodge_window":0.72,"perfect_window":0.22,"cue_before":0.47,"high_chance":0.30},
-	{"name":"Rogue","counters":2,"windup":1.05,"dodge_window":0.52,"perfect_window":0.17,"cue_before":0.33,"high_chance":0.20},
-	{"name":"Duelist","counters":3,"windup":1.20,"dodge_window":0.50,"perfect_window":0.16,"cue_before":0.31,"high_chance":0.35},
-	{"name":"Executioner","counters":4,"windup":1.85,"dodge_window":0.56,"perfect_window":0.17,"cue_before":0.36,"high_chance":0.45}
+	{"id":"swordsman","name":"Swordsman","counters":1,"windup":1.50,"dodge_window":0.68,"perfect_window":0.21,"cue_before":0.43},
+	{"id":"heavy_knight","name":"Heavy Knight","counters":2,"windup":2.35,"dodge_window":0.72,"perfect_window":0.22,"cue_before":0.47},
+	{"id":"rogue","name":"Rogue","counters":2,"windup":1.05,"dodge_window":0.52,"perfect_window":0.17,"cue_before":0.33},
+	{"id":"duelist","name":"Duelist","counters":3,"windup":1.20,"dodge_window":0.50,"perfect_window":0.16,"cue_before":0.31},
+	{"id":"executioner","name":"Executioner","counters":4,"windup":1.85,"dodge_window":0.56,"perfect_window":0.17,"cue_before":0.36}
 ]
 
 var hp := MAX_HP
@@ -44,6 +45,11 @@ var skill_levels: Dictionary = {}
 var perfect_count := 0
 var guardian_charges := 0
 var choice_mode := ""
+var current_pattern: Array[String] = []
+var current_pattern_name := ""
+var last_pattern_name := ""
+var pattern_step_index := 0
+var current_attack_step := ""
 var touch_start_pos := Vector2.ZERO
 var touch_tracking := false
 var touch_action_fired := false
@@ -579,6 +585,11 @@ func _reset_run(start_now: bool) -> void:
 	attack_side = ""
 	last_dodge_direction = ""
 	last_dodge_time = -99.0
+	current_pattern.clear()
+	current_pattern_name = ""
+	last_pattern_name = ""
+	pattern_step_index = 0
+	current_attack_step = ""
 	touch_tracking = false
 	touch_action_fired = false
 	touch_had_drag = false
@@ -615,72 +626,194 @@ func _load_enemy() -> void:
 		return
 	var enemy: Dictionary = enemies[enemy_index]
 	enemy_counters_left = int(enemy.counters)
+	current_pattern.clear()
+	current_pattern_name = ""
+	last_pattern_name = ""
+	pattern_step_index = 0
+	current_attack_step = ""
+
 	if int(skill_levels.get("guardian", 0)) >= 2:
 		guardian_charges = max(guardian_charges, 1)
+
 	enemy_name_label.text = str(enemy.name)
-	enemy_counter_label.text = "Counter needed: %d  •  High chance: %d%%" % [enemy_counters_left, int(float(enemy.high_chance) * 100.0)]
+	_update_enemy_pattern_label()
 	state_label.text = "READY"
 	state_label.add_theme_color_override("font_color", C.accent)
-	hint_label.text = "Watch the stance. Don't panic-dodge."
+	hint_label.text = "Learn the moveset. Patterns now repeat."
 	await get_tree().create_timer(0.65).timeout
 	if run_active:
-		_begin_attack()
+		_start_pattern()
 
-func _begin_attack() -> void:
+func _update_enemy_pattern_label() -> void:
+	var pattern_text := current_pattern_name if current_pattern_name != "" else "..."
+	enemy_counter_label.text = "Counter needed: %d  •  Pattern: %s" % [max(enemy_counters_left, 0), pattern_text]
+
+func _start_pattern() -> void:
 	if not run_active:
 		return
+
+	var enemy: Dictionary = enemies[enemy_index]
+	var patterns: Array = MovesetCatalog.patterns_for(str(enemy.id))
+	if patterns.is_empty():
+		return
+
+	var selected: Dictionary = patterns[randi() % patterns.size()]
+	var attempts := 0
+	while patterns.size() > 1 and str(selected.name) == last_pattern_name and attempts < 6:
+		selected = patterns[randi() % patterns.size()]
+		attempts += 1
+
+	current_pattern_name = str(selected.name)
+	last_pattern_name = current_pattern_name
+	current_pattern.clear()
+	for raw_step in selected.steps:
+		current_pattern.append(str(raw_step))
+	pattern_step_index = 0
+	_update_enemy_pattern_label()
+
+	state_label.text = "PATTERN"
+	state_label.add_theme_color_override("font_color", C.accent)
+	message_label.text = current_pattern_name
+	await get_tree().create_timer(0.28).timeout
+	if run_active:
+		_begin_pattern_step()
+
+func _begin_pattern_step() -> void:
+	if not run_active:
+		return
+
+	if pattern_step_index >= current_pattern.size():
+		state_label.text = "RESET"
+		state_label.add_theme_color_override("font_color", C.muted)
+		message_label.text = "Pattern complete."
+		await get_tree().create_timer(0.52).timeout
+		if run_active:
+			_start_pattern()
+		return
+
+	var step: String = current_pattern[pattern_step_index]
+	current_attack_step = step
+
+	if MovesetCatalog.is_fake(step):
+		_begin_fake_step(step)
+	else:
+		_begin_real_step(step)
+
+func _begin_real_step(step: String) -> void:
+	if not run_active:
+		return
+
 	attack_generation += 1
 	var generation := attack_generation
 	var enemy: Dictionary = enemies[enemy_index]
+	var action: String = MovesetCatalog.base_action(step)
+	var windup_multiplier: float = MovesetCatalog.windup_multiplier(step)
+	var windup: float = float(enemy.windup) * windup_multiplier
 
-	if randf() < float(enemy.high_chance):
-		attack_side = "high"
-	else:
-		attack_side = "left" if randf() < 0.5 else "right"
-
+	attack_side = action
 	last_dodge_direction = ""
 	last_dodge_time = -99.0
-	attack_resolve_time = Time.get_ticks_msec() / 1000.0 + float(enemy.windup)
+	attack_resolve_time = Time.get_ticks_msec() / 1000.0 + windup
 
-	state_label.text = "WIND-UP"
+	if step.begins_with("delay_"):
+		state_label.text = "HOLD"
+	elif step.begins_with("quick_"):
+		state_label.text = "RUSH"
+	else:
+		state_label.text = "WIND-UP"
 	state_label.add_theme_color_override("font_color", C.accent)
 
-	if attack_side == "high":
-		weapon_indicator.text = "HIGH SWEEP"
-		hint_label.text = "DUCK under it — S / ↓ / swipe down."
-	else:
-		weapon_indicator.text = "ATTACK FROM LEFT" if attack_side == "left" else "ATTACK FROM RIGHT"
-		hint_label.text = "Dodge to the OPPOSITE side."
-
+	_show_attack_telegraph(action)
 	_play("windup")
-
-	var target_x := 210.0
-	if attack_side == "left":
-		target_x = 185.0
-	elif attack_side == "right":
-		target_x = 235.0
-
-	var wind := create_tween()
-	wind.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	wind.tween_property(enemy_body, "position:x", target_x, min(float(enemy.windup) * 0.45, 0.55))
-	if attack_side == "high":
-		wind.parallel().tween_property(enemy_body, "position:y", 160.0, min(float(enemy.windup) * 0.45, 0.55))
+	_animate_enemy_windup(action, windup)
 
 	timing_bar.value = 0.0
 	var bar := create_tween()
-	bar.tween_property(timing_bar, "value", 1.0, float(enemy.windup))
+	bar.tween_property(timing_bar, "value", 1.0, windup)
 
-	await get_tree().create_timer(max(0.0, float(enemy.windup) - float(enemy.cue_before))).timeout
+	await get_tree().create_timer(max(0.0, windup - float(enemy.cue_before))).timeout
 	if not run_active or generation != attack_generation:
 		return
+
 	state_label.text = "NOW"
 	state_label.add_theme_color_override("font_color", C.danger)
-	hint_label.text = "DUCK NOW!" if attack_side == "high" else "NOW!"
+	hint_label.text = "DUCK NOW!" if action == "high" else "NOW!"
 	_play("cue")
 
 	await get_tree().create_timer(float(enemy.cue_before)).timeout
 	if run_active and generation == attack_generation:
 		_resolve_attack()
+
+func _begin_fake_step(step: String) -> void:
+	if not run_active:
+		return
+
+	attack_generation += 1
+	var generation := attack_generation
+	var enemy: Dictionary = enemies[enemy_index]
+	var action: String = MovesetCatalog.base_action(step)
+	var fake_duration: float = maxf(0.42, float(enemy.windup) - float(enemy.cue_before) * 0.70)
+
+	attack_side = "fake_" + action
+	last_dodge_direction = ""
+	last_dodge_time = -99.0
+	state_label.text = "WIND-UP"
+	state_label.add_theme_color_override("font_color", C.accent)
+
+	_show_attack_telegraph(action)
+	_play("windup")
+	_animate_enemy_windup(action, fake_duration)
+
+	timing_bar.value = 0.0
+	var bar := create_tween()
+	bar.tween_property(timing_bar, "value", 0.82, fake_duration)
+
+	await get_tree().create_timer(fake_duration).timeout
+	if not run_active or generation != attack_generation:
+		return
+
+	var panic_dodged := last_dodge_direction != ""
+	attack_side = ""
+	timing_bar.value = 0.0
+	enemy_body.position = Vector2(210, 185)
+	weapon_indicator.text = "FEINT"
+	state_label.text = "CANCEL"
+	state_label.add_theme_color_override("font_color", C.muted)
+	hint_label.text = "Fake — next strike may be fast."
+	message_label.text = "Panic dodge!" if panic_dodged else "You held your nerve."
+
+	pattern_step_index += 1
+	await get_tree().create_timer(0.10).timeout
+	if run_active:
+		_begin_pattern_step()
+
+func _show_attack_telegraph(action: String) -> void:
+	if action == "high":
+		weapon_indicator.text = "HIGH SWEEP"
+		hint_label.text = "DUCK under it — S / ↓ / swipe down."
+	else:
+		weapon_indicator.text = "ATTACK FROM LEFT" if action == "left" else "ATTACK FROM RIGHT"
+		hint_label.text = "Dodge to the OPPOSITE side."
+
+func _animate_enemy_windup(action: String, windup: float) -> void:
+	enemy_body.position = Vector2(210, 185)
+	var target_x := 210.0
+	if action == "left":
+		target_x = 185.0
+	elif action == "right":
+		target_x = 235.0
+
+	var wind := create_tween()
+	wind.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	wind.tween_property(enemy_body, "position:x", target_x, min(windup * 0.45, 0.55))
+	if action == "high":
+		wind.parallel().tween_property(enemy_body, "position:y", 160.0, min(windup * 0.45, 0.55))
+
+func _advance_pattern_after_exchange(delay: float) -> void:
+	pattern_step_index += 1
+	await get_tree().create_timer(delay).timeout
+	if run_active:
+		_begin_pattern_step()
 
 func _try_action(action: String) -> void:
 	if not run_active or attack_side == "":
@@ -751,7 +884,7 @@ func _resolve_attack() -> void:
 
 		var damage := _counter_damage(perfect)
 		enemy_counters_left -= damage
-		enemy_counter_label.text = "Counter needed: %d" % max(enemy_counters_left, 0)
+		_update_enemy_pattern_label()
 		if damage > 1:
 			message_label.text += "  [+%d BUILD DAMAGE]" % (damage - 1)
 		_counter_animation()
@@ -761,9 +894,7 @@ func _resolve_attack() -> void:
 			await get_tree().create_timer(0.48).timeout
 			_defeat_enemy()
 		else:
-			await get_tree().create_timer(0.72).timeout
-			if run_active:
-				_begin_attack()
+			_advance_pattern_after_exchange(0.24)
 	else:
 		if guardian_charges > 0:
 			guardian_charges -= 1
@@ -774,9 +905,7 @@ func _resolve_attack() -> void:
 			_play("perfect")
 			_flash(player_body, C.perfect)
 			_update_hud()
-			await get_tree().create_timer(0.85).timeout
-			if run_active:
-				_begin_attack()
+			_advance_pattern_after_exchange(0.30)
 		else:
 			hp -= 1
 			flow = 0
@@ -789,9 +918,7 @@ func _resolve_attack() -> void:
 			if hp <= 0:
 				_end_run(false)
 			else:
-				await get_tree().create_timer(0.85).timeout
-				if run_active:
-					_begin_attack()
+				_advance_pattern_after_exchange(0.30)
 
 func _counter_animation() -> void:
 	var start_y := player_body.position.y
