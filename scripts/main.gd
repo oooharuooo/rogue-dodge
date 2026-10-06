@@ -246,7 +246,7 @@ func _play(name: String) -> void:
 	if audio_players.has(name):
 		audio_players[name].play()
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_A or event.keycode == KEY_LEFT:
 			_try_dodge("left")
@@ -254,7 +254,14 @@ func _unhandled_input(event: InputEvent) -> void:
 			_try_dodge("right")
 		elif event.keycode == KEY_R:
 			_reset_run(true)
+
 	elif event is InputEventScreenTouch and event.pressed and run_active:
+		var half := get_viewport_rect().size.x * 0.5
+		_try_dodge("left" if event.position.x < half else "right")
+		get_viewport().set_input_as_handled()
+
+	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT and run_active:
+		# Web/mobile fallback: some browsers/devices may surface a tap as a mouse click.
 		var half := get_viewport_rect().size.x * 0.5
 		_try_dodge("left" if event.position.x < half else "right")
 
