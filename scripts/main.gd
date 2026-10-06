@@ -318,31 +318,34 @@ func _build_ui() -> void:
 	message_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(message_label)
 
-	var dev_row := HBoxContainer.new()
-	dev_row.add_theme_constant_override("separation", 8)
-	column.add_child(dev_row)
+	var utility_row := HBoxContainer.new()
+	utility_row.add_theme_constant_override("separation", 8)
+	column.add_child(utility_row)
 
 	dev_button = Button.new()
 	dev_button.text = "DEV MODE"
 	dev_button.custom_minimum_size = Vector2(0, 38)
 	dev_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	dev_button.add_theme_font_size_override("font_size", 12)
 	dev_button.pressed.connect(_show_dev_overlay)
-	dev_row.add_child(dev_button)
+	utility_row.add_child(dev_button)
 
 	dev_step_button = Button.new()
 	dev_step_button.text = "NEXT ATTACK"
 	dev_step_button.custom_minimum_size = Vector2(0, 38)
 	dev_step_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	dev_step_button.add_theme_font_size_override("font_size", 12)
 	dev_step_button.visible = false
 	dev_step_button.pressed.connect(_dev_next_attack)
-	dev_row.add_child(dev_step_button)
+	utility_row.add_child(dev_step_button)
 
 	collection_button = Button.new()
-	collection_button.text = "COLLECTION  %d / %d" % [unlocked_skills.size(), SkillCatalog.SKILLS.size()]
+	collection_button.text = "COLLECTION %d/%d" % [unlocked_skills.size(), SkillCatalog.SKILLS.size()]
 	collection_button.custom_minimum_size = Vector2(0, 38)
-	collection_button.add_theme_font_size_override("font_size", 13)
+	collection_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	collection_button.add_theme_font_size_override("font_size", 12)
 	collection_button.pressed.connect(_show_collection)
-	column.add_child(collection_button)
+	utility_row.add_child(collection_button)
 
 	version_button = Button.new()
 	version_button.text = VersionInfo.VERSION + "  •  WHAT'S NEW"
