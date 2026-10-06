@@ -3,6 +3,7 @@ extends Control
 const MAX_HP := 3
 const DODGE_COMMIT_SECONDS := 0.35
 const SWIPE_DOWN_THRESHOLD := 28.0
+const SWIPE_UP_THRESHOLD := 32.0
 const TOUCH_MOUSE_SUPPRESS_MS := 1200
 const SkillCatalog = preload("res://scripts/skill_catalog.gd")
 const MovesetCatalog = preload("res://scripts/moveset_catalog.gd")
@@ -55,6 +56,7 @@ var touch_tracking := false
 var touch_action_fired := false
 var touch_had_drag := false
 var touch_down_accum := 0.0
+var touch_up_accum := 0.0
 var last_touch_event_ms := -10000
 
 var hp_label: Label
@@ -79,6 +81,7 @@ var choice_buttons: Array[Button] = []
 var version_button: Button
 var update_overlay: ColorRect
 var duck_touch_zone: PanelContainer
+var jump_touch_zone: PanelContainer
 
 var audio_players: Dictionary = {}
 
@@ -125,7 +128,7 @@ func _build_ui() -> void:
 	header.add_child(info)
 	enemy_name_label = _label("Combat Sandbox", 22, C.text)
 	info.add_child(enemy_name_label)
-	enemy_counter_label = _label("Left / Right + Duck", 14, C.muted)
+	enemy_counter_label = _label("Left / Right + Duck + Jump", 14, C.muted)
 	info.add_child(enemy_counter_label)
 	build_label = _label("Build: none", 12, C.perfect)
 	build_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -149,7 +152,7 @@ func _build_ui() -> void:
 	timing_bar.show_percentage = false
 	arena.add_child(timing_bar)
 
-	hint_label = _label("A/D = dodge • S/↓ = duck • Phone: tap DUCK or swipe down.", 14, C.muted)
+	hint_label = _label("A/D dodge • S/↓ duck • W/↑ jump • Phone: use center buttons.", 14, C.muted)
 	hint_label.position = Vector2(22, 52)
 	hint_label.size = Vector2(460, 28)
 	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -183,7 +186,7 @@ func _build_ui() -> void:
 
 	player_body = ColorRect.new()
 	player_body.color = C.player
-	player_body.position = Vector2(235, 380)
+	player_body.position = Vector2(235, 310)
 	player_body.size = Vector2(70, 90)
 	arena.add_child(player_body)
 	var player_text := _label("YOU", 16, C.bg)
@@ -204,9 +207,34 @@ func _build_ui() -> void:
 	right_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	arena.add_child(right_hint)
 
+	jump_touch_zone = PanelContainer.new()
+	jump_touch_zone.position = Vector2(165, 386)
+	jump_touch_zone.size = Vector2(210, 48)
+	jump_touch_zone.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var jump_style := StyleBoxFlat.new()
+	jump_style.bg_color = Color(0.20, 0.34, 0.24, 0.94)
+	jump_style.border_width_left = 2
+	jump_style.border_width_top = 2
+	jump_style.border_width_right = 2
+	jump_style.border_width_bottom = 2
+	jump_style.border_color = C.good
+	jump_style.corner_radius_top_left = 12
+	jump_style.corner_radius_top_right = 12
+	jump_style.corner_radius_bottom_left = 12
+	jump_style.corner_radius_bottom_right = 12
+	jump_touch_zone.add_theme_stylebox_override("panel", jump_style)
+	arena.add_child(jump_touch_zone)
+
+	var jump_hint := _label("JUMP  ↑   •   W / ↑   •   swipe up", 13, C.text)
+	jump_hint.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	jump_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	jump_hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	jump_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	jump_touch_zone.add_child(jump_hint)
+
 	duck_touch_zone = PanelContainer.new()
-	duck_touch_zone.position = Vector2(165, 438)
-	duck_touch_zone.size = Vector2(210, 58)
+	duck_touch_zone.position = Vector2(165, 442)
+	duck_touch_zone.size = Vector2(210, 54)
 	duck_touch_zone.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var duck_style := StyleBoxFlat.new()
 	duck_style.bg_color = Color(0.18, 0.30, 0.42, 0.92)
@@ -222,7 +250,7 @@ func _build_ui() -> void:
 	duck_touch_zone.add_theme_stylebox_override("panel", duck_style)
 	arena.add_child(duck_touch_zone)
 
-	var duck_hint := _label("DUCK  ↓\nTap here • S / ↓ • swipe down", 14, C.text)
+	var duck_hint := _label("DUCK  ↓   •   S / ↓   •   swipe down", 13, C.text)
 	duck_hint.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	duck_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	duck_hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -515,6 +543,7 @@ func _load_audio() -> void:
 		"cue":[760.0,0.07,0.28],
 		"dodge":[310.0,0.08,0.22],
 		"duck":[240.0,0.09,0.23],
+		"jump":[470.0,0.10,0.24],
 		"perfect":[980.0,0.14,0.30],
 		"hit":[95.0,0.18,0.34],
 		"kill":[620.0,0.16,0.28]
@@ -552,6 +581,9 @@ func _play(name: String) -> void:
 func _point_is_duck_zone(point: Vector2) -> bool:
 	return duck_touch_zone != null and duck_touch_zone.get_global_rect().has_point(point)
 
+func _point_is_jump_zone(point: Vector2) -> bool:
+	return jump_touch_zone != null and jump_touch_zone.get_global_rect().has_point(point)
+
 func _input(event: InputEvent) -> void:
 	if update_overlay != null and update_overlay.visible:
 		return
@@ -563,6 +595,8 @@ func _input(event: InputEvent) -> void:
 			_try_action("right")
 		elif event.keycode == KEY_S or event.keycode == KEY_DOWN:
 			_try_action("duck")
+		elif event.keycode == KEY_W or event.keycode == KEY_UP:
+			_try_action("jump")
 		elif event.keycode == KEY_R:
 			_begin_new_run()
 
@@ -574,8 +608,15 @@ func _input(event: InputEvent) -> void:
 			touch_action_fired = false
 			touch_had_drag = false
 			touch_down_accum = 0.0
+			touch_up_accum = 0.0
 
-			if _point_is_duck_zone(event.position):
+			if _point_is_jump_zone(event.position):
+				touch_action_fired = true
+				touch_tracking = false
+				_try_action("jump")
+				get_viewport().set_input_as_handled()
+				return
+			elif _point_is_duck_zone(event.position):
 				touch_action_fired = true
 				touch_tracking = false
 				_try_action("duck")
@@ -593,6 +634,7 @@ func _input(event: InputEvent) -> void:
 			touch_action_fired = false
 			touch_had_drag = false
 			touch_down_accum = 0.0
+			touch_up_accum = 0.0
 		get_viewport().set_input_as_handled()
 
 	elif event is InputEventScreenDrag and run_active and touch_tracking and not touch_action_fired:
@@ -601,19 +643,28 @@ func _input(event: InputEvent) -> void:
 
 		# Track downward motion in two ways. This is more reliable on mobile Web
 		# than trusting the final touch-release position.
-		var from_start: float = event.position.y - touch_start_pos.y
+		var from_start_down: float = event.position.y - touch_start_pos.y
+		var from_start_up: float = touch_start_pos.y - event.position.y
 		touch_down_accum += maxf(0.0, event.relative.y)
-		var downward: float = maxf(from_start, touch_down_accum)
+		touch_up_accum += maxf(0.0, -event.relative.y)
+		var downward: float = maxf(from_start_down, touch_down_accum)
+		var upward: float = maxf(from_start_up, touch_up_accum)
 
 		if downward >= SWIPE_DOWN_THRESHOLD:
 			touch_action_fired = true
 			_try_action("duck")
 			get_viewport().set_input_as_handled()
+		elif upward >= SWIPE_UP_THRESHOLD:
+			touch_action_fired = true
+			_try_action("jump")
+			get_viewport().set_input_as_handled()
 
 	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT and run_active:
 		# Desktop/Web fallback. Duck zone always wins over side-tap classification.
 		if Time.get_ticks_msec() - last_touch_event_ms > TOUCH_MOUSE_SUPPRESS_MS:
-			if _point_is_duck_zone(event.position):
+			if _point_is_jump_zone(event.position):
+				_try_action("jump")
+			elif _point_is_duck_zone(event.position):
 				_try_action("duck")
 			else:
 				var half := get_viewport_rect().size.x * 0.5
@@ -637,9 +688,10 @@ func _reset_run(start_now: bool) -> void:
 	touch_action_fired = false
 	touch_had_drag = false
 	touch_down_accum = 0.0
+	touch_up_accum = 0.0
 	dodge_locked_until = 0.0
 	timing_bar.value = 0.0
-	player_body.position = Vector2(235, 380)
+	player_body.position = Vector2(235, 310)
 	player_body.size = Vector2(70, 90)
 	player_body.modulate = Color.WHITE
 	_reset_enemy_pose()
@@ -780,7 +832,12 @@ func _begin_real_step(step: String) -> void:
 
 	state_label.text = "NOW"
 	state_label.add_theme_color_override("font_color", C.danger)
-	hint_label.text = "DUCK NOW!" if action == "high" else "NOW!"
+	if action == "high":
+		hint_label.text = "DUCK NOW!"
+	elif action == "low":
+		hint_label.text = "JUMP NOW!"
+	else:
+		hint_label.text = "NOW!"
 	_play("cue")
 	_animate_enemy_strike(action, float(enemy.cue_before))
 
@@ -834,7 +891,10 @@ func _begin_fake_step(step: String) -> void:
 func _show_attack_telegraph(action: String) -> void:
 	if action == "high":
 		weapon_indicator.text = "HIGH SWEEP"
-		hint_label.text = "DUCK under it — tap DUCK / S / ↓ / swipe down."
+		hint_label.text = "DUCK under it — tap DUCK / S / ↓."
+	elif action == "low":
+		weapon_indicator.text = "LOW SWEEP"
+		hint_label.text = "JUMP over it — tap JUMP / W / ↑."
 	else:
 		weapon_indicator.text = "ATTACK FROM LEFT" if action == "left" else "ATTACK FROM RIGHT"
 		hint_label.text = "Dodge to the OPPOSITE side."
@@ -877,6 +937,11 @@ func _animate_enemy_windup(action: String, windup: float, step: String) -> void:
 		body_rotation = deg_to_rad(-3.0)
 		weapon_target = Vector2(264, 118)
 		weapon_rotation = deg_to_rad(88.0)
+	elif action == "low":
+		body_target = Vector2(210, 205)
+		body_rotation = deg_to_rad(8.0)
+		weapon_target = Vector2(330, 278)
+		weapon_rotation = deg_to_rad(28.0)
 
 	var wind_tween := create_tween()
 	wind_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
@@ -916,6 +981,11 @@ func _animate_enemy_strike(action: String, strike_time: float) -> void:
 		strike.parallel().tween_property(enemy_weapon, "rotation", deg_to_rad(90.0), duration)
 		strike.parallel().tween_property(enemy_body, "position", Vector2(210, 198), duration)
 		strike.parallel().tween_property(enemy_body, "scale", Vector2(1.08, 0.94), duration)
+	elif action == "low":
+		strike.tween_property(enemy_weapon, "position", Vector2(214, 388), duration)
+		strike.parallel().tween_property(enemy_weapon, "rotation", deg_to_rad(90.0), duration)
+		strike.parallel().tween_property(enemy_body, "position", Vector2(205, 220), duration)
+		strike.parallel().tween_property(enemy_body, "rotation", deg_to_rad(-10.0), duration)
 
 func _animate_enemy_retract() -> void:
 	var retract := create_tween()
@@ -949,6 +1019,9 @@ func _try_action(action: String) -> void:
 	if action == "duck":
 		_play("duck")
 		_duck_animation()
+	elif action == "jump":
+		_play("jump")
+		_jump_animation()
 	else:
 		_play("dodge")
 		var target_x := 170.0 if action == "left" else 300.0
@@ -961,17 +1034,24 @@ func _try_action(action: String) -> void:
 func _duck_animation() -> void:
 	var tween := create_tween()
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(player_body, "position:y", 414.0, 0.09)
+	tween.tween_property(player_body, "position:y", 338.0, 0.09)
 	tween.parallel().tween_property(player_body, "size:y", 56.0, 0.09)
 	tween.set_ease(Tween.EASE_IN)
-	tween.tween_property(player_body, "position:y", 380.0, 0.18)
+	tween.tween_property(player_body, "position:y", 310.0, 0.18)
 	tween.parallel().tween_property(player_body, "size:y", 90.0, 0.18)
+
+func _jump_animation() -> void:
+	var tween := create_tween()
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(player_body, "position:y", 228.0, 0.13)
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.tween_property(player_body, "position:y", 310.0, 0.18)
 
 func _resolve_attack() -> void:
 	if not run_active:
 		return
 	var enemy: Dictionary = enemies[enemy_index]
-	var correct := "duck" if attack_side == "high" else ("right" if attack_side == "left" else "left")
+	var correct := "duck" if attack_side == "high" else ("jump" if attack_side == "low" else ("right" if attack_side == "left" else "left"))
 	var success := false
 	var perfect := false
 
@@ -992,13 +1072,15 @@ func _resolve_attack() -> void:
 			perfect_count += 1
 			state_label.text = "PERFECT"
 			state_label.add_theme_color_override("font_color", C.perfect)
-			message_label.text = "PERFECT %s — AUTO COUNTER!" % ("DUCK" if correct == "duck" else "DODGE")
+			var perfect_action := "DUCK" if correct == "duck" else ("JUMP" if correct == "jump" else "DODGE")
+			message_label.text = "PERFECT %s — AUTO COUNTER!" % perfect_action
 			_play("perfect")
 			_flash(player_body, C.perfect)
 		else:
 			state_label.text = "DODGED"
 			state_label.add_theme_color_override("font_color", C.good)
-			message_label.text = ("%s — Auto Counter" % ("Duck" if correct == "duck" else "Dodge"))
+			var action_name := "Duck" if correct == "duck" else ("Jump" if correct == "jump" else "Dodge")
+			message_label.text = "%s — Auto Counter" % action_name
 
 		var damage := _counter_damage(perfect)
 		enemy_counters_left -= damage
