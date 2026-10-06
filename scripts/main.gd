@@ -840,7 +840,19 @@ func _build_dev_overlay() -> void:
 	dev_weapon_select.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	for weapon_id in ["katana", "daggers", "greatsword", "bow"]:
 		dev_weapon_select.add_item(WeaponCatalog.display_name(weapon_id))
+	dev_weapon_select.item_selected.connect(_refresh_dev_upgrade_options)
 	weapon_row.add_child(dev_weapon_select)
+
+	var upgrade_row := HBoxContainer.new()
+	upgrade_row.add_theme_constant_override("separation", 8)
+	box.add_child(upgrade_row)
+	var upgrade_label := _label("Upgrade", 13, C.muted)
+	upgrade_label.custom_minimum_size = Vector2(110, 0)
+	upgrade_row.add_child(upgrade_label)
+	dev_upgrade_select = OptionButton.new()
+	dev_upgrade_select.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	upgrade_row.add_child(dev_upgrade_select)
+	_refresh_dev_upgrade_options()
 
 	var enemy_row := HBoxContainer.new()
 	enemy_row.add_theme_constant_override("separation", 8)
@@ -869,31 +881,36 @@ func _build_dev_overlay() -> void:
 	hp_row.add_child(dev_hp_spin)
 
 	dev_turn_toggle = CheckButton.new()
-	dev_turn_toggle.text = "Turn-Based Test — one attack per NEXT ATTACK"
+	dev_turn_toggle.text = "Turn-Based Test"
 	dev_turn_toggle.button_pressed = true
 	box.add_child(dev_turn_toggle)
 
 	dev_auto_toggle = CheckButton.new()
-	dev_auto_toggle.text = "Auto Dodge — automatically choose the correct movement"
+	dev_auto_toggle.text = "Auto Dodge"
 	dev_auto_toggle.button_pressed = true
 	box.add_child(dev_auto_toggle)
 
 	dev_perfect_toggle = CheckButton.new()
-	dev_perfect_toggle.text = "Force Perfect — Auto Dodge always lands inside Perfect window"
+	dev_perfect_toggle.text = "Force Perfect"
 	dev_perfect_toggle.button_pressed = false
 	box.add_child(dev_perfect_toggle)
 
 	dev_god_toggle = CheckButton.new()
-	dev_god_toggle.text = "God Mode — mistakes do not remove player HP"
+	dev_god_toggle.text = "God Mode"
 	dev_god_toggle.button_pressed = true
 	box.add_child(dev_god_toggle)
 
-	dev_status_label = _label("Recommended for weapon testing: Turn-Based ON + Auto Dodge ON.", 12, C.perfect)
+	var toggle_help := _label("Turn-Based = NEXT ATTACK steps • Auto Dodge = correct move • Force Perfect = perfect timing • God Mode = no HP loss", 11, C.muted)
+	toggle_help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	toggle_help.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(toggle_help)
+
+	dev_status_label = _label("Recommended: Turn-Based ON + Auto Dodge ON.", 12, C.perfect)
 	dev_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	dev_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(dev_status_label)
 
-	var future := _label("Future test slots: Weapon Mastery XP, status effects, projectiles, multi-enemy, boss phases, DPS/balance logs.", 11, C.muted)
+	var future := _label("Future: status effects • projectiles • multi-enemy • boss phases • DPS logs", 11, C.muted)
 	future.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	future.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(future)
@@ -909,6 +926,22 @@ func _build_dev_overlay() -> void:
 	close.custom_minimum_size = Vector2(0, 42)
 	close.pressed.connect(_hide_dev_overlay)
 	box.add_child(close)
+
+func _refresh_dev_upgrade_options(_selected_weapon_index: int = -1) -> void:
+	if dev_upgrade_select == null or dev_weapon_select == null:
+		return
+	dev_upgrade_select.clear()
+	dev_upgrade_select.add_item("None")
+	dev_upgrade_select.set_item_metadata(0, "")
+
+	var weapon_ids := ["katana", "daggers", "greatsword", "bow"]
+	var weapon_index := clampi(dev_weapon_select.selected, 0, weapon_ids.size() - 1)
+	var weapon_id := weapon_ids[weapon_index]
+	for raw_upgrade in WeaponUpgradeCatalog.upgrades_for(weapon_id):
+		var upgrade: Dictionary = raw_upgrade
+		var item_index := dev_upgrade_select.item_count
+		dev_upgrade_select.add_item(str(upgrade["name"]))
+		dev_upgrade_select.set_item_metadata(item_index, str(upgrade["id"]))
 
 func _show_dev_overlay() -> void:
 	if run_active:
