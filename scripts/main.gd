@@ -746,6 +746,236 @@ func _consume_unlock_notice(prefix: String = "") -> String:
 	pending_unlock_notice = ""
 	return result
 
+func _build_dev_overlay() -> void:
+	dev_overlay = ColorRect.new()
+	dev_overlay.color = Color(0.02, 0.025, 0.035, 0.99)
+	dev_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	dev_overlay.visible = false
+	dev_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(dev_overlay)
+
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 26)
+	margin.add_theme_constant_override("margin_right", 26)
+	margin.add_theme_constant_override("margin_top", 36)
+	margin.add_theme_constant_override("margin_bottom", 36)
+	dev_overlay.add_child(margin)
+
+	var panel := PanelContainer.new()
+	_style_panel(panel, C.panel)
+	margin.add_child(panel)
+
+	var inner := MarginContainer.new()
+	inner.add_theme_constant_override("margin_left", 18)
+	inner.add_theme_constant_override("margin_right", 18)
+	inner.add_theme_constant_override("margin_top", 18)
+	inner.add_theme_constant_override("margin_bottom", 18)
+	panel.add_child(inner)
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 10)
+	inner.add_child(box)
+
+	var title := _label("DEV TEST MODE", 24, C.text)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(title)
+
+	var warning := _label("Isolated sandbox: no Gold, achievements, permanent unlocks or route rewards.", 12, C.accent)
+	warning.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	warning.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(warning)
+
+	var weapon_row := HBoxContainer.new()
+	weapon_row.add_theme_constant_override("separation", 8)
+	box.add_child(weapon_row)
+	var weapon_label := _label("Weapon", 13, C.muted)
+	weapon_label.custom_minimum_size = Vector2(110, 0)
+	weapon_row.add_child(weapon_label)
+	dev_weapon_select = OptionButton.new()
+	dev_weapon_select.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for weapon_id in ["katana", "daggers", "greatsword", "bow"]:
+		dev_weapon_select.add_item(WeaponCatalog.display_name(weapon_id))
+	weapon_row.add_child(dev_weapon_select)
+
+	var enemy_row := HBoxContainer.new()
+	enemy_row.add_theme_constant_override("separation", 8)
+	box.add_child(enemy_row)
+	var enemy_label := _label("Enemy", 13, C.muted)
+	enemy_label.custom_minimum_size = Vector2(110, 0)
+	enemy_row.add_child(enemy_label)
+	dev_enemy_select = OptionButton.new()
+	dev_enemy_select.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for enemy in enemies:
+		dev_enemy_select.add_item(str(enemy.name))
+	enemy_row.add_child(dev_enemy_select)
+
+	var hp_row := HBoxContainer.new()
+	hp_row.add_theme_constant_override("separation", 8)
+	box.add_child(hp_row)
+	var hp_text := _label("Enemy Test HP", 13, C.muted)
+	hp_text.custom_minimum_size = Vector2(110, 0)
+	hp_row.add_child(hp_text)
+	dev_hp_spin = SpinBox.new()
+	dev_hp_spin.min_value = 5
+	dev_hp_spin.max_value = 100
+	dev_hp_spin.step = 1
+	dev_hp_spin.value = 20
+	dev_hp_spin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hp_row.add_child(dev_hp_spin)
+
+	dev_turn_toggle = CheckButton.new()
+	dev_turn_toggle.text = "Turn-Based Test — one attack per NEXT ATTACK"
+	dev_turn_toggle.button_pressed = true
+	box.add_child(dev_turn_toggle)
+
+	dev_auto_toggle = CheckButton.new()
+	dev_auto_toggle.text = "Auto Dodge — automatically choose the correct movement"
+	dev_auto_toggle.button_pressed = true
+	box.add_child(dev_auto_toggle)
+
+	dev_perfect_toggle = CheckButton.new()
+	dev_perfect_toggle.text = "Force Perfect — Auto Dodge always lands inside Perfect window"
+	dev_perfect_toggle.button_pressed = false
+	box.add_child(dev_perfect_toggle)
+
+	dev_god_toggle = CheckButton.new()
+	dev_god_toggle.text = "God Mode — mistakes do not remove player HP"
+	dev_god_toggle.button_pressed = true
+	box.add_child(dev_god_toggle)
+
+	dev_status_label = _label("Recommended for weapon testing: Turn-Based ON + Auto Dodge ON.", 12, C.perfect)
+	dev_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	dev_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(dev_status_label)
+
+	var future := _label("Future test slots: Weapon Mastery XP, status effects, projectiles, multi-enemy, boss phases, DPS/balance logs.", 11, C.muted)
+	future.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	future.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(future)
+
+	var start := Button.new()
+	start.text = "START DEV TEST"
+	start.custom_minimum_size = Vector2(0, 48)
+	start.pressed.connect(_start_dev_test)
+	box.add_child(start)
+
+	var close := Button.new()
+	close.text = "CLOSE"
+	close.custom_minimum_size = Vector2(0, 42)
+	close.pressed.connect(_hide_dev_overlay)
+	box.add_child(close)
+
+func _show_dev_overlay() -> void:
+	if run_active:
+		run_active = false
+		attack_generation += 1
+		attack_side = ""
+		timing_bar.value = 0.0
+	dev_overlay.visible = true
+	dev_overlay.move_to_front()
+
+func _hide_dev_overlay() -> void:
+	if dev_overlay != null:
+		dev_overlay.visible = false
+
+func _start_dev_test() -> void:
+	var weapon_ids := ["katana", "daggers", "greatsword", "bow"]
+	var weapon_index := clampi(dev_weapon_select.selected, 0, weapon_ids.size() - 1)
+	enemy_index = clampi(dev_enemy_select.selected, 0, enemies.size() - 1)
+	current_weapon_id = weapon_ids[weapon_index]
+	dev_enemy_hp = int(dev_hp_spin.value)
+	dev_turn_based = dev_turn_toggle.button_pressed
+	dev_auto_dodge = dev_auto_toggle.button_pressed
+	dev_force_perfect = dev_perfect_toggle.button_pressed and dev_auto_dodge
+	dev_god_mode = dev_god_toggle.button_pressed
+	dev_test_active = true
+
+	skill_levels.clear()
+	perfect_count = 0
+	guardian_charges = 0
+	dagger_hit_bank = 0
+	greatsword_charge = 0
+	bow_aim = 0
+	flow = 0
+	hp = MAX_HP
+	current_node_type = "dev"
+	current_gold_reward = 0
+	last_counter_damage = 0
+	pending_unlock_notice = ""
+	route_history.clear()
+	dungeon_floor = 0
+	current_floor_number = 0
+
+	if weapon_overlay != null:
+		weapon_overlay.visible = false
+	if choice_overlay != null:
+		choice_overlay.visible = false
+	if map_overlay != null:
+		map_overlay.visible = false
+	if collection_overlay != null:
+		collection_overlay.visible = false
+	dev_overlay.visible = false
+
+	run_active = true
+	restart_button.text = "DEV TEST"
+	restart_button.disabled = true
+	collection_button.disabled = true
+	dev_step_button.visible = dev_turn_based
+	dev_step_button.disabled = false
+	dev_button.text = "DEV MODE *"
+	message_label.text = "DEV TEST: %s vs %s" % [WeaponCatalog.display_name(current_weapon_id), str(enemies[enemy_index].name)]
+	_update_hud()
+	_load_enemy()
+
+func _dev_next_attack() -> void:
+	if not dev_test_active or not dev_turn_based or not run_active:
+		return
+	if attack_side != "":
+		return
+	if current_pattern.is_empty():
+		_start_pattern()
+	else:
+		_begin_pattern_step()
+
+func _dev_correct_action(action: String) -> String:
+	if action == "high":
+		return "duck"
+	if action == "low":
+		return "jump"
+	if action == "left":
+		return "right"
+	return "left"
+
+func _dev_apply_auto_dodge(action: String, enemy: Dictionary) -> void:
+	if not dev_test_active or not dev_auto_dodge:
+		return
+
+	var correct := _dev_correct_action(action)
+	last_dodge_direction = correct
+	var perfect_window := _effective_perfect_window(enemy)
+	if dev_force_perfect:
+		last_dodge_time = attack_resolve_time - maxf(0.01, perfect_window * 0.45)
+	else:
+		var dodge_window := float(enemy.dodge_window)
+		var target_early := perfect_window + maxf(0.04, (dodge_window - perfect_window) * 0.55)
+		last_dodge_time = attack_resolve_time - minf(dodge_window * 0.90, target_early)
+
+	if correct == "duck":
+		_play("duck")
+		_duck_animation()
+	elif correct == "jump":
+		_play("jump")
+		_jump_animation()
+	else:
+		_play("dodge")
+		var target_x := 170.0 if correct == "left" else 300.0
+		var tween := create_tween()
+		tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		tween.tween_property(player_body, "position:x", target_x, 0.08)
+		tween.set_ease(Tween.EASE_IN)
+		tween.tween_property(player_body, "position:x", 235.0, 0.12)
+
 func _build_update_overlay() -> void:
 	update_overlay = ColorRect.new()
 	update_overlay.color = Color(0.025, 0.03, 0.045, 0.975)
