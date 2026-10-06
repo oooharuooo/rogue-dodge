@@ -1,17 +1,14 @@
 extends RefCounted
 
-const VERSION := "v0.4.0"
-const BUILD_NAME := "Duck & High Attack"
+const VERSION := "v0.4.1"
+const BUILD_NAME := "Cache-Safe Mobile Test"
 
 const CHANGES := [
-	"Unlocked DUCK as the third combat action.",
-	"PC controls: S or Down Arrow = Duck.",
-	"Mobile controls: swipe down = Duck; tap left/right still dodges.",
-	"Added High Sweep enemy attacks that must be ducked instead of side-dodged.",
-	"Heavy Knight, Rogue, Duelist and Executioner can now mix High attacks into their patterns.",
-	"Added a duck animation and separate duck sound cue.",
-	"Executioner now has the highest High Attack chance in the current prototype.",
-	"Kept the v0.3 skill-build system and mobile tap fix."
+	"Web test deployment now uses a unique build filename for every commit.",
+	"The fixed game URL now checks latest.json with cache disabled before launching.",
+	"Mobile testing should no longer require manually clearing browser cache after each update.",
+	"Kept DUCK controls: S/Down Arrow on PC and swipe down on mobile.",
+	"Kept High Sweep attacks and the v0.3 skill-build system."
 ]
 
 static func changelog_text() -> String:
