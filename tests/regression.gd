@@ -18,6 +18,7 @@ func check(condition: bool, message: String) -> void:
 		push_error("FAIL: " + message)
 
 func reset_combat(weapon: String = "katana") -> void:
+	game._clear_secondary_threats()
 	game.current_weapon_id = weapon
 	game.weapon_upgrades.clear()
 	game.skill_levels.clear()
@@ -63,6 +64,7 @@ func _run() -> void:
 	root.add_child(game)
 	await process_frame
 	await process_frame
+	_test_secondary_schedule()
 	_test_weapons()
 	_test_preview_matrix()
 	_test_mastery()
@@ -379,6 +381,23 @@ func _test_real_attacks() -> void:
 	await game._begin_fake_step("fake_high")
 	check(game.hp == 3 and game.enemy_hp == 10000 and game.state_label.text == "WAITING", "feint causes no counter or damage and waits in turn mode")
 	game.enemies = original_enemies
+	for source in ["minion", "arena"]:
+		for action in ["left", "right", "high", "low"]:
+			for perfect in [false, true]:
+				reset_combat()
+				game.dev_auto_dodge = true
+				game.dev_force_perfect = perfect
+				game.pattern_step_index = 3
+				game.active_threat = {"name":"Test source", "source":source, "action":action, "windup":0.12}
+				await game._begin_real_step(action)
+				check(game.enemy_hp == (9998 if perfect else 9999) and game.hp == 3, "Secondary actual counter %s %s perfect=%s" % [source, action, perfect])
+				check(game.pattern_step_index == 3 and game.active_threat.is_empty(), "Secondary returns to unchanged main combo")
+	reset_combat()
+	game.active_threat = {"name":"Cancelled", "source":"arena", "action":"low", "windup":0.12}
+	game._begin_real_step("low")
+	game._show_dev_overlay()
+	await create_timer(0.2).timeout
+	check(game.enemy_hp == 10000 and game.active_threat.is_empty() and not game.secondary_marker.visible, "Stopping Dev cancels secondary impact and visuals")
 	game.dev_auto_dodge = false
 	game.dev_force_perfect = false
 	game.dev_turn_based = false
@@ -460,3 +479,29 @@ func _test_layout() -> void:
 	game._hide_update_popup()
 	check(not paused, "Continue resumes combat")
 	print("PASS: changelog overflow, fixed Continue and pause/resume")
+
+func _test_secondary_schedule() -> void:
+	for enemy_id in ["swordsman", "heavy_knight", "rogue", "duelist", "executioner"]:
+		for phase in range(1, 4):
+			for count in range(1, 13):
+				var threat: Dictionary = game.SecondaryThreatCatalog.threat_for_exchange(enemy_id, phase, count)
+				if threat.is_empty():
+					continue
+				check(str(threat.action) in ["left", "right", "high", "low"], "Secondary uses existing controls")
+				check(float(threat.windup) > game.DODGE_COMMIT_SECONDS, "Secondary allows commitment recovery")
+	reset_combat()
+	game.enemy_index = 2
+	game.pattern_step_index = 0
+	game._complete_exchange()
+	check(game.pending_threat.is_empty(), "Rogue first main exchange has no minion")
+	game._complete_exchange()
+	check(str(game.pending_threat.get("source", "")) == "minion", "Rogue second main exchange queues minion")
+	game.active_threat = game.pending_threat.duplicate(true)
+	game.pending_threat.clear()
+	game._show_secondary_source(game.active_threat)
+	game._complete_exchange()
+	check(game.pattern_step_index == 2 and game.primary_exchanges == 2, "Minion does not consume main combo or recursively schedule")
+	check(not game.secondary_marker.visible, "Minion clears after resolution")
+	game._clear_secondary_threats()
+	check(game.primary_exchanges == 0 and game.pending_threat.is_empty() and game.active_threat.is_empty(), "Lifecycle clears all secondary state")
+	print("PASS: secondary schedules, four controls, commitment recovery and combo preservation")

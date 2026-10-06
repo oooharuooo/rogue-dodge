@@ -1,7 +1,7 @@
 extends RefCounted
 
-const VERSION := "v0.13.1"
-const BUILD_NAME := "UI Fixes + Regression Checks"
+const VERSION := "v0.14.0"
+const BUILD_NAME := "Multi-Enemy + Environmental Hazards"
 
 const CHANGES := [
 	"Added a reusable projectile attack system without adding any new player controls.",
@@ -17,6 +17,13 @@ const CHANGES := [
 
 static func changelog_text() -> String:
 	var lines: Array[String] = [
+		"v0.14.0 - Multi-Enemy + Environmental Hazards",
+		"• Minions and arena hazards alternate with main attacks; impacts never require conflicting inputs at the same time.",
+		"• Heavy Knight adds Ground Pulse and Falling Hammer; Rogue adds Shadow Archer; Duelist adds Blade Trap and Side Seal.",
+		"• Executioner phases add Chain Tremor, Black Guard and Death Field with increasing frequency.",
+		"• Each secondary source has its own visible warning and uses Left, Right, Duck or Jump.",
+		"• Secondary dodges use the same counter damage, skills and mastery rules. Dev Mode supports Auto Dodge, Force Perfect and NEXT ATTACK.",
+		"",
 		"v0.13.1 - UI and progression fixes",
 		"• Browser wheel scrolling stays inside the game; the page no longer scrolls away from the canvas.",
 		"• Control hints use readable arrow-key names.",

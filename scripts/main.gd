@@ -11,6 +11,7 @@ const DungeonCatalog = preload("res://scripts/dungeon_catalog.gd")
 const SaveManager = preload("res://scripts/save_manager.gd")
 const WeaponCatalog = preload("res://scripts/weapon_catalog.gd")
 const WeaponUpgradeCatalog = preload("res://scripts/weapon_upgrade_catalog.gd")
+const SecondaryThreatCatalog = preload("res://scripts/secondary_threat_catalog.gd")
 const VersionInfo = preload("res://scripts/version_info.gd")
 
 const C := {
@@ -49,6 +50,11 @@ var last_dodge_direction := ""
 var last_dodge_time := -99.0
 var dodge_locked_until := 0.0
 var attack_generation := 0
+var primary_exchanges := 0
+var pending_threat: Dictionary = {}
+var active_threat: Dictionary = {}
+var secondary_marker: ColorRect
+var secondary_label: Label
 var skill_levels: Dictionary = {}
 var perfect_count := 0
 var guardian_charges := 0
@@ -280,6 +286,18 @@ func _build_ui() -> void:
 	projectile_body.visible = false
 	projectile_body.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	arena.add_child(projectile_body)
+
+	secondary_marker = ColorRect.new()
+	secondary_marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	secondary_marker.visible = false
+	arena.add_child(secondary_marker)
+	secondary_label = _label("", 15, C.perfect)
+	secondary_label.position = Vector2(22, 284)
+	secondary_label.size = Vector2(170, 48)
+	secondary_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	secondary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	secondary_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	arena.add_child(secondary_label)
 
 	player_body = ColorRect.new()
 	player_body.color = C.player
@@ -517,6 +535,7 @@ func _show_dungeon_map(status_text: String = "Choose your route.") -> void:
 	if enemy_hp_bar != null:
 		enemy_hp_bar.visible = false
 	attack_generation += 1
+	_clear_secondary_threats()
 	if map_overlay != null:
 		map_overlay.visible = false
 	if choice_overlay != null:
@@ -951,7 +970,7 @@ func _build_dev_overlay() -> void:
 	dev_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(dev_status_label)
 
-	var future := _label("Future: status effects • projectiles • multi-enemy • boss phases • DPS logs", 11, C.muted)
+	var future := _label("Minions + arena hazards active • Next: status effects + DPS logs", 11, C.muted)
 	future.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	future.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(future)
@@ -988,6 +1007,7 @@ func _show_dev_overlay() -> void:
 	if run_active:
 		run_active = false
 		attack_generation += 1
+		_clear_secondary_threats()
 		attack_side = ""
 		timing_bar.value = 0.0
 		message_label.text = "Combat stopped for Dev Mode."
@@ -1010,6 +1030,7 @@ func _hide_dev_overlay() -> void:
 
 func _start_dev_test() -> void:
 	attack_generation += 1
+	_clear_secondary_threats()
 	run_active = false
 	attack_side = ""
 	timing_bar.value = 0.0
@@ -1322,6 +1343,7 @@ func _show_weapon_choices() -> void:
 	_refresh_weapon_mastery_ui()
 	run_active = false
 	attack_generation += 1
+	_clear_secondary_threats()
 	attack_side = ""
 	timing_bar.value = 0.0
 	weapon_indicator.text = ""
@@ -1513,6 +1535,7 @@ func _begin_new_run() -> void:
 func _show_skill_choices(mode: String) -> void:
 	run_active = false
 	attack_generation += 1
+	_clear_secondary_threats()
 	attack_side = ""
 	timing_bar.value = 0.0
 	weapon_indicator.text = ""
@@ -1944,6 +1967,7 @@ func _input(event: InputEvent) -> void:
 
 func _reset_run(start_now: bool) -> void:
 	attack_generation += 1
+	_clear_secondary_threats()
 	hp = MAX_HP
 	flow = 0
 	enemy_index = 0
@@ -1997,6 +2021,7 @@ func _load_enemy() -> void:
 	if not run_active:
 		return
 	attack_generation += 1
+	_clear_secondary_threats()
 	var generation := attack_generation
 	var enemy: Dictionary = enemies[enemy_index]
 	if dev_test_active:
@@ -2082,6 +2107,12 @@ func _begin_pattern_step() -> void:
 	if not run_active:
 		return
 
+	if not pending_threat.is_empty():
+		active_threat = pending_threat.duplicate(true)
+		pending_threat.clear()
+		_begin_real_step(str(active_threat.action))
+		return
+
 	if pattern_step_index >= current_pattern.size():
 		var generation := attack_generation
 		state_label.text = "RESET"
@@ -2117,6 +2148,12 @@ func _begin_real_step(step: String) -> void:
 			boss_speed_multiplier = 0.78
 	var windup: float = float(enemy.windup) * windup_multiplier * boss_speed_multiplier
 
+	if not active_threat.is_empty():
+		windup = float(active_threat.windup)
+		_show_secondary_source(active_threat)
+	else:
+		secondary_label.text = ""
+
 	attack_side = action
 	last_dodge_direction = ""
 	last_dodge_time = -99.0
@@ -2130,12 +2167,14 @@ func _begin_real_step(step: String) -> void:
 		state_label.text = "WIND-UP"
 	state_label.add_theme_color_override("font_color", C.accent)
 
-	var projectile := MovesetCatalog.is_projectile(step)
+	var projectile := MovesetCatalog.is_projectile(step) or (not active_threat.is_empty() and str(active_threat.source) == "minion")
 	_show_attack_telegraph(action, projectile)
+	if not active_threat.is_empty():
+		weapon_indicator.text = str(active_threat.name) + " — " + _dev_correct_action(action).to_upper()
 	_play("windup")
 	if projectile:
 		_animate_projectile_windup(action, windup)
-	else:
+	elif active_threat.is_empty():
 		_animate_enemy_windup(action, windup, step)
 
 	timing_bar.value = 0.0
@@ -2157,8 +2196,10 @@ func _begin_real_step(step: String) -> void:
 	_play("cue")
 	if projectile:
 		_animate_projectile_strike(action, float(enemy.cue_before))
-	else:
+	elif active_threat.is_empty():
 		_animate_enemy_strike(action, float(enemy.cue_before))
+	else:
+		secondary_marker.color = C.danger
 	_dev_apply_auto_dodge(action, enemy)
 
 	await get_tree().create_timer(float(enemy.cue_before), false).timeout
@@ -2274,6 +2315,8 @@ func _animate_projectile_windup(action: String, windup: float) -> void:
 		projectile_body.position.y = 198
 	elif action == "low":
 		projectile_body.position.y = 278
+	if not active_threat.is_empty() and str(active_threat.source) == "minion":
+		projectile_body.position = secondary_marker.position + Vector2(24, 20)
 
 	var charge := create_tween()
 	charge.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
@@ -2383,9 +2426,37 @@ func _animate_enemy_retract() -> void:
 	retract.parallel().tween_property(enemy_weapon, "rotation", deg_to_rad(18.0), 0.12)
 	retract.parallel().tween_property(enemy_weapon, "modulate", Color.WHITE, 0.12)
 
+func _clear_secondary_threats() -> void:
+	primary_exchanges = 0
+	pending_threat.clear()
+	active_threat.clear()
+	if secondary_marker != null:
+		secondary_marker.visible = false
+	if secondary_label != null:
+		secondary_label.text = ""
+
+func _show_secondary_source(threat: Dictionary) -> void:
+	secondary_marker.visible = true
+	secondary_marker.color = C.perfect if str(threat.source) == "minion" else C.accent
+	secondary_marker.position = Vector2(45, 210) if str(threat.source) == "minion" else Vector2(22, 336)
+	secondary_marker.size = Vector2(48, 64) if str(threat.source) == "minion" else Vector2(460, 8)
+	secondary_label.text = ("MINION: " if str(threat.source) == "minion" else "ARENA: ") + str(threat.name)
+
+func _complete_exchange() -> void:
+	if not active_threat.is_empty():
+		active_threat.clear()
+		secondary_marker.visible = false
+		secondary_label.text = ""
+		return
+	pattern_step_index += 1
+	primary_exchanges += 1
+	pending_threat = SecondaryThreatCatalog.threat_for_exchange(str(enemies[enemy_index].id), boss_phase, primary_exchanges)
+	if not pending_threat.is_empty():
+		secondary_label.text = "NEXT: " + str(pending_threat.name)
+
 func _advance_pattern_after_exchange(delay: float) -> void:
 	var generation := attack_generation
-	pattern_step_index += 1
+	_complete_exchange()
 	await get_tree().create_timer(delay, false).timeout
 	if not run_active or generation != attack_generation:
 		return
@@ -2468,6 +2539,7 @@ func _check_boss_phase_transition() -> bool:
 	pattern_step_index = 0
 	current_attack_step = ""
 	attack_generation += 1
+	_clear_secondary_threats()
 	attack_side = ""
 	enemy_name_label.text = "Executioner — PHASE %d" % boss_phase
 	state_label.text = "PHASE %d" % boss_phase
@@ -2587,6 +2659,7 @@ func _defeat_enemy() -> void:
 	_play("kill")
 	run_active = false
 	attack_generation += 1
+	_clear_secondary_threats()
 	attack_side = ""
 
 	if dev_test_active:
@@ -2632,6 +2705,7 @@ func _defeat_enemy() -> void:
 func _end_run(victory: bool) -> void:
 	run_active = false
 	attack_generation += 1
+	_clear_secondary_threats()
 	attack_side = ""
 	weapon_indicator.text = ""
 	timing_bar.value = 0.0

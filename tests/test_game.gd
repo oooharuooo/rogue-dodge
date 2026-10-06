@@ -20,4 +20,4 @@ func _start_pattern() -> void:
 	pattern_starts += 1
 
 func _advance_pattern_after_exchange(_delay: float) -> void:
-	pattern_step_index += 1
+	_complete_exchange()
