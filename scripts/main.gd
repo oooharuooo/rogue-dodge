@@ -56,6 +56,7 @@ var dagger_hit_bank := 0
 var greatsword_charge := 0
 var bow_aim := 0
 var weapon_upgrades: Array[String] = []
+var run_weapon_mastery_level := 1
 var dev_test_active := false
 var dev_auto_dodge := false
 var dev_force_perfect := false
@@ -121,6 +122,9 @@ var collection_list: VBoxContainer
 var collection_summary_label: Label
 var weapon_overlay: ColorRect
 var weapon_buttons: Array[Button] = []
+var weapon_mastery_labels: Dictionary = {}
+var weapon_upgrade_overlay: ColorRect
+var weapon_upgrade_buttons: Array[Button] = []
 var dev_button: Button
 var dev_step_button: Button
 var dev_overlay: ColorRect
