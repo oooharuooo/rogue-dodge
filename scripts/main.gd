@@ -2,10 +2,8 @@ extends Control
 
 const MAX_HP := 3
 const DODGE_COMMIT_SECONDS := 0.35
-const SWIPE_DOWN_THRESHOLD := 40.0
-const TAP_MAX_MOVE := 26.0
-const SWIPE_VERTICAL_BIAS := 0.55
-const TOUCH_MOUSE_SUPPRESS_MS := 450
+const SWIPE_DOWN_THRESHOLD := 28.0
+const TOUCH_MOUSE_SUPPRESS_MS := 1200
 const SkillCatalog = preload("res://scripts/skill_catalog.gd")
 const VersionInfo = preload("res://scripts/version_info.gd")
 
@@ -49,6 +47,8 @@ var choice_mode := ""
 var touch_start_pos := Vector2.ZERO
 var touch_tracking := false
 var touch_action_fired := false
+var touch_had_drag := false
+var touch_down_accum := 0.0
 var last_touch_event_ms := -10000
 
 var hp_label: Label
@@ -533,25 +533,33 @@ func _input(event: InputEvent) -> void:
 			touch_start_pos = event.position
 			touch_tracking = true
 			touch_action_fired = false
+			touch_had_drag = false
+			touch_down_accum = 0.0
 		elif touch_tracking:
 			if not touch_action_fired:
-				var delta: Vector2 = event.position - touch_start_pos
-				if _is_duck_swipe(delta):
-					_try_action("duck")
-				elif delta.length() <= TAP_MAX_MOVE:
+				if touch_had_drag:
+					# Once the finger moved, NEVER reinterpret the gesture as Left/Right.
+					message_label.text = "Drag ended — no accidental side dodge."
+				else:
 					var half := get_viewport_rect().size.x * 0.5
 					_try_action("left" if touch_start_pos.x < half else "right")
-				else:
-					# A real drag that is not a valid duck should never become an accidental side dodge.
-					message_label.text = "Gesture ignored — tap for Left/Right, swipe down for Duck."
 			touch_tracking = false
 			touch_action_fired = false
+			touch_had_drag = false
+			touch_down_accum = 0.0
 		get_viewport().set_input_as_handled()
 
 	elif event is InputEventScreenDrag and run_active and touch_tracking and not touch_action_fired:
 		last_touch_event_ms = Time.get_ticks_msec()
-		var delta: Vector2 = event.position - touch_start_pos
-		if _is_duck_swipe(delta):
+		touch_had_drag = true
+
+		# Track downward motion in two ways. This is more reliable on mobile Web
+		# than trusting the final touch-release position.
+		var from_start: float = event.position.y - touch_start_pos.y
+		touch_down_accum += maxf(0.0, event.relative.y)
+		var downward: float = maxf(from_start, touch_down_accum)
+
+		if downward >= SWIPE_DOWN_THRESHOLD:
 			touch_action_fired = true
 			_try_action("duck")
 			get_viewport().set_input_as_handled()
@@ -561,11 +569,6 @@ func _input(event: InputEvent) -> void:
 		if Time.get_ticks_msec() - last_touch_event_ms > TOUCH_MOUSE_SUPPRESS_MS:
 			var half := get_viewport_rect().size.x * 0.5
 			_try_action("left" if event.position.x < half else "right")
-
-func _is_duck_swipe(delta: Vector2) -> bool:
-	if delta.y < SWIPE_DOWN_THRESHOLD:
-		return false
-	return delta.y >= abs(delta.x) * SWIPE_VERTICAL_BIAS
 
 func _reset_run(start_now: bool) -> void:
 	attack_generation += 1
@@ -578,6 +581,8 @@ func _reset_run(start_now: bool) -> void:
 	last_dodge_time = -99.0
 	touch_tracking = false
 	touch_action_fired = false
+	touch_had_drag = false
+	touch_down_accum = 0.0
 	dodge_locked_until = 0.0
 	timing_bar.value = 0.0
 	player_body.position = Vector2(235, 380)
