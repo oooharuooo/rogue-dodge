@@ -1132,12 +1132,23 @@ func _build_update_overlay() -> void:
 	var whats_new := _label("WHAT'S NEW", 16, C.accent)
 	box.add_child(whats_new)
 
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.custom_minimum_size = Vector2(0, 220)
+	box.add_child(scroll)
+
+	var scroll_margin := MarginContainer.new()
+	scroll_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll_margin.add_theme_constant_override("margin_right", 10)
+	scroll.add_child(scroll_margin)
+
 	var changes := _label(VersionInfo.changelog_text(), 14, C.text)
 	changes.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	changes.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	box.add_child(changes)
+	changes.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll_margin.add_child(changes)
 
-	var note := _label("If this version number changes after a refresh, your phone has the latest build.", 12, C.muted)
+	var note := _label("Scroll to read the full update. CONTINUE always stays available below.", 12, C.muted)
 	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(note)
