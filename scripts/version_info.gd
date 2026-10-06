@@ -1,17 +1,15 @@
 extends RefCounted
 
-const VERSION := "v0.5.0"
-const BUILD_NAME := "Enemy Moveset System"
+const VERSION := "v0.5.1"
+const BUILD_NAME := "Dedicated Duck Button"
 
 const CHANGES := [
-	"Replaced independent random attacks with named, learnable enemy attack patterns.",
-	"Added multi-step combos that chain Left, Right and High attacks.",
-	"Added delayed attacks that hold the wind-up longer before impact.",
-	"Added quick follow-up attacks inside selected combos.",
-	"Added fake/cancel attacks for Rogue, Duelist and Executioner.",
-	"Fake attacks can bait an early dodge before a faster real follow-up.",
-	"Each enemy now has its own data-driven moveset, making future enemies and bosses easier to expand.",
-	"Prototype UI shows the current pattern name for testing; final builds can hide this once animation/audio tells are strong enough."
+	"Added a dedicated DUCK touch zone in the bottom-center of the combat arena.",
+	"Tapping the DUCK zone triggers Duck immediately on touch-down for faster response.",
+	"The DUCK zone now takes priority over Left/Right tap classification, preventing accidental Right dodges.",
+	"Swipe down is still supported as a secondary Duck input.",
+	"PC controls remain S or Down Arrow for Duck.",
+	"Enemy moveset patterns from v0.5.0 are unchanged."
 ]
 
 static func changelog_text() -> String:
