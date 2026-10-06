@@ -10,6 +10,7 @@ const MovesetCatalog = preload("res://scripts/moveset_catalog.gd")
 const DungeonCatalog = preload("res://scripts/dungeon_catalog.gd")
 const SaveManager = preload("res://scripts/save_manager.gd")
 const WeaponCatalog = preload("res://scripts/weapon_catalog.gd")
+const WeaponUpgradeCatalog = preload("res://scripts/weapon_upgrade_catalog.gd")
 const VersionInfo = preload("res://scripts/version_info.gd")
 
 const C := {
@@ -54,6 +55,7 @@ var current_weapon_id := ""
 var dagger_hit_bank := 0
 var greatsword_charge := 0
 var bow_aim := 0
+var weapon_upgrades: Array[String] = []
 var dev_test_active := false
 var dev_auto_dodge := false
 var dev_force_perfect := false
@@ -124,6 +126,7 @@ var dev_step_button: Button
 var dev_overlay: ColorRect
 var dev_weapon_select: OptionButton
 var dev_enemy_select: OptionButton
+var dev_upgrade_select: OptionButton
 var dev_hp_spin: SpinBox
 var dev_auto_toggle: CheckButton
 var dev_perfect_toggle: CheckButton
