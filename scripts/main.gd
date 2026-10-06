@@ -2257,6 +2257,7 @@ func _resolve_attack() -> void:
 			message_label.text = "%s — Auto Counter" % action_name
 
 		var damage := _counter_damage(perfect)
+		_add_weapon_mastery_xp(1)
 		last_counter_damage = damage
 		enemy_counters_left -= damage
 		_update_enemy_pattern_label()
@@ -2356,6 +2357,8 @@ func _defeat_enemy() -> void:
 		message_label.text = "COUNTER KILL — +%d Gold" % current_gold_reward
 
 	await get_tree().create_timer(0.40).timeout
+	if current_node_type == "elite" and _show_weapon_upgrade_choices():
+		return
 	_show_skill_choices("reward")
 
 func _end_run(victory: bool) -> void:
