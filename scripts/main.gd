@@ -1631,23 +1631,35 @@ func _counter_damage(perfect: bool) -> int:
 		"katana":
 			if perfect:
 				damage += 1
+				if _has_weapon_upgrade("iaido") and perfect_count % 3 == 0:
+					damage += 2
+			if _has_weapon_upgrade("flow_edge") and flow >= 3:
+				damage += 1
 		"daggers":
-			dagger_hit_bank += 3 if perfect else 2
-			var dagger_bonus := int(dagger_hit_bank / 4)
-			if dagger_bonus > 0:
-				damage += dagger_bonus
-				dagger_hit_bank -= dagger_bonus * 4
+			var added_hits := (4 if _has_weapon_upgrade("flurry") else 3) if perfect else 2
+			dagger_hit_bank += added_hits
+			var triggers := int(dagger_hit_bank / 4)
+			if triggers > 0:
+				var trigger_damage := 2 if _has_weapon_upgrade("serrated") else 1
+				damage += triggers * trigger_damage
+				dagger_hit_bank -= triggers * 4
 		"greatsword":
+			var max_charge := _greatsword_max_charge()
 			if perfect and greatsword_charge > 0:
 				damage += greatsword_charge
+				if _has_weapon_upgrade("crushing_release") and greatsword_charge >= max_charge:
+					damage += 1
 				greatsword_charge = 0
 			else:
-				greatsword_charge = mini(2, greatsword_charge + 1)
+				greatsword_charge = mini(max_charge, greatsword_charge + 1)
 		"bow":
 			if perfect:
-				bow_aim = mini(2, bow_aim + 1)
+				var aim_gain := 2 if _has_weapon_upgrade("steady_aim") else 1
+				bow_aim = mini(_bow_max_aim(), bow_aim + aim_gain)
 			elif bow_aim > 0:
 				damage += bow_aim
+				if _has_weapon_upgrade("piercing_shot"):
+					damage += 1
 				bow_aim = 0
 
 	_update_build_label()
