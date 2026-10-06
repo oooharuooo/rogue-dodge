@@ -581,6 +581,8 @@ func _meta_progress_value(key: String) -> int:
 	return int(progress.get(key, 0))
 
 func _add_meta_progress(key: String, amount: int = 1) -> void:
+	if dev_test_active:
+		return
 	var progress: Dictionary = meta_data.get("progress", {})
 	progress[key] = int(progress.get(key, 0)) + amount
 	meta_data["progress"] = progress
@@ -1200,6 +1202,15 @@ func _build_choice_overlay() -> void:
 		choice_buttons.append(button)
 
 func _begin_new_run() -> void:
+	dev_test_active = false
+	dev_auto_dodge = false
+	dev_force_perfect = false
+	dev_god_mode = false
+	dev_turn_based = false
+	if dev_step_button != null:
+		dev_step_button.visible = false
+	if dev_button != null:
+		dev_button.text = "DEV MODE"
 	_reset_run(false)
 	skill_levels.clear()
 	perfect_count = 0
@@ -1500,6 +1511,8 @@ func _point_is_jump_zone(point: Vector2) -> bool:
 
 func _input(event: InputEvent) -> void:
 	if update_overlay != null and update_overlay.visible:
+		return
+	if dev_overlay != null and dev_overlay.visible:
 		return
 	if collection_overlay != null and collection_overlay.visible:
 		return
