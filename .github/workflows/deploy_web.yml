@@ -36,7 +36,20 @@ jobs:
           SHORT_SHA="${GITHUB_SHA::8}"
           EXPORT_BASENAME="game-${SHORT_SHA}"
 
-          godot --headless --path . --export-release "Web" "build/web/${EXPORT_BASENAME}.html"
+          set +e
+          godot --headless --path . --export-release "Web" "build/web/${EXPORT_BASENAME}.html" 2>&1 | tee godot-export.log
+          GODOT_EXIT=${PIPESTATUS[0]}
+          set -e
+
+          if grep -E "SCRIPT ERROR:|Parse Error:|Failed to load script" godot-export.log; then
+            echo "Godot script validation failed."
+            exit 1
+          fi
+
+          if [ "${GODOT_EXIT}" -ne 0 ]; then
+            echo "Godot export failed with exit code ${GODOT_EXIT}."
+            exit "${GODOT_EXIT}"
+          fi
 
           cat > build/web/latest.json <<EOF
           {"url":"${EXPORT_BASENAME}.html","build":"${SHORT_SHA}"}
