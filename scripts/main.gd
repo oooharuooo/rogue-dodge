@@ -3,6 +3,7 @@ extends Control
 const MAX_HP := 3
 const DODGE_COMMIT_SECONDS := 0.35
 const SkillCatalog = preload("res://scripts/skill_catalog.gd")
+const VersionInfo = preload("res://scripts/version_info.gd")
 
 const C := {
 	"bg": Color("111318"),
@@ -60,6 +61,8 @@ var build_label: Label
 var choice_overlay: ColorRect
 var choice_title: Label
 var choice_buttons: Array[Button] = []
+var version_button: Button
+var update_overlay: ColorRect
 
 var audio_players: Dictionary = {}
 
@@ -67,6 +70,7 @@ func _ready() -> void:
 	_build_ui()
 	_load_audio()
 	_reset_run(false)
+	_show_update_popup()
 
 func _build_ui() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -94,7 +98,7 @@ func _build_ui() -> void:
 	column.add_child(stats)
 	hp_label = _stat(stats, "HP", "3 / 3")
 	flow_label = _stat(stats, "FLOW", "x0")
-	progress_label = _stat(stats, "ENEMY", "1 / 3")
+	progress_label = _stat(stats, "ENEMY", "1 / 5")
 
 	var header := HBoxContainer.new()
 	header.add_theme_constant_override("separation", 8)
@@ -182,6 +186,13 @@ func _build_ui() -> void:
 	message_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(message_label)
 
+	version_button = Button.new()
+	version_button.text = VersionInfo.VERSION + "  •  WHAT'S NEW"
+	version_button.custom_minimum_size = Vector2(0, 38)
+	version_button.add_theme_font_size_override("font_size", 13)
+	version_button.pressed.connect(_show_update_popup)
+	column.add_child(version_button)
+
 	restart_button = Button.new()
 	restart_button.text = "START RUN"
 	restart_button.custom_minimum_size = Vector2(0, 54)
@@ -189,6 +200,7 @@ func _build_ui() -> void:
 	column.add_child(restart_button)
 
 	_build_choice_overlay()
+	_build_update_overlay()
 
 func _stat(parent: HBoxContainer, title: String, value: String) -> Label:
 	var box := PanelContainer.new()
@@ -222,6 +234,77 @@ func _style_panel(control: Control, color: Color) -> void:
 	style.corner_radius_bottom_left = 14
 	style.corner_radius_bottom_right = 14
 	control.add_theme_stylebox_override("panel", style)
+
+func _build_update_overlay() -> void:
+	update_overlay = ColorRect.new()
+	update_overlay.color = Color(0.025, 0.03, 0.045, 0.975)
+	update_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	update_overlay.visible = false
+	update_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(update_overlay)
+
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 28)
+	margin.add_theme_constant_override("margin_right", 28)
+	margin.add_theme_constant_override("margin_top", 80)
+	margin.add_theme_constant_override("margin_bottom", 70)
+	update_overlay.add_child(margin)
+
+	var panel := PanelContainer.new()
+	_style_panel(panel, C.panel)
+	margin.add_child(panel)
+
+	var inner := MarginContainer.new()
+	inner.add_theme_constant_override("margin_left", 22)
+	inner.add_theme_constant_override("margin_right", 22)
+	inner.add_theme_constant_override("margin_top", 24)
+	inner.add_theme_constant_override("margin_bottom", 24)
+	panel.add_child(inner)
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 14)
+	inner.add_child(box)
+
+	var title := _label("ROGUE DODGE  " + VersionInfo.VERSION, 26, C.text)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(title)
+
+	var build := _label(VersionInfo.BUILD_NAME, 15, C.perfect)
+	build.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(build)
+
+	var divider := HSeparator.new()
+	box.add_child(divider)
+
+	var whats_new := _label("WHAT'S NEW", 16, C.accent)
+	box.add_child(whats_new)
+
+	var changes := _label(VersionInfo.changelog_text(), 14, C.text)
+	changes.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	changes.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	box.add_child(changes)
+
+	var note := _label("If this version number changes after a refresh, your phone has the latest build.", 12, C.muted)
+	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(note)
+
+	var close := Button.new()
+	close.text = "CONTINUE"
+	close.custom_minimum_size = Vector2(0, 52)
+	close.pressed.connect(_hide_update_popup)
+	box.add_child(close)
+
+func _show_update_popup() -> void:
+	if update_overlay == null:
+		return
+	update_overlay.visible = true
+	update_overlay.move_to_front()
+
+func _hide_update_popup() -> void:
+	if update_overlay != null:
+		update_overlay.visible = false
 
 func _build_choice_overlay() -> void:
 	choice_overlay = ColorRect.new()
@@ -416,6 +499,9 @@ func _play(name: String) -> void:
 		audio_players[name].play()
 
 func _input(event: InputEvent) -> void:
+	if update_overlay != null and update_overlay.visible:
+		return
+
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_A or event.keycode == KEY_LEFT:
 			_try_dodge("left")
