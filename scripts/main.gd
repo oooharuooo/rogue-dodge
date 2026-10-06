@@ -1233,6 +1233,100 @@ func _choose_weapon(weapon_id: String) -> void:
 	message_label.text = "%s selected. Choose a starter skill." % WeaponCatalog.display_name(weapon_id)
 	_show_skill_choices("starter")
 
+func _build_weapon_upgrade_overlay() -> void:
+	weapon_upgrade_overlay = ColorRect.new()
+	weapon_upgrade_overlay.color = Color(0.035, 0.04, 0.055, 0.985)
+	weapon_upgrade_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	weapon_upgrade_overlay.visible = false
+	weapon_upgrade_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(weapon_upgrade_overlay)
+
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 28)
+	margin.add_theme_constant_override("margin_right", 28)
+	margin.add_theme_constant_override("margin_top", 90)
+	margin.add_theme_constant_override("margin_bottom", 90)
+	weapon_upgrade_overlay.add_child(margin)
+
+	var panel := PanelContainer.new()
+	_style_panel(panel, C.panel)
+	margin.add_child(panel)
+
+	var inner := MarginContainer.new()
+	inner.add_theme_constant_override("margin_left", 18)
+	inner.add_theme_constant_override("margin_right", 18)
+	inner.add_theme_constant_override("margin_top", 18)
+	inner.add_theme_constant_override("margin_bottom", 18)
+	panel.add_child(inner)
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 12)
+	inner.add_child(box)
+
+	var title := _label("ELITE REWARD — WEAPON UPGRADE", 22, C.text)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(title)
+
+	var note := _label("Choose one upgrade unlocked by your permanent Weapon Mastery. It lasts for this run only.", 12, C.muted)
+	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(note)
+
+	for i in range(2):
+		var button := Button.new()
+		button.custom_minimum_size = Vector2(0, 112)
+		button.add_theme_font_size_override("font_size", 14)
+		button.visible = false
+		box.add_child(button)
+		weapon_upgrade_buttons.append(button)
+
+func _available_weapon_upgrades() -> Array[Dictionary]:
+	if current_weapon_id == "":
+		return []
+	var result: Array[Dictionary] = []
+	for upgrade in WeaponUpgradeCatalog.unlocked_upgrades(current_weapon_id, run_weapon_mastery_level):
+		var upgrade_id := str(upgrade["id"])
+		if upgrade_id not in weapon_upgrades:
+			result.append(upgrade)
+	return result
+
+func _show_weapon_upgrade_choices() -> bool:
+	var candidates := _available_weapon_upgrades()
+	if candidates.is_empty():
+		return false
+
+	for i in range(weapon_upgrade_buttons.size()):
+		var button := weapon_upgrade_buttons[i]
+		for conn in button.pressed.get_connections():
+			button.pressed.disconnect(conn.callable)
+
+		if i < candidates.size():
+			var upgrade: Dictionary = candidates[i]
+			var upgrade_id := str(upgrade["id"])
+			button.visible = true
+			button.text = "%s\n%s" % [str(upgrade["name"]), str(upgrade["description"])]
+			button.pressed.connect(_choose_weapon_upgrade.bind(upgrade_id))
+		else:
+			button.visible = false
+
+	weapon_upgrade_overlay.visible = true
+	weapon_upgrade_overlay.move_to_front()
+	return true
+
+func _choose_weapon_upgrade(upgrade_id: String) -> void:
+	var data := WeaponUpgradeCatalog.upgrade_by_id(current_weapon_id, upgrade_id)
+	if data.is_empty() or upgrade_id in weapon_upgrades:
+		return
+	weapon_upgrades.append(upgrade_id)
+	weapon_upgrade_overlay.visible = false
+	_update_build_label()
+	message_label.text = "%s acquired for this run." % str(data["name"])
+	_show_skill_choices("reward")
+
+func _has_weapon_upgrade(upgrade_id: String) -> bool:
+	return upgrade_id in weapon_upgrades
+
 func _build_choice_overlay() -> void:
 	choice_overlay = ColorRect.new()
 	choice_overlay.color = Color(0.035, 0.04, 0.055, 0.97)
