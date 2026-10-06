@@ -995,8 +995,12 @@ func _show_dev_overlay() -> void:
 		restart_button.disabled = false
 	if dev_step_button != null:
 		dev_step_button.visible = false
+	if collection_button != null:
+		collection_button.disabled = false
 	dev_test_active = false
 	dev_button.text = "DEV MODE"
+	state_label.text = "STOPPED"
+	state_label.add_theme_color_override("font_color", C.muted)
 	dev_overlay.visible = true
 	dev_overlay.move_to_front()
 

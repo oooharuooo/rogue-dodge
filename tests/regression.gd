@@ -236,6 +236,11 @@ func _test_resolution_and_input() -> void:
 	click.position = game.dev_button.get_global_rect().get_center()
 	game._input(click)
 	check(game.last_dodge_direction == "", "utility button click does not dodge")
+	game._start_dev_test()
+	check(game.dev_test_active and game.run_active and game.dev_step_button.visible, "Dev setup starts turn-based test")
+	game._show_dev_overlay()
+	game._hide_dev_overlay()
+	check(not game.run_active and not game.collection_button.disabled and not game.restart_button.disabled, "closing stopped Dev Test enables collection and new run")
 	for zone_pair in [[game.jump_touch_zone,"jump"], [game.duck_touch_zone,"duck"]]:
 		reset_combat()
 		click.position = zone_pair[0].get_global_rect().get_center()
