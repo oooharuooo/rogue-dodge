@@ -1,18 +1,16 @@
 extends RefCounted
 
-const VERSION := "v0.11.0"
-const BUILD_NAME := "Real Enemy HP & Combat Balance"
+const VERSION := "v0.12.0"
+const BUILD_NAME := "Executioner Boss Phases"
 
 const CHANGES := [
-	"Replaced the old counter requirement with real Enemy HP values.",
-	"Added a visible Enemy HP bar in the combat arena.",
-	"Initial balance: Swordsman 5 HP, Heavy Knight 8 HP, Rogue 7 HP, Elite Duelist 12 HP and Executioner Boss 18 HP.",
-	"Player HP remains 3; stronger builds shorten fights instead of increasing player survivability.",
-	"Combat HUD now shows Normal and Perfect Counter ATK plus estimated counters-to-KO for both.",
-	"Internal combat state now uses enemy_hp naming so future armor, damage-over-time and boss phase systems can build on real HP cleanly.",
-	"Balanced Bow so continuous Perfect play is rewarded: Perfect stores Aim, and a Perfect at full Aim now releases the stored bonus damage.",
-	"Normal Bow counters can still spend stored Aim as before.",
-	"Dev Mode custom Enemy Test HP remains available for longer damage and upgrade testing."
+	"Executioner is now a real three-phase boss driven by HP thresholds.",
+	"Phase 1 runs from 100% to 67% HP with slower, readable core patterns.",
+	"Phase 2 starts at 66% HP and adds feints plus faster follow-ups.",
+	"Phase 3 starts at 33% HP with longer chains and significantly faster wind-ups.",
+	"Crossing a phase threshold cancels the old pattern and cleanly starts the new phase moveset.",
+	"Boss name and combat state now show the active phase.",
+	"Boss phases work in Dev Mode as well, using the custom test HP as the phase scale."
 ]
 
 static func changelog_text() -> String:
