@@ -38,7 +38,7 @@ var enemies := [
 var hp := MAX_HP
 var flow := 0
 var enemy_index := 0
-var enemy_counters_left := 1
+var enemy_hp := 1
 var enemy_max_hp := 1
 var last_counter_damage := 0
 var run_active := false
@@ -502,6 +502,8 @@ func _build_dungeon_map() -> void:
 
 func _show_dungeon_map(status_text: String = "Choose your route.") -> void:
 	run_active = false
+	if enemy_hp_bar != null:
+		enemy_hp_bar.visible = false
 	attack_generation += 1
 	if map_overlay != null:
 		map_overlay.visible = false
@@ -1653,7 +1655,7 @@ func _update_combat_stats() -> void:
 	var normal_damage := maxi(1, _preview_counter_damage(false))
 	var perfect_damage := maxi(1, _preview_counter_damage(true))
 	var last_text := "-" if last_counter_damage <= 0 else str(last_counter_damage)
-	var current_hp := maxi(enemy_counters_left, 0)
+	var current_hp := maxi(enemy_hp, 0)
 	var normal_hits := ceili(float(current_hp) / float(normal_damage)) if current_hp > 0 else 0
 	var perfect_hits := ceili(float(current_hp) / float(perfect_damage)) if current_hp > 0 else 0
 	combat_stat_label.text = "ATK N%d / P%d  •  KO N%d / P%d  •  Last %s" % [normal_damage, perfect_damage, normal_hits, perfect_hits, last_text]
@@ -1950,10 +1952,10 @@ func _load_enemy() -> void:
 		return
 	var enemy: Dictionary = enemies[enemy_index]
 	if dev_test_active:
-		enemy_counters_left = dev_enemy_hp
+		enemy_hp = dev_enemy_hp
 		enemy_max_hp = dev_enemy_hp
 	else:
-		enemy_counters_left = int(enemy.max_hp)
+		enemy_hp = int(enemy.max_hp)
 		enemy_max_hp = int(enemy.max_hp)
 	last_counter_damage = 0
 	encounter_took_damage = false
@@ -1967,6 +1969,8 @@ func _load_enemy() -> void:
 		guardian_charges = max(guardian_charges, 1)
 
 	enemy_name_label.text = str(enemy.name)
+	if enemy_hp_bar != null:
+		enemy_hp_bar.visible = true
 	if collection_button != null:
 		collection_button.disabled = true
 	_update_enemy_pattern_label()
@@ -1980,7 +1984,7 @@ func _load_enemy() -> void:
 
 func _update_enemy_pattern_label() -> void:
 	var pattern_text := current_pattern_name if current_pattern_name != "" else "..."
-	var shown_hp := maxi(enemy_counters_left, 0)
+	var shown_hp := maxi(enemy_hp, 0)
 	enemy_counter_label.text = "Enemy HP: %d / %d  •  Pattern: %s" % [shown_hp, enemy_max_hp, pattern_text]
 	if enemy_hp_bar != null:
 		enemy_hp_bar.max_value = maxf(1.0, float(enemy_max_hp))
@@ -2354,7 +2358,7 @@ func _resolve_attack() -> void:
 		var damage := _counter_damage(perfect)
 		_add_weapon_mastery_xp(1)
 		last_counter_damage = damage
-		enemy_counters_left -= damage
+		enemy_hp -= damage
 		_update_enemy_pattern_label()
 		_update_combat_stats()
 		message_label.text += "  [Counter Damage: %d]" % damage
@@ -2363,7 +2367,7 @@ func _resolve_attack() -> void:
 		_counter_animation()
 		_update_hud()
 
-		if enemy_counters_left <= 0:
+		if enemy_hp <= 0:
 			await get_tree().create_timer(0.48).timeout
 			_defeat_enemy()
 		else:
