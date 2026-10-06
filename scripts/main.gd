@@ -792,8 +792,8 @@ func _build_weapon_overlay() -> void:
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	margin.add_theme_constant_override("margin_left", 24)
 	margin.add_theme_constant_override("margin_right", 24)
-	margin.add_theme_constant_override("margin_top", 42)
-	margin.add_theme_constant_override("margin_bottom", 42)
+	margin.add_theme_constant_override("margin_top", 28)
+	margin.add_theme_constant_override("margin_bottom", 28)
 	weapon_overlay.add_child(margin)
 
 	var panel := PanelContainer.new()
@@ -801,38 +801,73 @@ func _build_weapon_overlay() -> void:
 	margin.add_child(panel)
 
 	var inner := MarginContainer.new()
-	inner.add_theme_constant_override("margin_left", 18)
-	inner.add_theme_constant_override("margin_right", 18)
-	inner.add_theme_constant_override("margin_top", 18)
-	inner.add_theme_constant_override("margin_bottom", 18)
+	inner.add_theme_constant_override("margin_left", 16)
+	inner.add_theme_constant_override("margin_right", 16)
+	inner.add_theme_constant_override("margin_top", 16)
+	inner.add_theme_constant_override("margin_bottom", 16)
 	panel.add_child(inner)
 
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 10)
+	box.add_theme_constant_override("separation", 8)
 	inner.add_child(box)
 
 	var title := _label("CHOOSE WEAPON", 25, C.text)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
 
-	var sub := _label("Movement is still your only input. The weapon changes the automatic counter.", 12, C.muted)
+	var sub := _label("Movement is your only combat input. Weapon changes the automatic counter.", 12, C.muted)
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(sub)
 
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.custom_minimum_size = Vector2(0, 600)
+	box.add_child(scroll)
+
+	var list := VBoxContainer.new()
+	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	list.add_theme_constant_override("separation", 10)
+	scroll.add_child(list)
+
 	for weapon_id in ["katana", "daggers", "greatsword", "bow"]:
-		var button := Button.new()
-		button.custom_minimum_size = Vector2(0, 106)
-		button.add_theme_font_size_override("font_size", 14)
-		button.text = "%s - %s\n%s\n%s" % [
-			WeaponCatalog.display_name(weapon_id),
-			WeaponCatalog.tagline(weapon_id),
-			WeaponCatalog.stat_line(weapon_id),
-			WeaponCatalog.description(weapon_id)
-		]
-		button.pressed.connect(_choose_weapon.bind(weapon_id))
-		box.add_child(button)
-		weapon_buttons.append(button)
+		var card := PanelContainer.new()
+		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_style_panel(card, C.panel2)
+		list.add_child(card)
+
+		var card_margin := MarginContainer.new()
+		card_margin.add_theme_constant_override("margin_left", 12)
+		card_margin.add_theme_constant_override("margin_right", 12)
+		card_margin.add_theme_constant_override("margin_top", 10)
+		card_margin.add_theme_constant_override("margin_bottom", 10)
+		card.add_child(card_margin)
+
+		var vb := VBoxContainer.new()
+		vb.add_theme_constant_override("separation", 4)
+		card_margin.add_child(vb)
+
+		var name_label := _label("%s - %s" % [WeaponCatalog.display_name(weapon_id), WeaponCatalog.tagline(weapon_id)], 16, C.text)
+		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		vb.add_child(name_label)
+
+		var stat := _label(WeaponCatalog.stat_line(weapon_id), 12, C.accent)
+		stat.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		stat.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		vb.add_child(stat)
+
+		var desc := _label(WeaponCatalog.description(weapon_id), 12, C.muted)
+		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		desc.custom_minimum_size = Vector2(0, 38)
+		vb.add_child(desc)
+
+		var select := Button.new()
+		select.text = "SELECT " + WeaponCatalog.display_name(weapon_id).to_upper()
+		select.custom_minimum_size = Vector2(0, 36)
+		select.pressed.connect(_choose_weapon.bind(weapon_id))
+		vb.add_child(select)
+		weapon_buttons.append(select)
 
 func _show_weapon_choices() -> void:
 	run_active = false
