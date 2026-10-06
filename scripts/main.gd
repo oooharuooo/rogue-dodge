@@ -9,6 +9,7 @@ const SkillCatalog = preload("res://scripts/skill_catalog.gd")
 const MovesetCatalog = preload("res://scripts/moveset_catalog.gd")
 const DungeonCatalog = preload("res://scripts/dungeon_catalog.gd")
 const SaveManager = preload("res://scripts/save_manager.gd")
+const WeaponCatalog = preload("res://scripts/weapon_catalog.gd")
 const VersionInfo = preload("res://scripts/version_info.gd")
 
 const C := {
@@ -47,6 +48,10 @@ var attack_generation := 0
 var skill_levels: Dictionary = {}
 var perfect_count := 0
 var guardian_charges := 0
+var current_weapon_id := ""
+var dagger_hit_bank := 0
+var greatsword_charge := 0
+var bow_aim := 0
 var choice_mode := ""
 var dungeon_floor := 0
 var current_floor_number := 0
@@ -103,6 +108,8 @@ var collection_button: Button
 var collection_overlay: ColorRect
 var collection_list: VBoxContainer
 var collection_summary_label: Label
+var weapon_overlay: ColorRect
+var weapon_buttons: Array[Button] = []
 
 var audio_players: Dictionary = {}
 
@@ -307,6 +314,7 @@ func _build_ui() -> void:
 	restart_button.pressed.connect(_begin_new_run)
 	column.add_child(restart_button)
 
+	_build_weapon_overlay()
 	_build_choice_overlay()
 	_build_dungeon_map()
 	_build_collection_overlay()
@@ -420,11 +428,14 @@ func _show_dungeon_map(status_text: String = "Choose your route.") -> void:
 		map_overlay.visible = false
 	if choice_overlay != null:
 		choice_overlay.visible = false
+	if weapon_overlay != null:
+		weapon_overlay.visible = false
 	attack_side = ""
 	timing_bar.value = 0.0
 	weapon_indicator.text = ""
 	map_status_label.text = status_text
-	map_resource_label.text = "HP %d/%d   •   GOLD %d   •   BUILD %d   •   COLLECTION %d/%d" % [hp, MAX_HP, gold, skill_levels.size(), unlocked_skills.size(), SkillCatalog.SKILLS.size()]
+	var map_weapon := "none" if current_weapon_id == "" else WeaponCatalog.display_name(current_weapon_id)
+	map_resource_label.text = "HP %d/%d   •   GOLD %d   •   %s   •   BUILD %d   •   COLLECTION %d/%d" % [hp, MAX_HP, gold, map_weapon, skill_levels.size(), unlocked_skills.size(), SkillCatalog.SKILLS.size()]
 
 	for floor_index in range(DungeonCatalog.floor_count()):
 		for node in DungeonCatalog.nodes_for_floor(floor_index):
@@ -762,6 +773,86 @@ func _hide_update_popup() -> void:
 	if update_overlay != null:
 		update_overlay.visible = false
 
+func _build_weapon_overlay() -> void:
+	weapon_overlay = ColorRect.new()
+	weapon_overlay.color = Color(0.035, 0.04, 0.055, 0.985)
+	weapon_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	weapon_overlay.visible = false
+	weapon_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(weapon_overlay)
+
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 24)
+	margin.add_theme_constant_override("margin_right", 24)
+	margin.add_theme_constant_override("margin_top", 42)
+	margin.add_theme_constant_override("margin_bottom", 42)
+	weapon_overlay.add_child(margin)
+
+	var panel := PanelContainer.new()
+	_style_panel(panel, C.panel)
+	margin.add_child(panel)
+
+	var inner := MarginContainer.new()
+	inner.add_theme_constant_override("margin_left", 18)
+	inner.add_theme_constant_override("margin_right", 18)
+	inner.add_theme_constant_override("margin_top", 18)
+	inner.add_theme_constant_override("margin_bottom", 18)
+	panel.add_child(inner)
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 10)
+	inner.add_child(box)
+
+	var title := _label("CHOOSE WEAPON", 25, C.text)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(title)
+
+	var sub := _label("Movement is still your only input. The weapon changes the automatic counter.", 12, C.muted)
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(sub)
+
+	for weapon_id in ["katana", "daggers", "greatsword", "bow"]:
+		var button := Button.new()
+		button.custom_minimum_size = Vector2(0, 106)
+		button.add_theme_font_size_override("font_size", 14)
+		button.text = "%s — %s\n%s\n%s" % [
+			WeaponCatalog.display_name(weapon_id),
+			WeaponCatalog.tagline(weapon_id),
+			WeaponCatalog.stat_line(weapon_id),
+			WeaponCatalog.description(weapon_id)
+		]
+		button.pressed.connect(_choose_weapon.bind(weapon_id))
+		box.add_child(button)
+		weapon_buttons.append(button)
+
+func _show_weapon_choices() -> void:
+	run_active = false
+	attack_generation += 1
+	attack_side = ""
+	timing_bar.value = 0.0
+	weapon_indicator.text = ""
+	state_label.text = "LOADOUT"
+	state_label.add_theme_color_override("font_color", C.accent)
+	restart_button.disabled = true
+	if collection_button != null:
+		collection_button.disabled = false
+	weapon_overlay.visible = true
+	weapon_overlay.move_to_front()
+
+func _choose_weapon(weapon_id: String) -> void:
+	if not WeaponCatalog.WEAPONS.has(weapon_id):
+		return
+	current_weapon_id = weapon_id
+	dagger_hit_bank = 0
+	greatsword_charge = 0
+	bow_aim = 0
+	weapon_overlay.visible = false
+	_update_build_label()
+	message_label.text = "%s selected. Choose a starter skill." % WeaponCatalog.display_name(weapon_id)
+	_show_skill_choices("starter")
+
 func _build_choice_overlay() -> void:
 	choice_overlay = ColorRect.new()
 	choice_overlay.color = Color(0.035, 0.04, 0.055, 0.97)
@@ -804,6 +895,10 @@ func _begin_new_run() -> void:
 	skill_levels.clear()
 	perfect_count = 0
 	guardian_charges = 0
+	current_weapon_id = ""
+	dagger_hit_bank = 0
+	greatsword_charge = 0
+	bow_aim = 0
 	dungeon_floor = 0
 	current_floor_number = 0
 	gold = 0
@@ -813,7 +908,7 @@ func _begin_new_run() -> void:
 	run_unlocked_pool = unlocked_skills.duplicate()
 	pending_unlock_notice = ""
 	_update_build_label()
-	_show_skill_choices("starter")
+	_show_weapon_choices()
 
 func _show_skill_choices(mode: String) -> void:
 	run_active = false
@@ -901,15 +996,31 @@ func _choose_skill(skill_id: String) -> void:
 		message_label.text = "Combat reward chosen."
 		_show_dungeon_map(_consume_unlock_notice("Reward acquired. Choose the next route."))
 
+func _weapon_state_text() -> String:
+	if current_weapon_id == "daggers":
+		return "Hits %d/4" % dagger_hit_bank
+	if current_weapon_id == "greatsword":
+		return "Charge %d/2" % greatsword_charge
+	if current_weapon_id == "bow":
+		return "Aim %d/2" % bow_aim
+	if current_weapon_id == "katana":
+		return "Perfect +1"
+	return ""
+
 func _update_build_label() -> void:
+	var weapon_name := "No Weapon" if current_weapon_id == "" else WeaponCatalog.display_name(current_weapon_id)
+	var weapon_state := _weapon_state_text()
+	var weapon_text := weapon_name if weapon_state == "" else "%s [%s]" % [weapon_name, weapon_state]
+
 	if skill_levels.is_empty():
-		build_label.text = "Build: none"
+		build_label.text = "Weapon: %s  •  Skills: none" % weapon_text
 		return
+
 	var parts: Array[String] = []
 	for id in skill_levels:
 		parts.append("%s Lv.%d" % [SkillCatalog.display_name(str(id)), int(skill_levels[id])])
 	parts.sort()
-	build_label.text = "Build: " + " • ".join(parts)
+	build_label.text = "Weapon: %s  •  %s" % [weapon_text, " • ".join(parts)]
 
 func _effective_perfect_window(enemy: Dictionary) -> float:
 	var bonus := 0.0
@@ -948,6 +1059,30 @@ func _counter_damage(perfect: bool) -> int:
 		elif flame_level == 1 and perfect_count % 2 == 0:
 			damage += 1
 
+	match current_weapon_id:
+		"katana":
+			if perfect:
+				damage += 1
+		"daggers":
+			dagger_hit_bank += 3 if perfect else 2
+			var dagger_bonus := int(dagger_hit_bank / 4)
+			if dagger_bonus > 0:
+				damage += dagger_bonus
+				dagger_hit_bank -= dagger_bonus * 4
+		"greatsword":
+			if perfect and greatsword_charge > 0:
+				damage += greatsword_charge
+				greatsword_charge = 0
+			else:
+				greatsword_charge = mini(2, greatsword_charge + 1)
+		"bow":
+			if perfect:
+				bow_aim = mini(2, bow_aim + 1)
+			elif bow_aim > 0:
+				damage += bow_aim
+				bow_aim = 0
+
+	_update_build_label()
 	return damage
 
 func _load_audio() -> void:
@@ -1001,6 +1136,8 @@ func _input(event: InputEvent) -> void:
 	if update_overlay != null and update_overlay.visible:
 		return
 	if collection_overlay != null and collection_overlay.visible:
+		return
+	if weapon_overlay != null and weapon_overlay.visible:
 		return
 
 	if event is InputEventKey and event.pressed and not event.echo:
@@ -1508,7 +1645,7 @@ func _resolve_attack() -> void:
 		enemy_counters_left -= damage
 		_update_enemy_pattern_label()
 		if damage > 1:
-			message_label.text += "  [+%d BUILD DAMAGE]" % (damage - 1)
+			message_label.text += "  [+%d BONUS COUNTER]" % (damage - 1)
 		_counter_animation()
 		_update_hud()
 
