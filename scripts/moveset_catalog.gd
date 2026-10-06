@@ -15,14 +15,16 @@ const MOVESETS := {
 		{"name":"Three Knives","steps":["left","right","left"]},
 		{"name":"Slipstream","steps":["right","left","high"]},
 		{"name":"Bait & Cut","steps":["fake_left","quick_right"]},
-		{"name":"Low Trick","steps":["right","low","quick_left"]}
+		{"name":"Low Trick","steps":["right","low","quick_left"]},
+		{"name":"Knife Fan","steps":["projectile_left","projectile_right","projectile_high"]}
 	],
 	"duelist": [
 		{"name":"False Opening","steps":["fake_left","quick_right"]},
 		{"name":"Mirror Feint","steps":["fake_right","quick_left"]},
 		{"name":"High Line","steps":["left","high","right"]},
 		{"name":"Reverse High","steps":["right","high","left"]},
-		{"name":"Floor Line","steps":["left","low","right"]}
+		{"name":"Floor Line","steps":["left","low","right"]},
+		{"name":"Needle Line","steps":["projectile_low","right","projectile_left"]}
 	]
 }
 
@@ -34,12 +36,14 @@ const EXECUTIONER_PHASES := {
 	2: [
 		{"name":"False Mercy","steps":["fake_high","quick_left","right"]},
 		{"name":"Headsman Chain","steps":["right","fake_left","quick_high"]},
-		{"name":"Broken Oath","steps":["left","low","fake_right","quick_left"]}
+		{"name":"Broken Oath","steps":["left","low","fake_right","quick_left"]},
+		{"name":"Black Iron Volley","steps":["projectile_left","quick_projectile_right","high"]}
 	],
 	3: [
 		{"name":"Final Sentence","steps":["high","left","low","delay_high"]},
 		{"name":"Last Rites","steps":["fake_left","quick_right","low","quick_high"]},
-		{"name":"No Mercy","steps":["right","quick_left","fake_high","quick_right","low"]}
+		{"name":"No Mercy","steps":["right","quick_left","fake_high","quick_right","low"]},
+		{"name":"Death Rain","steps":["projectile_high","projectile_low","quick_projectile_left","right"]}
 	]
 }
 
@@ -49,13 +53,22 @@ static func patterns_for(enemy_id: String, phase: int = 1) -> Array:
 	return MOVESETS.get(enemy_id, [])
 
 static func base_action(step: String) -> String:
-	for prefix in ["fake_", "delay_", "quick_"]:
-		if step.begins_with(prefix):
-			return step.trim_prefix(prefix)
-	return step
+	var result := step
+	var changed := true
+	while changed:
+		changed = false
+		for prefix in ["fake_", "delay_", "quick_", "projectile_"]:
+			if result.begins_with(prefix):
+				result = result.trim_prefix(prefix)
+				changed = true
+				break
+	return result
 
 static func is_fake(step: String) -> bool:
 	return step.begins_with("fake_")
+
+static func is_projectile(step: String) -> bool:
+	return step.contains("projectile_")
 
 static func windup_multiplier(step: String) -> float:
 	if step.begins_with("delay_"):
