@@ -1,7 +1,7 @@
 extends RefCounted
 
 const SAVE_PATH := "user://rogue_dodge_meta.json"
-const SAVE_VERSION := 1
+const SAVE_VERSION := 2
 
 static func default_data() -> Dictionary:
 	return {
@@ -13,6 +13,12 @@ static func default_data() -> Dictionary:
 			"elite_no_damage_clears": 0,
 			"boss_clears": 0,
 			"runs_completed": 0
+		},
+		"weapon_mastery": {
+			"katana": 0,
+			"daggers": 0,
+			"greatsword": 0,
+			"bow": 0
 		}
 	}
 
@@ -41,6 +47,12 @@ static func load_data() -> Dictionary:
 	for key in progress.keys():
 		if parsed_progress.has(key):
 			progress[key] = int(parsed_progress[key])
+
+	var parsed_mastery: Dictionary = parsed_dict.get("weapon_mastery", {})
+	var weapon_mastery: Dictionary = data["weapon_mastery"]
+	for weapon_id in weapon_mastery.keys():
+		if parsed_mastery.has(weapon_id):
+			weapon_mastery[weapon_id] = maxi(0, int(parsed_mastery[weapon_id]))
 
 	data["version"] = SAVE_VERSION
 	return data
