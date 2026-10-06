@@ -1480,13 +1480,27 @@ func _choose_skill(skill_id: String) -> void:
 		message_label.text = "Combat reward chosen."
 		_show_dungeon_map(_consume_unlock_notice("Reward acquired. Choose the next route."))
 
+func _greatsword_max_charge() -> int:
+	return 3 if _has_weapon_upgrade("deep_charge") else 2
+
+func _bow_max_aim() -> int:
+	return 2
+
+func _weapon_upgrade_text() -> String:
+	if weapon_upgrades.is_empty() or current_weapon_id == "":
+		return ""
+	var names: Array[String] = []
+	for upgrade_id in weapon_upgrades:
+		names.append(WeaponUpgradeCatalog.upgrade_name(current_weapon_id, upgrade_id))
+	return ", ".join(names)
+
 func _weapon_state_text() -> String:
 	if current_weapon_id == "daggers":
 		return "Hits %d/4" % dagger_hit_bank
 	if current_weapon_id == "greatsword":
-		return "Charge %d/2" % greatsword_charge
+		return "Charge %d/%d" % [greatsword_charge, _greatsword_max_charge()]
 	if current_weapon_id == "bow":
-		return "Aim %d/2" % bow_aim
+		return "Aim %d/%d" % [bow_aim, _bow_max_aim()]
 	if current_weapon_id == "katana":
 		return "Perfect +1"
 	return ""
