@@ -1,17 +1,19 @@
 extends RefCounted
 
-const VERSION := "v0.5.2"
-const BUILD_NAME := "Combat Telegraph Animation"
+const VERSION := "v0.6.0"
+const BUILD_NAME := "Jump & Low Attack"
 
 const CHANGES := [
-	"Added a visible placeholder weapon to every enemy for readable attack telegraphs.",
-	"Left and Right attacks now use mirrored body lean and weapon wind-up poses before striking.",
-	"High attacks now raise the weapon overhead, then sweep across the player's head level.",
-	"Delayed attacks visibly hold their pose longer and pulse before impact.",
-	"Quick follow-ups use a more urgent weapon cue.",
-	"Fake attacks now visibly retract back to neutral before the real follow-up.",
-	"Reduced the prominence of debug attack text so animation becomes the primary signal.",
-	"Kept the dedicated DUCK button, swipe-down fallback and v0.5.0 moveset system."
+	"Added JUMP as the fourth combat action.",
+	"PC controls: W or Up Arrow = Jump.",
+	"Mobile controls: dedicated JUMP button plus swipe-up fallback.",
+	"Added Low Sweep attacks that must be jumped over.",
+	"Low attacks begin appearing from Heavy Knight onward; Swordsman remains the basic Left/Right trainer.",
+	"Heavy Knight, Rogue, Duelist and Executioner now include low attacks in their learnable patterns.",
+	"Added a jump animation and a distinct jump sound cue.",
+	"Added low-attack wind-up and strike animation near the player's feet.",
+	"Moved the player upward slightly so Jump/Duck controls do not hide combat telegraphs.",
+	"Jump is temporarily available from the start for prototype testing; permanent unlock rules will be added later."
 ]
 
 static func changelog_text() -> String:
