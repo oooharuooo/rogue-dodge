@@ -20,10 +20,18 @@ jobs:
           node-version: '22'
       - name: Gameplay and timing checks
         run: |
+          node tests/combat-integration-2d.cjs
+          node tests/combat-timing-2d.cjs
+          node tests/combo-art-2d.cjs
           node tests/full-2d.cjs
           node tests/release-2d.cjs
           node tests/normal-2d.cjs
           node tests/mobile-2d.cjs
+          node tests/arena-2d.cjs
+          node tests/arena-art-2d.cjs
+          node tests/boss-art-2d.cjs
+          node tests/encounter-art-2d.cjs
+          node tests/roster-art-2d.cjs
       - name: Package versioned game
         shell: bash
         run: |
