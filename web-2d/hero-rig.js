@@ -25,7 +25,7 @@ class HeroRig {
   const name={idle:'Idle',bow_attack:'Idle',sword_attack:'Slashing',dagger_attack:'Run Slashing',heavy_attack:'Slashing',up:'Sliding',slide:'Sliding',jump_start:'Jump Start',jump_loop:'Jump Loop',fall:'Falling Down',hurt:'Hurt',dying:'Dying'}[state];
   const anim=this.animations.find(n=>n.a.name===name);if(!anim)return;
   const length=+anim.a.length;
-  const moveClock=state==='heavy_attack'?(clock<.38?clock*.3:.114+(clock-.38)*1.7):state==='dagger_attack'?(clock*2.8)%.9:clock;
+  const release=state==='heavy_attack'?.52:.35;const moveClock=state==='heavy_attack'||state==='sword_attack'?(clock<release?.45*clock/release:.45+.45*Math.min(1,(clock-release)/(.85-release))):state==='dagger_attack'?(clock*3.4)%.9:clock;
   const time=state==='idle'?(clock*1000)%length:state==='up'?Math.min(length-1,moveClock/.9*length):Math.min(length-1,moveClock/.9*length);
   const main=anim.c.find(n=>n.tag==='mainline').c;
   const key=[...main].reverse().find(k=>+(k.a.time||0)<=time)||main[0];
