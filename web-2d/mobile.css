@@ -23,3 +23,6 @@ canvas{object-fit:fill}.lane-input{position:absolute;inset:0;pointer-events:none
 @media(max-height:620px){.shell{gap:4px}.stage{margin-top:8px;margin-bottom:2px}.status{padding:3px 8px}#feedback{font-size:12px}}
 
 #proc-toast{font-size:12px;line-height:1.5;color:#f4dc9e;padding:6px 8px;border:1px solid #8e794b;border-radius:8px;background:#304442;flex-shrink:0;overflow-wrap:anywhere}
+/* System fonts keep Vietnamese accents in the same face as the base letters. */
+h2{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;font-weight:700;line-height:1.4;letter-spacing:normal}
+
