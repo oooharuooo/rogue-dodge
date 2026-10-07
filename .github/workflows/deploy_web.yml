@@ -23,6 +23,7 @@ jobs:
           node tests/full-2d.cjs
           node tests/release-2d.cjs
           node tests/normal-2d.cjs
+          node tests/mobile-2d.cjs
       - name: Package versioned game
         shell: bash
         run: |
