@@ -7,7 +7,7 @@ const ENCOUNTER_STYLES={
 if(typeof MONSTER_STYLES!=='undefined')Object.assign(ENCOUNTER_STYLES,MONSTER_STYLES);
 function encounterRig(style){if(style.pack)return monsterRigs[style.pack]||knightRig;const original=enemyRigs[style.variant];if(!original)return knightRig;if(!style.sword)return original;const images=original.images.slice();images[9]=enemyRigs[style.sword].images[9];images[10]=enemyRigs[style.sword].images[10];return {...original,images};}
 function drawEncounter(ctx,g){
- if(g.enemyId==='dread_wolf'){ctx.save();if(g.enemyHp<=0){ctx.globalAlpha=Math.max(0,1-(g.time-g.deathTime)/1.2);ctx.translate(670,552);ctx.rotate(-Math.min(1,(g.time-g.deathTime)/.6));ctx.translate(-670,-552);}if(g.damageEvents.some(e=>g.time-e.time<.12))ctx.filter='brightness(1.5)';drawWolf(ctx,g);ctx.restore();return;}
+ if(typeof BEAST_IDS!=='undefined'?BEAST_IDS.includes(g.enemyId):g.enemyId==='dread_wolf'){ctx.save();if(g.enemyHp<=0){ctx.globalAlpha=Math.max(0,1-(g.time-g.deathTime)/1.2);ctx.translate(670,552);ctx.rotate(-Math.min(1,(g.time-g.deathTime)/.6));ctx.translate(-670,-552);}if(g.damageEvents.some(e=>g.time-e.time<.12))ctx.filter='brightness(1.5)';typeof drawBeast==='function'?drawBeast(ctx,g):drawWolf(ctx,g);ctx.restore();return;}
  const style=ENCOUNTER_STYLES[g.enemyId]||ENCOUNTER_STYLES.executioner;
  g.visualStyle=style;g.visualRig=encounterRig(style);
  ctx.save();if(style.filter)ctx.filter=style.filter;

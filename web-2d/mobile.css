@@ -26,3 +26,6 @@ canvas{object-fit:fill}.lane-input{position:absolute;inset:0;pointer-events:none
 /* System fonts keep Vietnamese accents in the same face as the base letters. */
 h2{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;font-weight:700;line-height:1.4;letter-spacing:normal}
 
+#lesson-panel{padding:10px;flex-shrink:0}#lesson-panel h2{font-size:15px;margin:0}#lesson-panel p{font-size:12px;margin:5px 0}#lesson-panel button{padding:8px;font-size:12px}body:has(#lesson-panel:not([hidden])) .stage{min-height:180px;margin-top:0;margin-bottom:0}
+
+.node-name{white-space:normal;line-height:1.15;text-align:center;overflow-wrap:anywhere}.route-node{height:78px}.node-icon{font-size:22px;line-height:26px}

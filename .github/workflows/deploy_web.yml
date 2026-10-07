@@ -20,6 +20,7 @@ jobs:
           node-version: '22'
       - name: Gameplay and timing checks
         run: |
+          node tests/campaign-2d.cjs
           node tests/combat-integration-2d.cjs
           node tests/combat-timing-2d.cjs
           node tests/combo-art-2d.cjs

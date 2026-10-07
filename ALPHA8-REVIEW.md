@@ -1,0 +1,9 @@
+# Alpha 0.8
+
+1. Readability: three melee preparation silhouettes have distinct free-hand poses; weapon and gripping hand render in front of the head. Three pitch/timbre cues identify upper, center and lower attacks; ground slam has a separate low cue. Live combat retains three lanes without answer overlays. The pose study is a review-only page.
+2. Timing: first encounter has 0.2 seconds more preparation. Phase intervals shorten gradually, with a 1.4-second floor. Test Mode has slow/standard/challenge tempo. Dodge duration and damage rules are unchanged.
+3. Five isolated practice lessons: Up, Down, Jump, hold still, and a two-hit chain followed by automatic counter. Wrong attempts retry; HP is restored; progress never writes XP/Gold. Advancement waits for the counter to finish.
+4. Campaign: three encounter rosters rotate by completed dungeon count. Elite room variants keep 4 Gold and elite achievements. Full-health rest/camp gives a non-stacking shield. Momentum and Guardian are starter build choices; owned starter skills can be upgraded normally even before permanent unlock. Checkpoints retain the roster and room reward context.
+5. Frost Wolf, Iron Bear and Elder Bear reuse independent quadruped joints. Bear torso/head/ears/tail/leg palette are separate modules; Elder Bear has a separate spiked harness. Bear attacks favor slam; wolves favor claw strikes. Elder Bear phases use 2, 3 and 4 hits. These are procedural prototype assets and still need human visual approval.
+
+Validation: 630 additional campaign/tutorial/reward/FPS/audio checks; all legacy suites; integrated hand-grip and weapon-edge checks. Browser verification and screenshots are stored in task artifacts. Auto reads attack data, so it does not establish human readability or final difficulty balance. Physical phone testing remains needed.

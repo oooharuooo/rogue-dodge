@@ -13,20 +13,20 @@ function wolfPose(g){
   jaw:a?wolfClamp((q-.58)/.22)*(1-wolfClamp((q-1.05)/.2)):0,active:!!a};
 }
 function drawWolf(ctx,g){
- const p=wolfPose(g),a=g.attack,q=p.q;
+ const p=wolfPose(g),a=g.attack,q=p.q,parts=g.quadParts||WolfParts;if(g.beastBear){p.stride*=.6;p.crouch*=1.5;p.pitch*=.6;}
  const ellipse=(x,y,rx,ry,fill)=>{ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fillStyle=g.wolfSkin?.colors?.[fill]||fill;ctx.fill();ctx.stroke();};
  const poly=(points,fill)=>{ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.fillStyle=g.wolfSkin?.colors?.[fill]||fill;ctx.fill();ctx.stroke();};
  ctx.save();ctx.fillStyle='#25332835';ctx.beginPath();ctx.ellipse(p.x,552+((a?.target??1)-1)*156+8,95,15,0,0,Math.PI*2);ctx.fill();
  ctx.translate(p.x,p.y);ctx.rotate(p.pitch);ctx.scale(-1.15,1.15);ctx.lineWidth=2.5;ctx.strokeStyle='#28373b';ctx.lineJoin='round';ctx.lineCap='round';
  // Four jointed legs, heavy shoulders and angular fur silhouette.
- WolfParts.leg(ctx,p,poly,-53,true,false);WolfParts.leg(ctx,p,poly,43,false,false);
- WolfParts.tail(ctx,p,poly);
- WolfParts.torso(ctx,p,poly);
- WolfParts.mane(ctx,p,poly);
- WolfParts.fur(ctx,p,poly);
- WolfParts.harness(ctx,p,poly);
- WolfParts.leg(ctx,p,poly,-51,true,true);WolfParts.leg(ctx,p,poly,44,false,true);
- WolfParts.head(ctx,p,poly);ctx.restore();
+ parts.leg(ctx,p,poly,-53,true,false);parts.leg(ctx,p,poly,43,false,false);
+ parts.tail(ctx,p,poly);
+ parts.torso(ctx,p,poly);
+ parts.mane(ctx,p,poly);
+ parts.fur(ctx,p,poly);
+ parts.harness(ctx,p,poly);
+ parts.leg(ctx,p,poly,-51,true,true);parts.leg(ctx,p,poly,44,false,true);
+ parts.head(ctx,p,poly);ctx.restore();
 
  if(a?.kind==='jump'&&q>=.9&&q<=1.35){
   // A connected radial shock begins exactly at the landing feet, not three separate lane strips.

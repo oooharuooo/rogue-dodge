@@ -1,3 +1,4 @@
+function attackSoundCue(a){if(a.kind==='jump')return {freq:90,duration:.28,type:'sawtooth'};const lane=a.family==='melee'?a.target:a.kind==='up'?2:0;return {freq:[620,350,170][lane],duration:.16,type:lane===1?'square':'triangle'};}
 // Local synthesized audio: no downloads, tracking or autoplay.
 class CombatFeedback {
  constructor(){this.enabled=localStorage.getItem('rogue-audio')!=='off';this.volume=Number(localStorage.getItem('rogue-volume')||.25);this.ctx=null;this.particles=[];this.last={};this.shake=0;this.reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;}
@@ -6,7 +7,7 @@ class CombatFeedback {
  burst(x,y,color,n=12){if(this.reduced)return;for(let i=0;i<n;i++)this.particles.push({x,y,vx:(Math.random()-.5)*180,vy:-Math.random()*170,age:0,color});this.particles=this.particles.slice(-140);}
  update(game,dt){const l=this.last;if(game.time<(l.time||0))this.last={};const prev=this.last;
  if(game.action&&game.action.start!==prev.action){this.tone(game.action.kind==='jump'?540:380,.1,'triangle');this.burst(90,552,'#f6efdc',8);prev.action=game.action.start;}
- if(game.attack&&game.attack.start!==prev.attack){this.tone(game.attack.kind==='jump'?120:game.attack.kind==='up'?230:410,.18,game.attack.kind==='jump'?'sawtooth':'triangle',.5);prev.attack=game.attack.start;}
+ if(game.attack&&game.attack.start!==prev.attack){const cue=attackSoundCue(game.attack);this.tone(cue.freq,cue.duration,cue.type,.5);prev.attack=game.attack.start;}
  if(game.dodged>(prev.dodged??game.dodged)){this.tone(game.counter?.perfect?880:650,.12,'sine');this.burst(90,482,game.counter?.perfect?'#ffe08b':'#a6ece5');}
  if(game.totalDamage>(prev.damage??game.totalDamage)){this.tone(game.weapon==='bow'?640:game.weapon==='greatsword'?110:260,.14,'triangle');this.burst(710,477,'#ffdf8a',20);this.shake=game.weapon==='greatsword'?5:2;}
  if(game.hp<(prev.hp??game.hp)){this.tone(100,.2,'sawtooth',.5);this.burst(90,482,'#e77d6e');this.shake=5;}
@@ -17,3 +18,5 @@ class CombatFeedback {
  }
  draw(ctx){for(const p of this.particles){ctx.globalAlpha=1-p.age/.55;ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;}
 }
+
+if(typeof module!=='undefined')module.exports={attackSoundCue};

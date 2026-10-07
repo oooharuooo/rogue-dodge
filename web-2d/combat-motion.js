@@ -6,7 +6,7 @@ function meleeMotion(game,q){const a=game.attack,target=a?.target??1,prep=Math.m
  let vertical=height*travel;
  if(c){const prior=a?.index>0?c.targets[a.index-1]:c.originLane,blend=Math.max(0,Math.min(1,(q-.70)/.22));vertical=((prior-1)+(target-prior)*blend)*156*travel;}
  const flavor=enemyMotion(family,target===0?'down':target===2?'up':'melee',q,game.time);
- return {...flavor,right:({0:135,1:35,2:-55}[target])*prep-70*swing,left:flavor.left,re:flavor.re,le:flavor.le,lean:flavor.lean,drop:flavor.drop,shift:-440*travel,wa:({0:90,1:0,2:-45}[target])*prep*(1-swing),stride:travel,vertical};
+ return {...flavor,right:({0:135,1:35,2:-55}[target])*prep-70*swing,left:({0:-25,1:45,2:100}[target])*prep,re:flavor.re,le:target===0?-65:target===2?25:flavor.le,lean:flavor.lean,drop:flavor.drop,shift:-440*travel,wa:({0:90,1:0,2:-45}[target])*prep*(1-swing),stride:travel,vertical};
 }
 function drawCloseEncounter(ctx,g){const a=g.attack,q=a?Math.max(0,(g.time-a.start)/(a.impact-a.start)):0;
  const style=ENCOUNTER_STYLES[g.enemyId],rig=encounterRig(style),fake={...g,attack:a?{...a,kind:a.kind}:null,visualStyle:style,visualRig:rig,meleePreview:g};
