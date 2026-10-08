@@ -11,10 +11,10 @@ $('#confirm-node').onclick=()=>{if(chosenNode){game.selectNode(chosenNode);nextA
 $('#open-menu').onclick=()=>{paused=true;$('#drawer').showModal();};$('#close-menu').onclick=()=>{$('#drawer').close();paused=false;previous=performance.now();};$('#drawer').addEventListener('cancel',()=>{paused=false;previous=performance.now();});$('#drawer').addEventListener('click',()=>{updateUI();mobileSignature='';});
 $('#tutorial').onclick=()=>{$('#drawer').close();$('#help-dialog').showModal();};$('#close-help').onclick=()=>{$('#help-dialog').close();paused=false;};$('#help-dialog').addEventListener('cancel',()=>{paused=false;});$('#start-tutorial').onclick=()=>{$('#help-dialog').close();startLessons();};
 const lessons=new LessonController();
-function startLessons(){lessons.start(game);auto=selfPlay=false;paused=false;syncToggles();}
+function startLessons(){lessons.start(game);$('#test-tempo').value='slow';auto=selfPlay=false;paused=false;syncToggles();}
 function updateLessonUI(){const active=lessons.active;$('#lesson-panel').hidden=!active;if(!active)return;const lesson=LESSONS[lessons.step];$('#lesson-title').textContent=lesson.title;$('#lesson-hint').textContent=lesson.hint;$('#lesson-result').textContent=lessons.message;$('#lesson-next').hidden=!lessons.waiting;$('#lesson-next').disabled=!!(game.combo||game.action||game.counter||game.shots.some(s=>!s.hit));$('#lesson-next').textContent=lessons.step===LESSONS.length-1?'Hoàn thành':'Bài tiếp';}
 $('#lesson-next').onclick=()=>{lessons.next(game);updateLessonUI();};
-$('#lesson-exit').onclick=()=>{lessons.stop();game.testTempo='standard';game.reset();auto=selfPlay=false;syncToggles();updateLessonUI();};
+$('#lesson-exit').onclick=()=>{lessons.stop();game.testTempo='standard';$('#test-tempo').value='standard';game.reset();auto=selfPlay=false;syncToggles();updateLessonUI();};
 
 // Stop the encounter while the app is backgrounded; return through the pause menu.
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&game.state==='combat'){paused=true;if(!$('#drawer').open&&!$('#node-dialog').open&&!$('#help-dialog').open)$('#drawer').showModal();}});
@@ -31,3 +31,5 @@ if(window.REVIEW_VIEW==='lessons')startLessons();
 if(window.REVIEW_VIEW==='readability'||window.REVIEW_VIEW==='beasts'){game.enterTest('bow',window.REVIEW_VIEW==='beasts'?'iron_bear':'duelist');game.enemyHp=game.enemyMax=100;game.testLength=3;auto=true;selfPlay=true;if(window.REVIEW_VIEW==='readability')$('#test-turns').checked=false;nextAttack=game.time+1;syncToggles();}
 if(window.REVIEW_VIEW==='tuning'){game.enterTest('bow','elder_bear',true);game.enemyMax=90;game.enemyHp=20;game.testLength=4;auto=selfPlay=true;nextAttack=game.time+1;syncToggles();}
 if(window.REVIEW_VIEW==='routes'){startRun();game.selectSkill('momentum');}
+
+if(window.REVIEW_VIEW){$('#test-family').value=game.testFamily;$('#test-length').value=String(game.testLength);$('#test-tempo').value=game.testTempo;$('#test-weapon').value=game.weapon;if(game.isBoss)$('#test-boss').value=game.enemyId;else $('#test-enemy').value=game.enemyId;}

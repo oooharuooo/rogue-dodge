@@ -53,8 +53,8 @@ $('#reset').onclick=()=>{if(game.test)game.enterTest(game.weapon,game.enemyId,ga
 $('#auto').onclick=()=>{auto=!auto;nextAttack=game.time+.4;syncToggles();};
 $('#self-play').onclick=()=>{selfPlay=!selfPlay;if(selfPlay){auto=true;if(['menu','won','lost'].includes(game.state))startRun();nextAttack=game.time+.4;}syncToggles();};
 $('#collection-toggle').onclick=()=>{$('#collection-panel').hidden=!$('#collection-panel').hidden;collectionUI();};
-$('#test-toggle').onclick=()=>{const open=$('#test-panel').hidden;$('#test-panel').hidden=!open;if(open){selfPlay=false;game.enterTest($('#test-weapon').value,$('#test-enemy').value);game.testLevel=+$('#test-mastery').value;auto=false;}else{auto=false;selfPlay=false;game.test=false;game.reset();}syncToggles();};
-function spawn(boss){game.enterTest($('#test-weapon').value,$(boss?'#test-boss':'#test-enemy').value,boss);game.testLevel=+$('#test-mastery').value;nextAttack=game.time+.4;}
+$('#test-toggle').onclick=()=>{const open=$('#test-panel').hidden;$('#test-panel').hidden=!open;if(open){selfPlay=false;game.enterTest($('#test-weapon').value,$('#test-enemy').value);game.testLevel=+$('#test-mastery').value;game.testTempo=$('#test-tempo').value;auto=false;}else{auto=false;selfPlay=false;game.test=false;game.reset();}syncToggles();};
+function spawn(boss){game.enterTest($('#test-weapon').value,$(boss?'#test-boss':'#test-enemy').value,boss);game.testLevel=+$('#test-mastery').value;game.testTempo=$('#test-tempo').value;nextAttack=game.time+.4;}
 $('#spawn-enemy').onclick=()=>spawn(false);$('#spawn-boss').onclick=()=>spawn(true);
 $('#test-weapon').onchange=()=>{if(game.test){game.weapon=$('#test-weapon').value;game.attack=null;game.combo=null;game.action=null;game.counter=null;game.shots=[];game.aim=game.charge=game.bank=game.flow=game.perfects=0;}};
 $('#test-mastery').onchange=()=>{if(game.test)game.testLevel=+$('#test-mastery').value;};
