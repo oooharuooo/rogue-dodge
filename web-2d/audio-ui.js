@@ -1,0 +1,4 @@
+const musicSetting=document.createElement('label');musicSetting.textContent='Âm lượng nhạc ';const musicSlider=document.createElement('input');musicSlider.type='range';musicSlider.min='0';musicSlider.max='.4';musicSlider.step='.01';musicSlider.value=localStorage.getItem('rogue-music-volume')||'.12';musicSlider.setAttribute('aria-label','Âm lượng nhạc');musicSetting.append(musicSlider);document.querySelector('#drawer details').append(musicSetting);
+musicSlider.oninput=()=>{localStorage.setItem('rogue-music-volume',musicSlider.value);if(effects.audio)effects.audio.musicLevel=+musicSlider.value;};
+function syncMusic(){if(!effects.audio)return;const track=game.state==='combat'?(game.isBoss?'boss':'normal'):['route','menu','starter','shop','shrine','event','reward'].includes(game.state)?'map':null;effects.audio.music(track,effects.enabled&&!paused&&!document.hidden);}
+setInterval(syncMusic,100);document.addEventListener('visibilitychange',syncMusic);

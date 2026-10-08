@@ -14,7 +14,7 @@ const ctx={globalAlpha:1,save(){stack.push({matrix:[...matrix],alpha:this.global
  }};
 const sandbox={knightRig:rigs[3],enemyRigs:rigs};vm.createContext(sandbox);
 vm.runInContext(fs.readFileSync("web-2d/modular-enemies.js","utf8"),sandbox);
-const motion=fs.readFileSync('web-2d/boss-motion.js','utf8');vm.runInContext(motion.slice(motion.indexOf('function drawReadableBoss')),sandbox);
+vm.runInContext(fs.readFileSync("web-2d/enemy-identities.js","utf8"),sandbox);const motion=fs.readFileSync('web-2d/boss-motion.js','utf8');vm.runInContext(motion.slice(motion.indexOf('function drawReadableBoss')),sandbox);
 vm.runInContext(fs.readFileSync('web-2d/encounter-art.js','utf8'),sandbox);
 let samples=0,maxError=0;
 for(const id of ['swordsman','heavy_knight','rogue','duelist','executioner','warden','wraith'])for(const kind of ['up','down','jump']){
@@ -33,3 +33,4 @@ for(const id of ['swordsman','heavy_knight','rogue','duelist','executioner','war
 for(const id of ['swordsman','heavy_knight','rogue','duelist','executioner','warden','wraith']){sandbox.drawEncounter(ctx,{enemyId:id,isBoss:false,enemyHp:0,time:2,deathTime:1,damageEvents:[],attack:null});assert.ok(bodyAlpha>=.15&&bodyAlpha<.2,'Death fade must reach all body parts');}
 assert.ok(860-edge*.95>12,'Weapon clipping in right-hand layout');assert.ok(100+edge*.95<948,'Weapon clipping in left-hand layout');
 console.log(`${samples} encounter poses: grip <= ${maxError.toFixed(3)} px; all projectile origins/impacts and weapon edges passed`);
+

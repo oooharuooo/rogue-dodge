@@ -1,0 +1,99 @@
+{
+  "selected": [
+    {
+      "title": "Swish A · né / nhảy",
+      "file": "audio/kept-00.wav",
+      "source": "https://opengameart.org/content/swishes-sound-pack",
+      "author": "artisticdude",
+      "license": "CC0",
+      "status": "selected"
+    },
+    {
+      "title": "Swish B · vung móng / vũ khí",
+      "file": "audio/kept-01.wav",
+      "source": "https://opengameart.org/content/swishes-sound-pack",
+      "author": "artisticdude",
+      "license": "CC0",
+      "status": "selected"
+    },
+    {
+      "title": "Swish C · vung nặng",
+      "file": "audio/kept-02.wav",
+      "source": "https://opengameart.org/content/swishes-sound-pack",
+      "author": "artisticdude",
+      "license": "CC0",
+      "status": "selected"
+    },
+    {
+      "title": "Cào / chém A · knifeSlice",
+      "file": "audio/kept-03.ogg",
+      "source": "https://kenney.nl/assets/rpg-audio",
+      "author": "Kenney",
+      "license": "CC0",
+      "status": "selected"
+    },
+    {
+      "title": "Vải / di chuyển",
+      "file": "audio/kept-10.ogg",
+      "source": "https://kenney.nl/assets/rpg-audio",
+      "author": "Kenney",
+      "license": "CC0",
+      "status": "selected"
+    },
+    {
+      "title": "Đã chọn · Medieval Exploration · chỉ menu/map",
+      "file": "audio/kept-12.mp3",
+      "source": "https://opengameart.org/content/medieval-exploration",
+      "author": "RandomMind",
+      "license": "CC0",
+      "status": "selected"
+    },
+    {
+      "title": "Đá vỡ",
+      "file": "audio/rock.ogg",
+      "source": "https://opengameart.org/content/breaking-rock",
+      "author": "themightyglider",
+      "license": "CC0",
+      "status": "selected"
+    },
+    {
+      "title": "Phép đất · tiếng đất chuyển động",
+      "file": "audio/earth-element-magic-spell.ogg",
+      "source": "https://opengameart.org/content/earth-element-magic-spell",
+      "author": "qubodup",
+      "license": "CC0",
+      "status": "selected"
+    },
+    {
+      "title": "Tiếp đất · bước chân thực tế",
+      "file": "audio/footsteps-0.ogg",
+      "source": "https://opengameart.org/content/footsteps-0",
+      "author": "GboxMikeFozzy",
+      "license": "CC0",
+      "status": "selected"
+    }
+  ],
+  "normalMusic": {
+    "title": "The Medieval Banquet",
+    "author": "Shane Ivers",
+    "license": "CC-BY 4.0",
+    "source": "https://www.silvermansound.com/free-music/the-medieval-banquet"
+  },
+  "bossMusic": {
+    "title": "Inside the Overlords Domain",
+    "author": "Karate Studios",
+    "license": "CC0",
+    "source": "https://opengameart.org/content/inside-the-overlords-domain",
+    "edit": "38.4s loop with release tail folded into next cycle"
+  },
+  "swordSamples": {
+    "author": "StarNinjas",
+    "license": "CC0",
+    "source": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes"
+  },
+  "bear": {
+    "source": "User provided yodguard-scorpion-claw-attack-2-482516.mp3",
+    "localTrialOnly": true,
+    "license": "unverified"
+  }
+}

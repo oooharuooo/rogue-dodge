@@ -33,6 +33,10 @@ jobs:
           node tests/boss-art-2d.cjs
           node tests/encounter-art-2d.cjs
           node tests/roster-art-2d.cjs
+          node tests/collection-locale-2d.cjs
+          node tests/skill-expansion-2d.cjs
+          node tests/audio-runtime-2d.cjs
+          node tests/checkpoint-campaign-2d.cjs
       - name: Package versioned game
         shell: bash
         run: |

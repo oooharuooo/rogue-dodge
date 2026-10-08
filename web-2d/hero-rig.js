@@ -25,7 +25,7 @@ class HeroRig {
   const name={idle:'Idle',bow_attack:'Idle',sword_attack:'Slashing',dagger_attack:'Run Slashing',heavy_attack:'Slashing',up:'Sliding',slide:'Sliding',jump_start:'Jump Start',jump_loop:'Jump Loop',fall:'Falling Down',hurt:'Hurt',dying:'Dying'}[state];
   const anim=this.animations.find(n=>n.a.name===name);if(!anim)return;
   const length=+anim.a.length;
-  const release=state==='heavy_attack'?.52:.35;const moveClock=state==='heavy_attack'||state==='sword_attack'?(clock<release?.45*clock/release:.45+.45*Math.min(1,(clock-release)/(.85-release))):state==='dagger_attack'?(clock*3.4)%.9:clock;
+  const release=state==='heavy_attack'?.52:.35;const moveClock=state==='heavy_attack'||state==='sword_attack'?(clock<release?.45*clock/release:.45+.45*Math.min(1,(clock-release)/(.85-release))):state==='dagger_attack'?(clock*(this.technique==='cross_cut'?2.12:3.4))%.9:clock;
   const time=state==='idle'?(clock*1000)%length:state==='up'?Math.min(length-1,moveClock/.9*length):Math.min(length-1,moveClock/.9*length);
   const main=anim.c.find(n=>n.tag==='mainline').c;
   const key=[...main].reverse().find(k=>+(k.a.time||0)<=time)||main[0];
@@ -63,6 +63,10 @@ class HeroRig {
     t.angle+=(tl.a.name==='Left Leg'?8:6)*trail;
    }
    if(state==='up'&&tl.a.name==='bone_007')t.angle-=7*Math.pow(Math.sin(Math.PI*Math.min(1,clock/.9)),2);
+   if(state==='heavy_attack'&&this.technique==='fault_breaker'&&tl.a.name==='bone_002'){
+    const phase=Math.min(1,clock/.85),lift=Math.sin(Math.PI*Math.min(1,phase/.61)),impact=Math.max(0,Math.sin(Math.PI*Math.max(0,(phase-.61)/.39)));
+    t.angle+=35*lift-22*impact; // Rotate the arm hierarchy: hand and weapon share the socket.
+   }
    return t;
   };
   const combine=(a,p)=>{if(!p)return a;const rad=p.angle*Math.PI/180,c=Math.cos(rad),s=Math.sin(rad),lx=a.x*p.scale_x,ly=a.y*p.scale_y;return {...a,x:p.x+c*lx-s*ly,y:p.y+s*lx+c*ly,angle:p.angle+(p.scale_x*p.scale_y<0?-a.angle:a.angle),scale_x:p.scale_x*a.scale_x,scale_y:p.scale_y*a.scale_y,a:p.a*a.a};};

@@ -29,3 +29,22 @@ h2{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;font-weight:7
 #lesson-panel{padding:10px;flex-shrink:0}#lesson-panel h2{font-size:15px;margin:0}#lesson-panel p{font-size:12px;margin:5px 0}#lesson-panel button{padding:8px;font-size:12px}body:has(#lesson-panel:not([hidden])) .stage{min-height:180px;margin-top:0;margin-bottom:0}
 
 .node-name{white-space:normal;line-height:1.15;text-align:center;overflow-wrap:anywhere}.route-node{height:78px}.node-icon{font-size:22px;line-height:26px}
+
+#enemy-name{display:inline-block;background:#183037d9;border-radius:8px;padding:3px 9px;color:#fff4cf;text-shadow:none}
+
+.lane-input button span{display:inline-flex;align-items:center;justify-content:center;width:27px;height:27px;margin-right:8px;font:700 18px system-ui;opacity:1;color:#fff3d3;background:#203e50dc;border:1px solid #e7f3fa;border-radius:50%;box-shadow:0 1px 4px #16334666}.lane-input button.pressed span{background:#e9d59e;color:#233d4c}.left-hand .lane-input button span{margin-left:8px;margin-right:0}
+
+/* Battle uses the remaining portrait viewport; no width-derived height cap. */
+.stage{flex:1 1 0;height:auto;max-height:none;min-height:0;margin:0}
+.shell{gap:5px}header{height:38px}header button{min-height:36px;padding:5px 10px}
+.tiny-stats{font-size:10px}#feedback:empty{display:none}
+
+.stage{max-height:80dvh}
+
+/* Combat notices never participate in arena sizing. */
+#feedback,#feedback:empty{display:block;flex:0 0 18px;height:18px;min-height:18px;line-height:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#proc-toast{position:absolute;z-index:2;left:20px;right:20px;bottom:76px;max-height:54px;overflow:auto;pointer-events:none;margin:0}
+.tiny-stats{flex:0 0 14px;height:14px;line-height:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#turn-hud{height:26px;flex:0 0 26px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.node-reward{font-size:9px;line-height:12px;font-weight:500;white-space:nowrap}.route-node{height:88px}.danger-node.available{border-color:#edaa83;background:#754d42;color:#fff0da}.route-outcome{padding:8px;border:1px solid #88b7a1;border-radius:10px;background:#31584c;color:#e1edd8!important}

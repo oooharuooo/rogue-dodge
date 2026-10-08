@@ -1,1 +1,16 @@
-function drawSkills(ctx,g){const recent=g.skillEvents.filter(e=>g.time-e.time<1.7);const newest=recent.at(-1);const group=newest?recent.filter(e=>e.time===newest.time):[];const page=newest?Math.floor((g.time-newest.time)/.45)%Math.max(1,Math.ceil(group.length/2)):0;const events=group.slice(page*2,page*2+2);events.forEach((e,i)=>{const age=g.time-e.time,color=SKILL_COLORS[e.id]||'#efcc72';ctx.save();ctx.globalAlpha=Math.min(1,(1.7-age)*3);ctx.fillStyle='#173a3bea';ctx.fillRect(-40,350-i*44-age*5,385,38);ctx.fillStyle=color;ctx.font='bold 23px system-ui';readableText(ctx,e.text.replace('thành công','✓'),-23,377-i*44-age*5);ctx.strokeStyle=color;ctx.lineWidth=3;ctx.beginPath();if(e.id==='guardian'){ctx.ellipse(90,477,62,70,0,0,Math.PI*2);}else if(e.id==='focus'){ctx.arc(90,477,58,-Math.PI/2,Math.PI);}else if(e.id==='flame_counter'){for(let j=0;j<5;j++){ctx.moveTo(55+j*17,551);ctx.lineTo(61+j*17,529-Math.sin(age*12+j)*8);ctx.lineTo(69+j*17,551);}}else if(e.id==='bloodlust'){for(let j=0;j<3;j++){ctx.moveTo(65+j*22,496);ctx.lineTo(72+j*22,521);ctx.lineTo(80+j*22,496);}}else if(e.id==='mastery'){ctx.moveTo(90,457);ctx.lineTo(119,482);ctx.lineTo(90,507);ctx.lineTo(61,482);ctx.closePath();}else{ctx.ellipse(90,557,65,12,0,0,Math.PI*2);ctx.moveTo(90,530);ctx.lineTo(90,516);ctx.moveTo(83,523);ctx.lineTo(97,523);}ctx.stroke();ctx.restore();});}
+// Compact skill confirmation follows the hero; the full text stays in the HUD toast.
+function drawSkills(ctx,g){
+ const recent=g.skillEvents.filter(e=>g.time-e.time<1.4),newest=recent.at(-1);if(!newest)return;
+ const group=recent.filter(e=>e.time===newest.time),page=Math.floor((g.time-newest.time)/.45)%Math.max(1,Math.ceil(group.length/2));
+ const k=typeof arenaYScale==='undefined'?1:arenaYScale,p=g.pose(),root=554+p.offset-p.height;
+ const tell=g.attack&&!g.attack.resolved&&g.time<g.attack.impact;
+ group.slice(page*2,page*2+2).forEach((e,i)=>{
+  const age=g.time-e.time,color=SKILL_COLORS[e.id]||'#efcc72',y=root-(125+i*34)/k;
+  ctx.save();ctx.globalAlpha=Math.min(1,(1.4-age)*3)*(tell?.45:1);ctx.fillStyle='#173a3bea';ctx.fillRect(-35,y-23/k,230,28/k);
+  const names={flame_counter:'Flame',momentum:'Flow',bloodlust:'Bloodlust',guardian:'Shield',focus:'Focus',mastery:'Mastery'};
+  ctx.fillStyle=color;ctx.font='bold 28px system-ui';readableText(ctx,e.amount?`${names[e.id]||SKILLS[e.id]?.name||e.id} +${e.amount} DMG`:names[e.id]||SKILLS[e.id]?.name||'Skill ✓',-23,y-4/k);
+  ctx.translate(90,root-65/k);ctx.scale(1,1/k);ctx.strokeStyle=color;ctx.lineWidth=2;ctx.globalAlpha*=.65;ctx.beginPath();
+  if(e.id==='mastery')ElementFX.skill(ctx,e.id,age);else{ctx.fillStyle=color;ctx.beginPath();ctx.arc(0,0,5,0,Math.PI*2);ctx.fill();}
+  ctx.restore();
+ });
+}

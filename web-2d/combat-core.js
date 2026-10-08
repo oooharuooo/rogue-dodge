@@ -35,10 +35,12 @@ class CombatGame extends FullGame {
    const safe=a.kind==='jump'?p.kind==='jump'&&p.height>=85:a.family==='ranged'?Math.abs(position-a.target)<.48:Math.abs(position-a.target)>.52;
    const extra=(this.skills.focus||0)*.02/.9,active=a.kind==='jump'?p.kind==='jump':a.family==='ranged'?p.kind===a.kind:a.target===1&&['up','down'].includes(p.kind);
    const perfect=safe&&active&&p.progress>=.42-extra&&p.progress<=.58+extra;
-   c.results.push({...a,safe,perfect});c.clean&&=safe;c.perfect&&=perfect;
-   if(safe){this.dodged++;this.feedback=perfect?'PERFECT':'NORMAL · NÉ / GIỮ ĐÚNG';if(perfect&&!this.test)this.meta.perfect++;if(perfect&&this.skills.focus&&(p.progress<.42||p.progress>.58))this.skillEvents.push({id:'focus',text:'Focus · Perfect mở rộng',time:a.impact});}
+   const held=safe&&a.family==='melee'&&a.kind!=='jump'&&p.kind==='idle';c.results.push({...a,safe,perfect,held});c.clean&&=safe;c.perfect&&=perfect;
+   if(safe){this.dodged++;this.feedback=perfect?'PERFECT':held?'GIỮ ĐÚNG':'NORMAL · NÉ ĐÚNG';if(perfect&&!this.test)this.meta.perfect++;if(perfect&&this.skills.focus&&(p.progress<.42||p.progress>.58))this.skillEvents.push({id:'focus',text:'Focus · Perfect mở rộng',time:a.impact});}
    else {this.hits++;this.flow=0;if(this.shield){this.shield--;this.skillEvents.push({id:'guardian',text:'Guardian · Đã chặn đòn',time:a.impact});this.feedback='GUARDIAN';}else{this.hp--;this.encounterHits++;this.hurtTime=a.impact;this.feedback='TRÚNG ĐÒN';}}
    a.resolved=true;this.attack=a;c.index++;
+   // Save resolved damage and shield consumption before the next combo beat.
+   this.persist();
    if(this.hp<=0){this.state='lost';this.lossTime=this.time;this.combo=null;this.counter=null;this.shots=[];this.persist();return;}
   }
   if(c.index===c.hits.length){this.lastCombo={...c,results:c.results.slice()};this.combo=null;if(c.clean){this.counter={perfect:c.perfect,start:null,released:false};this.feedback=c.perfect?'PERFECT CHUỖI · PHẢN CÔNG':'NÉ ĐỦ CHUỖI · PHẢN CÔNG';}this.persist();}

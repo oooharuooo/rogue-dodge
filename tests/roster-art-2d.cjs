@@ -19,7 +19,7 @@ vm.runInContext('Object.assign(monsterRigs,packs)',sandbox);
 const nativeWeapon=sandbox.drawPluginWeapon,nativeFX=sandbox.drawMonsterProjectile;
 sandbox.drawPluginWeapon=(c,type)=>{nativeWeapon(c,type);grips['Sword.png']=point(63,62);if(type!=='fist')for(const [x,y]of [[38,12],[382,12],[38,118],[382,118]])edge=Math.max(edge,point(x,y)[0]);};
 sandbox.drawMonsterProjectile=(c,style,x,y,w,h,q)=>{nativeFX(c,style,x,y,w,h,q);wave={center:point(x+w/2,y+h/2),left:point(x+w,y)[0],top:point(x,y)[1],bottom:point(x,y+h)[1]};};
-const motion=fs.readFileSync('web-2d/boss-motion.js','utf8');vm.runInContext(motion.slice(motion.indexOf('function drawReadableBoss')),sandbox);
+vm.runInContext(fs.readFileSync("web-2d/enemy-identities.js","utf8"),sandbox);const motion=fs.readFileSync('web-2d/boss-motion.js','utf8');vm.runInContext(motion.slice(motion.indexOf('function drawReadableBoss')),sandbox);
 vm.runInContext(fs.readFileSync('web-2d/encounter-art.js','utf8'),sandbox);
 let samples=0,maxError=0;
 for(const id of ['swordsman','heavy_knight','rogue','duelist','executioner','warden','wraith','goblin_scout','orc_raider','ogre_smith','frost_golem','moss_golem','rune_golem','minotaur_guard','minotaur_chief','minotaur_oracle'])for(const kind of ['up','down','jump']){
@@ -44,3 +44,4 @@ for(const family of ['knife','axe','hammer','fist','mage','charge']){
 assert.ok(sandbox.enemyMotion('knife','up',1,0).shift<-400,'Dagger enemy must actually approach');
 assert.equal(sandbox.enemyMotion('mage','up',1,0).shift,0,'Caster should retain range');
 console.log(`${samples} modular roster poses: grip <= ${maxError.toFixed(3)} px; projectile origins/impacts, weapon edges, release direction and approach/return passed`);
+

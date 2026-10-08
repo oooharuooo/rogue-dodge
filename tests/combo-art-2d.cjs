@@ -19,7 +19,7 @@ vm.runInContext('Object.assign(monsterRigs,packs)',sandbox);
 const nativeWeapon=sandbox.drawPluginWeapon,nativeFX=sandbox.drawMonsterProjectile;
 sandbox.drawPluginWeapon=(c,type)=>{nativeWeapon(c,type);grips['Sword.png']=point(63,62);if(type!=='fist')for(const [x,y]of [[38,12],[382,12],[38,118],[382,118]])edge=Math.max(edge,point(x,y)[0]);};
 sandbox.drawMonsterProjectile=(c,style,x,y,w,h,q)=>{nativeFX(c,style,x,y,w,h,q);wave={center:point(x+w/2,y+h/2),left:point(x+w,y)[0],top:point(x,y)[1],bottom:point(x,y+h)[1]};};
-const motion=fs.readFileSync('web-2d/boss-motion.js','utf8');vm.runInContext(motion.slice(motion.indexOf('function drawReadableBoss')),sandbox);
+vm.runInContext(fs.readFileSync("web-2d/enemy-identities.js","utf8"),sandbox);const motion=fs.readFileSync('web-2d/boss-motion.js','utf8');vm.runInContext(motion.slice(motion.indexOf('function drawReadableBoss')),sandbox);
 vm.runInContext(fs.readFileSync('web-2d/encounter-art.js','utf8'),sandbox);
 vm.runInContext(fs.readFileSync('web-2d/combat-motion.js','utf8'),sandbox);
 let samples=0,maxError=0;
@@ -28,3 +28,4 @@ for(const id of ['swordsman','heavy_knight','rogue','duelist','executioner','war
  grips={};edge=0;moves=[];lines=[];sandbox.drawCloseEncounter(ctx,g);const a=grips['Right Hand.png'],b=grips['Sword.png'];const error=Math.hypot(a[0]-b[0],a[1]-b[1]);assert.ok(error<.2,id+' melee grip');maxError=Math.max(maxError,error);assert.equal(stack.length,0);assert.ok(edge<892,id+' melee weapon clipping');samples++;
 }
 console.log(samples+' integrated melee poses: registered grips, balanced transforms and weapon edges passed');
+

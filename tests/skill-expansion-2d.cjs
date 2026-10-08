@@ -1,0 +1,15 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+global.LaneGame=require('../web-2d/lane-core.js');Object.assign(global,require('../web-2d/full-core.js'));Object.assign(global,require('../web-2d/combat-core.js'));Object.assign(global,require('../web-2d/campaign-core.js'));
+for(const file of ['skill-visuals.js','skill-expansion.js'])vm.runInThisContext(fs.readFileSync('web-2d/'+file,'utf8'));
+function game(weapon='katana'){const g=new CampaignGame(()=>.4);g.enterTest(weapon,'iron_bear');g.enemyMax=g.enemyHp=200;g.testLevel=3;return g;}
+function run(g,hits){assert(g.beginChain(hits));for(let i=0;i<1600&&(g.combo||g.counter||g.action||g.shots.some(s=>!s.hit));i++){if(g.attack&&!g.attack.resolved&&!g.action&&g.time>=g.attack.impact-.45){const action=g.recommendedAction();if(action)g.act(action);}g.update(1/60);}}
+const center=[{family:'melee',kind:'melee',target:1}],hold=[{family:'melee',kind:'melee',target:0},{family:'melee',kind:'melee',target:2}];
+{const g=game();g.flow=3;run(g,hold);assert.equal(g.flow,3);assert(g.lastCombo.results.every(r=>r.held&&!r.perfect));assert.equal(g.meta.perfect,0);}
+for(const [weapon,id]of [['bow','twin_fang'],['katana','crescent'],['daggers','cross_cut'],['greatsword','fault_breaker']]){const g=game(weapon),baseline=g.damage(true);g.skills[id]=1;if(id==='crescent')g.lastCombo={clean:true,results:[{},{}]};if(id==='fault_breaker')g.charge=2;const extra=g.damage(true);delete g.skills[id];const without=g.damage(true);assert.equal(extra,without+1);g.skills[id]=1;if(id==='fault_breaker')g.charge=2;run(g,id==='crescent'?[...center,...center]:center);assert(g.totalDamage>0);assert.equal(g.meta.xp[weapon],0);}
+{const g=game();g.skills={rime:1};for(let i=0;i<3;i++)run(g,center);assert.equal(g.elementState.chill,.15);assert(g.beginChain(center));assert(Math.abs(g.attack.impact-g.time-g.enemy.windup*1.15)<1e-8);assert.equal(g.elementState.chill,0);}
+{const g=game();g.skills={ember:1};const before=JSON.stringify(g.meta);for(let i=0;i<3;i++)run(g,center);const hp=g.enemyHp;for(let i=0;i<130;i++)g.update(1/60);assert(g.enemyHp<hp);assert.equal(JSON.stringify(g.meta),before);g.enemyHp=1;g.elementState.burn=2;g.elementState.burnClock=0;for(let i=0;i<130;i++)g.update(1/60);assert.equal(g.enemyHp,1);}
+{const g=game('daggers');g.skills={spark:1};run(g,center);run(g,center);assert.equal(g.elementState.lightning,2);run(g,center);assert(g.lastBonuses.some(b=>b.id==='spark'));assert.equal(g.elementState.lightning,0);}
+{const g=game();g.hp=2;g.skills={second_wind:2};for(let i=0;i<4;i++)run(g,center);assert.equal(g.hp,3);assert(g.recoveryUsed);}
+{const g=game();g.skills={resolve:1};g.flow=3;g.lastCombo={results:[{held:false,perfect:false}]};g.damage(false,true);assert.equal(g.flow,3);g.damage(false,true);assert.equal(g.flow,0);}
+{const g=game();g.test=false;g.meta.xp.bow=30;g.state='reward';g.skills={ember:1};assert(!g.selectSkill('rime'));assert(!g.selectSkill('twin_fang'));assert(g.unlocked('rime'));}
+console.log('Hold Flow, four real weapon techniques, elements, one-element rule, recovery and Test Mode isolation passed');

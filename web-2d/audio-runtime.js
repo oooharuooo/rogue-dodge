@@ -1,0 +1,11 @@
+// Sampled sound and sample-accurate music playback. No HTML ended/restart timer.
+class GameAudio {
+ constructor(context){this.ctx=context;this.buffers={};this.jobs={};this.track=null;this.source=null;this.offset=0;this.musicLevel=Number(localStorage.getItem('rogue-music-volume')||.12);this.gain=context.createGain();this.gain.connect(context.destination);}
+ load(id){if(this.buffers[id])return Promise.resolve(this.buffers[id]);if(this.jobs[id])return this.jobs[id];const file=GameAudio.files[id];if(!file)return Promise.resolve(null);return this.jobs[id]=fetch('audio/'+file).then(r=>{if(!r.ok)throw Error(file);return r.arrayBuffer()}).then(b=>this.ctx.decodeAudioData(b)).then(b=>this.buffers[id]=b).catch(e=>{delete this.jobs[id];console.warn('Audio load failed',file);return null;});}
+ preload(){for(const id of Object.keys(GameAudio.files))this.load(id);}
+ sample(id,gain=1,delay=0,rate=1){const b=this.buffers[id];if(!b||this.ctx.state!=='running')return;const s=this.ctx.createBufferSource(),g=this.ctx.createGain();s.buffer=b;s.playbackRate.value=rate;g.gain.value=Math.max(0,gain);s.connect(g).connect(this.ctx.destination);s.start(this.ctx.currentTime+delay);}
+ stopMusic(){if(!this.source)return;this.offset=(this.offset+this.ctx.currentTime-this.started)%this.buffers[this.track].duration;this.source.stop();this.source.disconnect();this.source=null;}
+ music(track,enabled){if(track!==this.track){this.stopMusic();this.track=track;this.offset=0;}this.gain.gain.setTargetAtTime(this.musicLevel,this.ctx.currentTime,.06);if(!enabled||!track||this.ctx.state!=='running'){this.stopMusic();return;}const b=this.buffers[track];if(!b||this.source)return;this.source=this.ctx.createBufferSource();this.source.buffer=b;this.source.loop=true;this.source.loopStart=0;this.source.loopEnd=b.duration;this.source.connect(this.gain);this.started=this.ctx.currentTime;this.source.start(0,this.offset);}
+}
+GameAudio.files={dodge:'swish-a.wav',swing:'swish-b.wav',heavy:'swish-c.wav',claw:'knife.ogg',cloth:'cloth.ogg',rock:'rock.ogg',earth:'earth.ogg',land:'footsteps.ogg',blade:'sword-clash.ogg',bell:'slam-cue.ogg',bear:'bear-claw.wav',normal:'normal.mp3',boss:'boss-loop.wav',map:'exploration.mp3'};
+if(typeof module!=='undefined')module.exports={GameAudio};
