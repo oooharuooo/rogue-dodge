@@ -21,12 +21,19 @@ body:has(#route-map:not([hidden])) #state-desc{display:none}body:has(#route-map:
 
 .shell:has(#route-map:not([hidden])) .stage,.shell:has(#route-map:not([hidden])) .tiny-stats,.shell:has(#route-map:not([hidden])) #feedback{visibility:hidden}
 
-/* Boss reward sheet keeps the same geometry for every selected description. */
-#skill-dialog[open]:has(.boss-reward-card){box-sizing:border-box;height:min(620px,calc(100dvh - 24px));display:grid;grid-template-rows:90px minmax(0,1fr) 120px 48px;gap:8px;overflow:hidden}
-#skill-dialog:has(.boss-reward-card) .draft-banner{min-height:0;padding-bottom:0}
-#skill-dialog:has(.boss-reward-card) .draft-cards{box-sizing:border-box;min-height:0;margin:0 auto;padding:8px 1px}
-#skill-dialog:has(.boss-reward-card) .boss-reward-card{min-height:0;height:100%;box-sizing:border-box}
-#skill-dialog:has(.boss-reward-card) .skill-illustration{flex:1;min-height:0;object-fit:contain;max-height:none}
-#skill-dialog:has(.boss-reward-card) .draft-description{box-sizing:border-box;min-height:0;margin:0;overflow:auto;scrollbar-width:thin}
-#skill-dialog:has(.boss-reward-card) .draft-secondary{display:none}
-@media(max-height:620px){#skill-dialog[open]:has(.boss-reward-card){grid-template-rows:74px minmax(0,1fr) 100px 44px;gap:5px}#skill-dialog:has(.boss-reward-card) .boss-reward-card{padding-top:7px}}
+/* Stable menu shells: viewport changes may resize them; text changes may not. */
+#skill-dialog{box-sizing:border-box;width:min(470px,calc(100vw - 24px));height:min(680px,calc(100dvh - 24px));overflow:hidden}
+#skill-dialog[open]{display:flex;flex-direction:column;gap:8px}
+#skill-dialog .draft-banner{flex:0 0 90px;box-sizing:border-box;padding-bottom:0}
+#skill-dialog .build-slots{flex:0 0 40px;box-sizing:border-box;margin:0;overflow:auto}
+#skill-dialog .starter-charge{flex:0 0 50px;box-sizing:border-box;margin:0;overflow:auto}
+#skill-dialog .draft-cards{flex:1 1 0;min-height:0;box-sizing:border-box;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;margin:0 auto;padding:12px 2px;align-items:stretch}
+#skill-dialog .skill-card{min-height:240px;box-sizing:border-box}
+#skill-dialog .skill-illustration{flex:1;min-height:0;object-fit:contain;max-height:150px}
+#skill-dialog .draft-description{flex:0 0 120px;box-sizing:border-box;min-height:0;margin:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
+#skill-dialog #draft-confirm{flex:0 0 48px;min-height:48px;box-sizing:border-box}
+#skill-dialog .draft-secondary{flex:0 0 44px;margin:0}
+#skill-dialog .draft-secondary:not(:has(button:not([hidden]))){display:none}
+#drawer,#mastery-dialog,#build-dialog,#event-dialog,#collection-detail{box-sizing:border-box;width:min(480px,calc(100vw - 24px));height:min(680px,calc(100dvh - 32px));max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+#term-popup{height:190px;max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain}
+@media(max-height:620px){#skill-dialog .draft-banner{flex-basis:74px}#skill-dialog .draft-description{flex-basis:100px}#skill-dialog .skill-card{min-height:210px}#skill-dialog .skill-illustration{max-height:100px}}
