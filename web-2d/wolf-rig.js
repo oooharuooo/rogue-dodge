@@ -2,8 +2,8 @@
 const wolfClamp=t=>Math.max(0,Math.min(1,t));
 function wolfPose(g){
  const a=g.attack,q=a?(g.time-a.start)/(a.impact-a.start):0,slam=a?.kind==='jump';
- const continuation=a?.index>0;const recoil=a?.resolved&&g.combo?.index<g.combo?.hits.length?wolfClamp((g.time-a.impact)/.5)*.05:0;
- const travel=a?(continuation?.95+.05*wolfClamp(q/.65):wolfClamp((q-.18)/.48))-recoil:0,returning=a?.resolved&&!g.combo?wolfClamp((g.time-a.impact)/.36):0;
+ const continuation=a?.index>0,fromInterrupt=a?.index===g.interruptMotion?.beat+1,initialTravel=fromInterrupt?Math.max(0,(670-g.interruptMotion.anchor.x)/365):0;const recoil=a?.resolved&&g.combo?.index<g.combo?.hits.length?wolfClamp((g.time-a.impact)/.5)*.05:0;
+ const travel=a?(fromInterrupt?initialTravel+(1-initialTravel)*wolfClamp(q/.65):continuation?.95+.05*wolfClamp(q/.65):wolfClamp((q-.18)/.48))-recoil:0,returning=a?.resolved&&!g.combo?wolfClamp((g.time-a.impact)/.36):0;
  const release=wolfClamp((q-.78)/.22)*(a?.resolved&&g.combo?1-wolfClamp((g.time-a.impact)/.5):1),target=a?.target??1;
  const recover=a?.resolved?wolfClamp((g.time-a.impact)/.32):0;const eased=recover*recover*(3-2*recover);
  const aim=wolfClamp((q-.7)/.25),aimEase=aim*aim*(3-2*aim);

@@ -45,13 +45,13 @@ class CombatFeedback {
  if(prev.landing!=null&&game.time>=prev.landing){this.land();prev.landing=null;}
  if(game.attack?.kind==='jump'&&game.time>=game.attack.start+(game.attack.impact-game.attack.start)*.12&&prev.slamCue!==game.attack.start){this.bell();prev.slamCue=game.attack.start;}
  if(game.attack&&game.attack.kind!=='jump'&&game.time>=game.attack.start+(game.attack.impact-game.attack.start)*.7&&prev.release!==game.attack.start){const style=typeof ENCOUNTER_STYLES!=='undefined'?ENCOUNTER_STYLES[game.enemyId]||{}:{};this.weaponSound(enemySoundProfile(game.enemyId,game.attack,style));prev.release=game.attack.start;}
- if(game.attack?.kind==='jump'&&game.time>=game.attack.impact&&prev.slamImpact!==game.attack.impact){this.quake();this.shake=this.reduced?0:6;prev.slamImpact=game.attack.impact;}
- const resolved=game.combo?.results||game.lastCombo?.results||[];for(const result of resolved){const key=result.impact+':'+result.index;if(prev.verdict!==key&&game.time-result.impact<.15){if(this.enabled&&this.audio)this.audio.sample(result.perfect?'blade':'cloth',this.volume*(result.perfect?.16:.1),0,result.perfect?1.65:1);prev.verdict=key;}}
+ if(game.attack?.kind==='jump'&&!game.attack.interrupted&&game.time>=game.attack.impact&&prev.slamImpact!==game.attack.impact){this.quake();this.shake=this.reduced?0:6;prev.slamImpact=game.attack.impact;}
+ const resolved=game.combo?.results||game.lastCombo?.results||[];for(const result of resolved){const key=result.impact+':'+result.index;if(!result.interrupted&&!result.deflected&&prev.verdict!==key&&game.time-result.impact<.15){if(this.enabled&&this.audio)this.audio.sample(result.perfect?'blade':'cloth',this.volume*(result.perfect?.16:.1),0,result.perfect?1.65:1);prev.verdict=key;}}
  if(game.dodged>(prev.dodged??game.dodged)){this.burst(90,482,game.counter?.perfect?'#ffe08b':'#a6ece5');}
- if(game.totalDamage>(prev.damage??game.totalDamage)){if(game.damageEvents.at(-1)?.element){if(this.enabled)this.audio?.sample('earth',this.volume*.12);}else this.weaponSound(game.weapon==='bow'?'bow':game.weapon==='greatsword'?'heavy':'blade');this.burst(game.visualAnchor?.x||710,(game.visualAnchor?.y||552)-70/(typeof arenaYScale==='undefined'?1:arenaYScale),'#ffdf8a',10);this.shake=game.weapon==='greatsword'?5:2;}
+ if(game.totalDamage>(prev.damage??game.totalDamage)){if(game.damageEvents.at(-1)?.element){if(this.enabled)this.audio?.sample('earth',this.volume*.12);}else if(!game.weaponRulesVersion)this.weaponSound(game.weapon==='bow'?'bow':game.weapon==='greatsword'?'heavy':'blade');this.burst(game.visualAnchor?.x||710,(game.visualAnchor?.y||552)-70/(typeof arenaYScale==='undefined'?1:arenaYScale),'#ffdf8a',10);this.shake=game.weapon==='greatsword'?5:2;}
  if(game.hp<(prev.hp??game.hp)){if(this.enabled&&this.audio){this.audio.sample('cloth',this.volume*.3);this.audio.sample('land',this.volume*.2);}else this.noise(.18,550,.5,0,'lowpass');const p=game.pose();this.burst(90,554+p.offset-p.height-70/(typeof arenaYScale==='undefined'?1:arenaYScale),'#e77d6e',8);this.shake=3;}
  if(['won','test-won'].includes(game.state)&&game.state!==prev.state){if(this.enabled)this.audio?.sample('cloth',this.volume*.2);}
- for(const e of game.skillEvents||[]){const key=e.id+':'+e.time;if(!prev.skills)prev.skills=new Set();if(!prev.skills.has(key)){if(this.enabled)this.audio?.sample('cloth',this.volume*.18);prev.skills.add(key);}}if(prev.skills?.size>40)prev.skills=new Set();
+ for(const e of game.skillEvents||[]){const key=e.id+':'+e.time;if(!prev.skills)prev.skills=new Set();if(!prev.skills.has(key)){if(this.enabled&&!['guard_gain','guard_break','opening','cross_cut','twin_fang'].includes(e.id))this.audio?.sample('cloth',this.volume*.18);prev.skills.add(key);}}if(prev.skills?.size>40)prev.skills=new Set();
  prev.time=game.time;prev.hp=game.hp;prev.damage=game.totalDamage;prev.dodged=game.dodged;prev.state=game.state;
  this.shake=Math.max(0,this.shake-dt*25);for(const p of this.particles){p.age+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=dt*230;}this.particles=this.particles.filter(p=>p.age<.55);
  }
@@ -59,4 +59,3 @@ class CombatFeedback {
 }
 
 if(typeof module!=='undefined')module.exports={attackSoundCue,enemySoundProfile,CombatFeedback};
-

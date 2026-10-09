@@ -1,0 +1,40 @@
+const finalStyle=document.createElement('style');finalStyle.textContent=`
+#boss-combat-hud{width:calc(100% - 162px);padding:5px 7px}.boss-title-row strong{font-size:11px}.boss-hp-row,.boss-stamina-row{height:0;margin:0;position:relative;top:9px;z-index:1;justify-content:flex-end}.boss-hp-row>span,.boss-stamina-row>span{display:none}.boss-hp-row b,.boss-stamina-row b{font:700 8px system-ui;text-shadow:0 1px 2px #13262a;padding-right:3px}.boss-hp-track{height:12px;margin-top:4px}#boss-combat-hud #stamina-hud{margin-top:4px}#boss-combat-hud #stamina-hud progress{height:12px}#hero-combat-hud{padding:6px 8px}
+#deflect-input{position:absolute;left:0;width:72%;top:18%;bottom:14%;z-index:5;display:grid;grid-template-rows:repeat(3,1fr);pointer-events:none}#deflect-input[hidden]{display:none}#deflect-input button{background:transparent;border:0;border-radius:0;pointer-events:auto;touch-action:manipulation;color:transparent;padding:0;min-height:0}.left-hand #deflect-input{left:28%}#deflect-badge{position:absolute;left:24%;top:42%;width:30px;height:30px;background:#193943d9;border:1px solid #eddb9c;border-radius:50%;color:#eddb9c;pointer-events:none}.left-hand #deflect-badge{left:64%}#deflect-badge svg{width:100%;height:100%}
+`;document.head.append(finalStyle);
+const deflectInput=document.createElement('div');deflectInput.id='deflect-input';deflectInput.hidden=true;for(let lane=0;lane<3;lane++){const b=document.createElement('button');b.setAttribute('aria-label',['Deflect trên','Deflect giữa','Deflect dưới'][lane]);b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(!paused){effects.unlock();game.deflect(lane);}});b.onclick=e=>{if(e.detail===0&&!paused){effects.unlock();game.deflect(lane);}};deflectInput.append(b);}identityStage.append(deflectInput);
+const deflectBadge=document.createElement('div');deflectBadge.id='deflect-badge';deflectBadge.innerHTML=weaponIcon('katana');identityStage.append(deflectBadge);
+// Decorative timing cue: tapping it must not fall through to a lane input.
+deflectBadge.style.pointerEvents='auto';
+deflectBadge.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();});
+deflectBadge.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();});
+deflectInput.style.top='0';deflectInput.style.bottom='0';
+function alignDeflectRegions(){const stage=identityStage.getBoundingClientRect(),buttons=document.querySelectorAll('.lane-input button');[...deflectInput.children].forEach((b,i)=>{const r=buttons[i].getBoundingClientRect(),signature=[r.top,stage.top,identityStage.clientTop,r.height].join(':');if(b.dataset.region===signature)return;b.dataset.region=signature;b.style.position='absolute';b.style.left='0';b.style.width='100%';b.style.top=(r.top-stage.top-identityStage.clientTop)+'px';b.style.height=r.height+'px';});}new ResizeObserver(alignDeflectRegions).observe(identityStage);requestAnimationFrame(alignDeflectRegions);
+heroGuard.innerHTML=weaponIcon('greatsword');heroGuard.setAttribute('aria-label','Thế đỡ: chặn một hit');
+function finalUI(){alignDeflectRegions();const a=game.attack,melee=game.weapon==='katana'&&game.state==='combat'&&a&&!a.resolved&&a.family==='melee'&&a.kind!=='jump';deflectInput.hidden=!melee;deflectBadge.hidden=!melee||a.impact-game.time>(game.deflectWindow??.30);for(const b of deflectInput.children)b.disabled=paused;
+ if(game.weapon==='greatsword'&&game.armor&&game.heavyWindow){weaponActionButton.hidden=false;weaponActionButton.disabled=paused;weaponTarget.innerHTML=weaponIcon('greatsword');weaponActionButton.title=locale==='vi'?'Bổ nặng · tiêu thụ Thế đỡ':'Heavy strike · spend stance';}
+ if(heroRig){heroRig.hp=game.hp;heroRig.guarding=game.weapon==='greatsword'&&!!(game.armor||game.chainArmor);heroRig.deflect=game.deflectMotion&&game.time<game.deflectMotion.end?game.deflectMotion:null;}
+ requestAnimationFrame(finalUI);
+}requestAnimationFrame(finalUI);
+TERM_HELP.guard={label:'Thế đỡ / Guard stance',vi:'Chặn một hit. Hoàn thành Clean Chain khi đang có Thế đỡ: tap để bổ mạnh và tiêu thụ nó. Mất thế: hoàn thành Clean Chain một lượt để hồi sau phản công; không cộng dồn.',en:'Blocks one hit. After a clean chain, tap to spend it on a heavy strike. Restore after one full clean chain and counter. No stacking.'};
+TERM_HELP.stamina.vi='Perfect né giảm 1; Deflect đúng lane và timing giảm 2. Hết thanh: phản công sau combo chí mạng. Không tự ngắt combo.';
+TERM_HELP.stamina.en='Perfect dodge removes 1; correctly timed and directed Deflect removes 2. Empty stamina makes the next counter critical, without interrupting the chain.';
+showWeaponGuide=function(id){const vi=locale==='vi',guides={katana:vi?['Kiếm · Deflect','Phản công 8 damage. Vùng trái: đúng lane + timing để Deflect đòn cận chiến, giảm 2 Sức bền. Perfect Dodge giảm 1.','Sai lane/timing mất tim. Đập đất và tầm xa vẫn né/Jump.']:['Sword · Deflect','Counter: 8 damage. Enemy side: correct lane + timing to deflect melee and remove 2 stamina. Perfect dodge removes 1.','Wrong lane/timing costs a heart. Dodge ranged attacks; jump slams.'],greatsword:vi?['Đại kiếm · Thế đỡ','Phản công 6 damage. Hoàn thành Clean Chain để nhận Thế đỡ sau phản công; chặn một hit.','Có thế từ lượt trước và hoàn thành Clean Chain: tap bổ 10 damage, tiêu thụ thế. Sơ hở + bổ: 16. Hoàn thành Clean Chain kế để hồi; không bổ ngay lượt hồi.']:['Greatsword · Guard stance','Counter: 6 damage. Clean chain restores a one-hit stance after the counter.','With an existing stance, clear a chain and tap: 10 damage, spending stance. Opening + heavy: 16. One clean chain to restore; no heavy on the restoration chain.'],daggers:vi?['Dao găm · nối đòn','Ba nhát: 2 + 2 + 3 damage. Tap một lần để nối hai nhát: 1 + 2.','Khoảng nghỉ boss chỉ 1 giây: tham nối đòn phải theo dõi báo đòn kế. Né hủy phần nối chưa trúng. Mỗi phản công tích nguyên tố một lần.']:['Daggers · Follow-up','Three hits: 2 + 2 + 3 damage. One tap adds two hits: 1 + 2.','Enemy rests only 1 second: watch the next tell while following up. Dodging cancels unlanded extras. One element stack per counter.'],bow:vi?['Cung · bắn ngắt','Phản công 6 damage. Bắn ngắt 1 damage từ lúc enemy chuẩn bị/di chuyển.','Một lần thử mỗi combo; chọn nhịp bất kỳ. Enemy một nhịp: canh bắn lúc đang áp sát, quá sớm/muộn sẽ hụt; vẫn có thể né.']:['Bow · Interrupt','Counter: 6 damage. Interrupt shot: 1 damage during windup or approach.','One attempt per chain, any beat. Single-beat enemy: time the shot during approach; early/late shots miss. You can still dodge.']};const g=guides[id];showCollectionSkill({id,weaponGuide:true,title:g[0],icon:weaponIcon(id),descs:[g[1],g[2],WEAPONS[id].upgrades.map((text,i)=>'Lv.'+(i+2)+' · '+translateText(text)).join(' · ')],progress:[game.meta.xp[id]||0,20,'XP']});};
+const finalFeedback=CombatFeedback.prototype.update;
+CombatFeedback.prototype.update=function(g,dt){finalFeedback.call(this,g,dt);for(const e of g.skillEvents){if(e.id!=='deflect'||this.weaponEventSeen.has(e)||g.time-e.time>.15)continue;this.weaponEventSeen.add(e);if(this.enabled){const beat=e.beat??g.attack?.index??0;this.audio?.sample(['deflectA','deflectB','deflectC'][beat%3],this.volume*.14,0,1);}}};
+const healthRigDraw=HeroRig.prototype.draw;
+HeroRig.prototype.draw=function(c,x,feet,state,clock){const tired=state==="idle"&&this.hp<3?3-this.hp:0;healthRigDraw.call(this,c,x,feet+tired*3,state,clock);};
+const finalStrike=strikeArt;
+strikeArt=function(c,g,age){finalStrike(c,g,age);for(const e of g.skillEvents){if(e.id!=='deflect')continue;const t=g.time-e.time;if(t<0||t>.2)continue;c.save();c.translate(g.bladeTip?.x||220,g.bladeTip?.y||554+(e.lane-1)*156-70/arenaYScale);c.scale(1,1/arenaYScale);c.globalAlpha=1-t/.2;c.strokeStyle='#ffe4a5';c.lineWidth=2;for(let i=0;i<6;i++){const a=i*Math.PI/3;c.beginPath();c.moveTo(Math.cos(a)*8,Math.sin(a)*8);c.lineTo(Math.cos(a)*(18+t*65),Math.sin(a)*(18+t*65));c.stroke();}c.restore();}};
+const finalDrawSkills=drawSkills;
+drawSkills=function(c,g){const view=Object.create(g);view.skillEvents=g.skillEvents.filter(e=>!['deflect','guard_gain','guard_break','heavy_spend'].includes(e.id));finalDrawSkills(c,view);};
+
+
+
+
+
+
+
+
+
+

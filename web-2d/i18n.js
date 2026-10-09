@@ -16,6 +16,16 @@ Object.assign(UI_EN,{'Tinh anh':'Elite','Không tải được khung xương đ�
 Object.assign(UI_EN,{'THẮNG':'VICTORY','TRÚNG ĐÒN':'HIT','PERFECT CHUỖI · PHẢN CÔNG':'PERFECT CHAIN · COUNTER','NÉ ĐỦ CHUỖI · PHẢN CÔNG':'CHAIN DODGED · COUNTER','NORMAL · NÉ / GIỮ ĐÚNG':'NORMAL · DODGED / HELD','SẴN SÀNG':'READY','chặn đòn':'blocked','Đã chặn đòn':'Blocked a hit','Perfect mở rộng':'Expanded Perfect window','phản công':'counterattack'});
 if(typeof EXTRA_SKILLS!=='undefined'){for(const [id,v]of Object.entries(EXTRA_SKILLS)){UI_EN[v.title[0]]=v.title[1];v.desc.forEach((text,i)=>UI_EN[text]=EXTRA_EN[id][i]);}Object.assign(UI_EN,{'Trận không mất HP':'Encounters without HP loss','XP tổng':'Total XP','VŨ KHÍ':'WEAPON','NGUYÊN TỐ':'ELEMENT','BỊ ĐỘNG':'PASSIVE','Giữ đúng':'Correct hold','GIỮ ĐÚNG':'CORRECT HOLD','NORMAL · NÉ ĐÚNG':'NORMAL · DODGED','Normal: giữ Flow ×1':'Normal: preserve Flow ×1','Normal: giữ Flow ×2':'Normal: preserve Flow ×2'});}
 UI_EN['Chi tiết']='Details';UI_EN['Né đúng. Phản công tự động.']='Dodge well. Counter automatically.';UI_EN['Cung']='Bow';UI_EN['Dao găm']='Daggers';UI_EN['Đại kiếm']='Greatsword';UI_EN['Đóng Mastery']='Close Mastery';UI_EN['Thành thạo vũ khí']='Weapon proficiency';
+Object.assign(UI_EN,{
+'Thu kiếm: Clean Chain chuẩn bị +1 damage cho phản công kế':'Sheathe: a clean chain prepares +1 damage for the next counter',
+'Kiếm pháp: Clean Chain chuẩn bị +2 damage cho phản công kế':'Swordcraft: a clean chain prepares +2 damage for the next counter',
+'Tiết chế: bỏ nối đòn chuẩn bị +1 damage cho phản công kế':'Restraint: skipping follow-up prepares +1 damage for the next counter',
+'Nhịp dao: bỏ nối đòn chuẩn bị +2 damage; nối đòn thêm 1 damage':'Dagger rhythm: skipping prepares +2 damage; follow-up adds 1 damage',
+'Vững thế: lần đầu Thế đỡ vỡ, phản công kế +1 damage':'Firm stance: first broken guard adds +1 damage to the next counter',
+'Phản chấn: lần đầu Thế đỡ vỡ, phản công kế +2 damage':'Rebound: first broken guard adds +2 damage to the next counter',
+'Dứt điểm: bắn ngắt đúng thêm 1 damage':'Finisher: successful interrupt adds 1 damage',
+'Mũi chặn: bắn ngắt đúng thêm 2 damage':'Stopping arrow: successful interrupt adds 2 damage'
+});
 const TRANSLATION_KEYS=Object.keys(UI_EN).sort((a,b)=>b.length-a.length);
 function translateText(value){value=String(value).normalize('NFC');if(locale==='vi')return value;let parts=[{text:value,done:false}];for(const key of TRANSLATION_KEYS){parts=parts.flatMap(p=>{if(p.done)return [p];return p.text.split(key).flatMap((text,i)=>i?[{text:UI_EN[key],done:true},{text,done:false}]:[{text,done:false}]);});}return parts.map(p=>p.text).join('');}
 function weaponLabel(id){const names={bow:['Cung','Bow'],katana:['Kiếm','Sword'],daggers:['Dao găm','Daggers'],greatsword:['Đại kiếm','Greatsword']};return names[id]?.[locale==='vi'?0:1]||WEAPONS[id].name;}

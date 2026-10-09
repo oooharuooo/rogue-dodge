@@ -2,9 +2,9 @@
 // Keep silhouettes legible at 48 px; effects share colors and shape language.
 const SKILL_VISUALS={
  flame_counter:{title:'Hỏa phản',color:'#ef9b54',dark:'#3b252c',tag:'PHẢN CÔNG',brief:['2 Perfect → +1 DMG','Perfect → +1 DMG'],shape:'flame'},
- focus:{title:'Tĩnh tâm',color:'#bba8f2',dark:'#262842',tag:'CHÍNH XÁC',brief:['Perfect +0,04s','Perfect +0,08s'],shape:'eye'},
+ focus:{title:'Tĩnh tâm',color:'#bba8f2',dark:'#262842',tag:'CHÍNH XÁC',brief:['Perfect +0,04s','Perfect +0,06s'],shape:'eye'},
  momentum:{title:'Phong hành',color:'#84dce0',dark:'#173e47',tag:'NHỊP CHIẾN',brief:['Flow 3 → +1 DMG','Flow 2 → +1 DMG'],shape:'wind'},
- guardian:{title:'Hộ vệ',color:'#a9d8a0',dark:'#263d35',tag:'PHÒNG THỦ',brief:['Nhận 1 shield','Shield mỗi trận'],shape:'shield'},
+ guardian:{title:'Vững tâm',color:'#a9d8a0',dark:'#263d35',tag:'PHÒNG THỦ',brief:['Giữ Flow khi mất tim ×1','Giữ Flow khi mất tim ×2'],shape:'shield'},
  bloodlust:{title:'Huyết lực',color:'#eb8d9c',dark:'#442630',tag:'SỨC MẠNH',brief:['Flow 4 → +1 DMG','Flow 3 → +1 DMG'],shape:'claw'}
 };
 function skillIconMarkup(id){

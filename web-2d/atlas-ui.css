@@ -20,3 +20,13 @@ body:has(#route-map:not([hidden])) #state-desc{display:none}body:has(#route-map:
 .draft-cards{grid-template-columns:repeat(var(--offer-count,3),minmax(0,1fr));max-width:calc(var(--offer-count,3)*140px);width:100%;margin-inline:auto}
 
 .shell:has(#route-map:not([hidden])) .stage,.shell:has(#route-map:not([hidden])) .tiny-stats,.shell:has(#route-map:not([hidden])) #feedback{visibility:hidden}
+
+/* Boss reward sheet keeps the same geometry for every selected description. */
+#skill-dialog[open]:has(.boss-reward-card){box-sizing:border-box;height:min(620px,calc(100dvh - 24px));display:grid;grid-template-rows:90px minmax(0,1fr) 120px 48px;gap:8px;overflow:hidden}
+#skill-dialog:has(.boss-reward-card) .draft-banner{min-height:0;padding-bottom:0}
+#skill-dialog:has(.boss-reward-card) .draft-cards{box-sizing:border-box;min-height:0;margin:0 auto;padding:8px 1px}
+#skill-dialog:has(.boss-reward-card) .boss-reward-card{min-height:0;height:100%;box-sizing:border-box}
+#skill-dialog:has(.boss-reward-card) .skill-illustration{flex:1;min-height:0;object-fit:contain;max-height:none}
+#skill-dialog:has(.boss-reward-card) .draft-description{box-sizing:border-box;min-height:0;margin:0;overflow:auto;scrollbar-width:thin}
+#skill-dialog:has(.boss-reward-card) .draft-secondary{display:none}
+@media(max-height:620px){#skill-dialog[open]:has(.boss-reward-card){grid-template-rows:74px minmax(0,1fr) 100px 44px;gap:5px}#skill-dialog:has(.boss-reward-card) .boss-reward-card{padding-top:7px}}

@@ -9,7 +9,7 @@ function renderSkillDraft(){
  draftSignature=signature;
  const offers=game.offerSkills(availableSkills()),titles={starter:'Chọn lời thề',reward:'Phần thưởng chiến thắng',shop:'Lều thương nhân',shrine:'Đền cổ'};
  $('#draft-title').textContent=titles[game.state];
- $('#draft-kicker').textContent=!offers.length?'Build hoàn thiện':game.state==='shop'?'Một món · 2 Gold · Có '+game.meta.gold+' Gold':game.state==='shrine'?'Nâng skill đang có':'Chọn một trong ba';
+ $('#draft-kicker').textContent=!offers.length?'Build hoàn thiện':game.state==='shop'?'Một món · 2 Gold · Có '+game.meta.gold+' Gold':game.state==='shrine'?'Nâng skill đang có':'Chọn 1 / '+offers.length+' · Skill '+Object.keys(game.skills).length+'/4';
  const cards=$('#draft-cards');cards.replaceChildren();cards.style.setProperty('--offer-count',Math.max(1,offers.length));draftSelected=offers[0]||null;
  for(const id of offers){const v=SKILL_VISUALS[id],level=(game.skills[id]||0)+1,b=document.createElement('button');b.type='button';b.className='skill-card';b.dataset.skill=id;b.style.setProperty('--skill-color',v.color);b.setAttribute('aria-label',SKILLS[id].name+' Lv.'+level+' · '+SKILLS[id].desc[level-1]);b.setAttribute('aria-pressed',String(id===draftSelected));
   b.innerHTML=`<span class="skill-level">${level===2?'II':'I'}</span><span class="skill-type">${v.tag}</span>${skillIconMarkup(id)}<strong>${v.title}</strong><span class="skill-name-en">${SKILLS[id].name}</span><span class="skill-brief">${v.brief[level-1]}</span><span class="skill-card-foot">${level===2?'NÂNG CẤP':'SKILL MỚI'}</span>`;

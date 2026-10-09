@@ -1,0 +1,22 @@
+global.localStorage={getItem:()=>null,setItem:()=>{},removeItem:()=>{}};
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');global.LaneGame=require('../web-2d/lane-core.js');Object.assign(global,require('../web-2d/full-core.js'));Object.assign(global,require('../web-2d/combat-core.js'));Object.assign(global,require('../web-2d/campaign-core.js'));for(const f of ['skill-visuals.js','skill-expansion.js','weapon-balance.js','weapon-final.js'])vm.runInThisContext(fs.readFileSync('web-2d/'+f,'utf8'));
+function game(w){const g=new CampaignGame(()=>.4);g.enterTest(w,'iron_bear');g.enemyHp=g.enemyMax=200;return g;}
+const hit={family:'melee',kind:'melee',target:1};
+function turn(g,{n=2,mode='perfect',fps=60,interrupt=-1,follow=false}={}){g.attack=null;g.counter=null;g.action=null;g.shots=[];assert(g.beginChain(Array.from({length:n},()=>({...hit}))));let pressed=false;for(let i=0;i<fps*12&&(g.combo||g.counter||g.action||g.shots.some(s=>!s.hit)||g.daggerWindow);i++){const a=g.attack;if(a&&!a.resolved){if(a.index===interrupt){if(!g.bowSpent&&g.time>=a.impact-.25)g.weaponAction();}else if(mode!=='hit'&&!g.action&&g.time>=a.impact-(mode==='normal'?.30:.45))g.act('up');}if(follow&&g.daggerWindow&&g.time>=g.daggerWindow.start+.02){assert(g.weaponAction());assert(!g.weaponAction());pressed=true;}g.update(1/fps);}return pressed;}
+let cases=0;for(const fps of [30,60,120]){
+ for(const w of ['katana','daggers','greatsword','bow']){const g=game(w),before=JSON.stringify(g.meta);turn(g,{fps,mode:'normal'});assert.equal(g.stamina,3);assert.equal(g.hp,3);assert.equal(g.totalDamage,WEAPON_RULES[w].base*4);assert.equal(JSON.stringify(g.meta),before);cases++;}
+ {const g=game('daggers');assert(turn(g,{fps,follow:true}));assert.equal(g.totalDamage,12);assert.equal(g.damageEvents.filter(e=>e.followup).length,2);assert.equal(g.elementState.lightning,0);cases++;}
+ {const g=game('bow');turn(g,{fps,n:3,interrupt:1});assert(g.lastCombo.results[1].interrupted);assert(!g.lastCombo.results[1].perfect);assert.equal(g.stamina,1);assert.equal(g.totalDamage,8);cases++;}
+ {const g=game('bow');g.beginChain([{...hit}]);while(g.time<g.attack.impact-.10)g.update(1/fps);g.weaponAction();assert(!g.weaponAction());for(let i=0;i<fps*.16;i++)g.update(1/fps);assert(!g.lastCombo?.results[0]?.interrupted);assert.equal(g.totalDamage,0);cases++;}
+ {const g=game('greatsword');turn(g,{fps});assert.equal(g.armor,1);turn(g,{fps,mode:'hit'});assert.equal(g.hp,2);assert.equal(g.flow,0);assert.equal(g.armor,0);turn(g,{fps});assert.equal(g.armor,1);turn(g,{fps});assert.equal(g.armor,1);g.loadEnemy('iron_bear');assert.equal(g.armor,0);cases++;}
+ {const g=game('katana');turn(g,{fps});assert.equal(g.stamina,1);const damage=g.totalDamage;turn(g,{fps});assert.equal(g.totalDamage-damage,16);assert.equal(g.stamina,3);cases++;}
+ {const g=game('daggers');g.skills={spark:1};turn(g,{fps,follow:true});assert.equal(g.elementState.lightning,1);cases++;}
+}
+{const g=game('daggers');g.daggerWindow={start:0,end:.3};g.weaponAction();assert(g.act('up'));assert(!g.shots.some(s=>s.followup));cases++;}
+{const g=game('katana');g.skills={momentum:2,flame_counter:2,spark:2};g.flow=3;g.perfects=1;g.elementState.lightning=2;g.opening=true;assert.equal(g.damage(true),24);cases++;}
+{const g=game('greatsword');g.test=false;g.stamina=1;g.armor=1;g.armorBroken=true;g.armorRecovery=1;g.persist();assert(g.savedRun.identityState);g.stamina=3;g.armor=0;assert(g.resume());assert.equal(g.stamina,1);assert.equal(g.armor,1);cases++;}
+{const g=game('katana');g.test=false;g.routeReward='duelist';g.loadEnemy('minotaur_guard');assert.equal(g.staminaMax,5);cases++;}
+{const g=game('bow');g.beginChain([{...hit},{...hit}]);const first=g.combo.first,interval=g.combo.interval;while(g.time<g.attack.impact-.26)g.update(1/120);g.act('jump');g.update(.08);const feet=554+g.pose().offset-g.pose().height;assert(g.weaponAction());assert.equal(g.shots.at(-1).originY,feet);assert(g.shots.at(-1).originY<554);assert.equal(g.combo.first,first);assert.equal(g.combo.interval,interval);cases++;}
+{const g=game('bow');g.beginChain([{...hit},{...hit}]);const nextStart=g.makeHit(1).start;assert(g.weaponAction());assert(!g.weaponAction());for(let i=0;i<20;i++)g.update(1/120);assert(g.combo.hits[0].interrupted);assert.equal(g.makeHit(1).start,nextStart);assert.equal(g.totalDamage,2);cases++;}
+console.log(cases+' weapon identity checks passed at 30/60/120 FPS: Normal/Perfect, optional attacks, guard, stamina, elements, cancellation and checkpoint resources.');
+
