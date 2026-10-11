@@ -1,0 +1,347 @@
+{
+  "id": "heavy-knight-01-five-parts-redrawn-73",
+  "source": "Five newly drawn sprites: helmet, front pauldron, rear shoulder, rear upper arm, rear forearm. Eight confirmed sprites preserved byte-for-byte from rig 71.",
+  "parts": [
+    {
+      "id": "helmet",
+      "file": "helmet.png",
+      "size": [
+        647,
+        599
+      ]
+    },
+    {
+      "id": "torso",
+      "file": "torso.png",
+      "size": [
+        589,
+        700
+      ]
+    },
+    {
+      "id": "pauldron",
+      "file": "pauldron.png",
+      "size": [
+        481,
+        428
+      ]
+    },
+    {
+      "id": "rear_shoulder",
+      "file": "rear_shoulder.png",
+      "size": [
+        338,
+        312
+      ]
+    },
+    {
+      "id": "front_upper",
+      "file": "front_upper.png",
+      "size": [
+        471,
+        565
+      ]
+    },
+    {
+      "id": "front_forearm",
+      "file": "front_forearm.png",
+      "size": [
+        644,
+        347
+      ]
+    },
+    {
+      "id": "rear_upper",
+      "file": "rear_upper.png",
+      "size": [
+        471,
+        399
+      ]
+    },
+    {
+      "id": "rear_forearm",
+      "file": "rear_forearm.png",
+      "size": [
+        470,
+        253
+      ]
+    },
+    {
+      "id": "front_hand",
+      "file": "front_hand.png",
+      "size": [
+        907,
+        658
+      ]
+    },
+    {
+      "id": "rear_hand",
+      "file": "rear_hand.png",
+      "size": [
+        642,
+        738
+      ]
+    },
+    {
+      "id": "front_leg",
+      "file": "front_leg.png",
+      "size": [
+        231,
+        444
+      ]
+    },
+    {
+      "id": "rear_leg",
+      "file": "rear_leg.png",
+      "size": [
+        292,
+        424
+      ]
+    },
+    {
+      "id": "weapon",
+      "file": "weapon.png",
+      "size": [
+        326,
+        889
+      ]
+    }
+  ],
+  "rig": {
+    "handAnchors": {
+      "front": [
+        0.24,
+        0.52
+      ],
+      "rear": [
+        0.28,
+        0.47
+      ]
+    },
+    "animationModes": [
+      "neutral",
+      "idle",
+      "raise",
+      "joints"
+    ],
+    "coordinateFrame": {
+      "canvas": [
+        700,
+        650
+      ],
+      "root": [
+        350,
+        420
+      ],
+      "scale": 0.88
+    },
+    "gripSpacing": 30,
+    "shoulders": {
+      "front": [
+        38,
+        -12
+      ],
+      "rear": [
+        -32,
+        -50
+      ]
+    },
+    "armLengths": {
+      "front": [
+        50,
+        75
+      ],
+      "rear": [
+        45,
+        45
+      ]
+    },
+    "parents": {
+      "rear_shoulder": "rearShoulder",
+      "rear_leg": "torso",
+      "front_upper": "frontShoulder",
+      "front_forearm": "frontElbow",
+      "helmet": "torso",
+      "rear_hand": "rearGrip",
+      "front_hand": "frontGrip",
+      "pauldron": "frontShoulder",
+      "front_leg": "torso",
+      "weapon": "frontGrip",
+      "torso": "root",
+      "rear_forearm": "rearElbow",
+      "rear_upper": "rearShoulder"
+    },
+    "neutralGrip": [
+      -95,
+      12
+    ],
+    "wristOffsets": {
+      "front": [
+        40,
+        3
+      ],
+      "rear": [
+        19,
+        17
+      ]
+    },
+    "legs": {
+      "front": [
+        48,
+        64
+      ],
+      "rear": [
+        -45,
+        78
+      ],
+      "sizeFront": [
+        64,
+        123
+      ],
+      "sizeRear": [
+        62,
+        100
+      ],
+      "frontMirrored": false,
+      "rearMirrored": false
+    },
+    "helmet": {
+      "attachment": [
+        14,
+        -36
+      ],
+      "size": [
+        180,
+        180
+      ],
+      "anchor": [
+        0.72,
+        0.9
+      ]
+    },
+    "mirroredSprites": [
+      "rear_shoulder",
+      "front_upper",
+      "rear_upper"
+    ],
+    "socketMapping": {
+      "front_upper": [
+        [
+          0.65,
+          0.3
+        ],
+        [
+          0.3,
+          0.74
+        ]
+      ],
+      "front_forearm": [
+        [
+          0.85,
+          0.48
+        ],
+        [
+          0.08,
+          0.53
+        ]
+      ],
+      "rear_upper": [
+        [
+          0.4,
+          0.15
+        ],
+        [
+          0.6,
+          0.75
+        ]
+      ],
+      "rear_forearm": [
+        [
+          0.83,
+          0.46
+        ],
+        [
+          0.08,
+          0.5
+        ]
+      ]
+    },
+    "pauldron": {
+      "attachment": [
+        45,
+        -30
+      ],
+      "size": [
+        96,
+        90
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ]
+    },
+    "layerOrder": [
+      "rear_leg",
+      "front_leg",
+      "rear_shoulder",
+      "rear_upper",
+      "rear_forearm",
+      "torso",
+      "helmet",
+      "front_upper",
+      "front_forearm",
+      "pauldron",
+      "weapon",
+      "rear_hand",
+      "front_hand"
+    ]
+  },
+  "approvals": {
+    "originalFour": [
+      "helmet",
+      "torso",
+      "pauldron",
+      "weapon"
+    ],
+    "redrawnConfirmed": [
+      "front_leg",
+      "rear_leg",
+      "front_hand",
+      "rear_hand"
+    ],
+    "pending": [
+      "rear_shoulder",
+      "front_upper",
+      "front_forearm",
+      "rear_upper",
+      "rear_forearm"
+    ],
+    "protectedPlacement72": [
+      "torso",
+      "front_upper",
+      "front_forearm",
+      "front_hand",
+      "rear_hand",
+      "front_leg",
+      "rear_leg",
+      "weapon"
+    ]
+  },
+  "redrawnParts": [
+    "helmet",
+    "pauldron",
+    "rear_shoulder",
+    "rear_upper",
+    "rear_forearm"
+  ],
+  "preservedParts": [
+    "torso",
+    "front_upper",
+    "front_forearm",
+    "front_hand",
+    "rear_hand",
+    "front_leg",
+    "rear_leg",
+    "weapon"
+  ]
+}

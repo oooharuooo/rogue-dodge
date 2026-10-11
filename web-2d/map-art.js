@@ -19,6 +19,7 @@ function mapLandscapeMarkup(){return `<svg class="map-landscape" viewBox="0 0 44
  </svg>`;}
 function mapNodeIcon(id){const shape={
  swordsman:'<path d="m19 5 4 5-8 15-6-3Z"/><path d="m5 20 13 7m-9-2-4 7"/>',
+ goblin_scout:'<path d="M6 7 16 11 9 3M26 7 16 11l7-8"/><path d="M8 12q8-6 16 0l-2 13-6 4-6-4Z"/><path d="m12 17 2 2m6-2-2 2m-4 5 2 1 2-1"/>',
  heavy_knight:'<path d="M7 8q9-7 18 0v12l-9 10-9-10Z"/><path d="M9 14h14m-7 0v11"/>',
  rogue:'<path d="m21 4 6 6-14 15-6-6Z"/><path d="m4 22 10 8m-7-3-3 4"/>',
  duelist:'<path d="m5 8 5 9 6-13 6 13 5-9v20H5Z"/><path d="m10 21 6 4 6-4"/>',

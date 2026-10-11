@@ -13,5 +13,7 @@ function drawCloseEncounter(ctx,g){const a=g.attack,q=a?Math.max(0,(g.time-a.sta
  ctx.save();if(g.damageEvents?.some(e=>g.time-e.time<.12)){if(a?.resolved)ctx.translate(4,0);}drawReadableBoss(ctx,fake,710,552);ctx.restore();g.visualAnchor=fake.visualAnchor;g.bladeTip=fake.bladeTip;g.faceAnchor=fake.faceAnchor;
  // The short contact slash appears only on release, at one lane; no travelling two-lane projectile.
  if(a?.kind==='jump'){drawBossWave(ctx,fake);a.groundOrigin=fake.attack.groundOrigin;}
- if(a?.kind==='melee'&&q>=.88&&q<=1.14){const y=338+a.target*156,age=(q-.88)/.26,origin=fake.bladeTip||{x:145,y};ctx.save();ctx.globalAlpha=1-age;ctx.strokeStyle='#f6e4af';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(origin.x,origin.y);ctx.quadraticCurveTo(85,y-30,95,y+30);ctx.stroke();ctx.restore();}
+ if(a?.kind==='melee'&&a.coverage!=='all'&&!['goblin_crescent_47','goblin_dagger_01'].includes(a.enemySkill)&&q>=.88&&q<=1.14){const y=338+a.target*156,age=(q-.88)/.26,origin=fake.bladeTip||{x:145,y};ctx.save();ctx.globalAlpha=1-age;ctx.strokeStyle='#f6e4af';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(origin.x,origin.y);ctx.quadraticCurveTo(85,y-30,95,y+30);ctx.stroke();ctx.restore();}
 }
+
+

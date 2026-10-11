@@ -57,3 +57,6 @@ skillIconMarkup=function(id){const v=EXTRA_SKILLS[id],paths={twin_fang:'M27 26Q8
 
 // Retire the redundant Flow damage skill; old saves retain data, not its bonus.
 delete SKILLS.bloodlust;
+
+
+

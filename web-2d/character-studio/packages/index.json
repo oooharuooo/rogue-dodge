@@ -1,0 +1,482 @@
+[
+  {
+    "id": "golem",
+    "name": "Golem",
+    "style": "chibi",
+    "source": "https://craftpix.net/freebies/free-golems-chibi-2d-game-sprites/",
+    "archive": "craftpix-891123-free-golems-chibi-2d-game-sprites.zip",
+    "variants": [
+      {
+        "id": "0",
+        "name": "Golem_1",
+        "rig": "golem/0/rig.json"
+      },
+      {
+        "id": "1",
+        "name": "Golem_2",
+        "rig": "golem/1/rig.json"
+      },
+      {
+        "id": "2",
+        "name": "Golem_3",
+        "rig": "golem/2/rig.json"
+      }
+    ]
+  },
+  {
+    "id": "reaper",
+    "name": "Reaper",
+    "style": "chibi",
+    "source": "https://craftpix.net/freebies/free-reaper-man-chibi-2d-game-sprites/",
+    "archive": "craftpix-904589-free-reaper-man-chibi-2d-game-sprites.zip",
+    "variants": [
+      {
+        "id": "0",
+        "name": "Reaper_Man_1",
+        "rig": "reaper/0/rig.json"
+      },
+      {
+        "id": "1",
+        "name": "Reaper_Man_2",
+        "rig": "reaper/1/rig.json"
+      },
+      {
+        "id": "2",
+        "name": "Reaper_Man_3",
+        "rig": "reaper/2/rig.json"
+      }
+    ]
+  },
+  {
+    "id": "zombie",
+    "name": "Zombie Villager",
+    "style": "chibi",
+    "source": "https://craftpix.net/freebies/free-zombie-villager-chibi-character-sprites/",
+    "archive": "craftpix-net-905641-free-zombie-villager-chibi-character-sprites.zip",
+    "variants": [
+      {
+        "id": "0",
+        "name": "Zombie_Villager_1",
+        "rig": "zombie/0/rig.json"
+      },
+      {
+        "id": "1",
+        "name": "Zombie_Villager_2",
+        "rig": "zombie/1/rig.json"
+      },
+      {
+        "id": "2",
+        "name": "Zombie_Villager_3",
+        "rig": "zombie/2/rig.json"
+      }
+    ]
+  },
+  {
+    "id": "skeleton",
+    "name": "Skeleton Warrior",
+    "style": "chibi",
+    "source": "https://craftpix.net/freebies/chibi-skeleton-warrior-character-sprites/",
+    "archive": "craftpix-net-140672-free-chibi-skeleton-warrior-character-sprites.zip",
+    "variants": [
+      {
+        "id": "0",
+        "name": "Skeleton_Warrior_1",
+        "rig": "skeleton/0/rig.json"
+      },
+      {
+        "id": "1",
+        "name": "Skeleton_Warrior_2",
+        "rig": "skeleton/1/rig.json"
+      },
+      {
+        "id": "2",
+        "name": "Skeleton_Warrior_3",
+        "rig": "skeleton/2/rig.json"
+      }
+    ]
+  },
+  {
+    "id": "crusader",
+    "name": "Skeleton Crusader",
+    "style": "chibi",
+    "source": "https://craftpix.net/freebies/free-chibi-skeleton-crusader-character-sprites/",
+    "archive": "craftpix-net-166787-free-chibi-skeleton-crusader-character-sprites.zip",
+    "variants": [
+      {
+        "id": "0",
+        "name": "Skeleton_Crusader_1",
+        "rig": "crusader/0/rig.json"
+      },
+      {
+        "id": "1",
+        "name": "Skeleton_Crusader_2",
+        "rig": "crusader/1/rig.json"
+      },
+      {
+        "id": "2",
+        "name": "Skeleton_Crusader_3",
+        "rig": "crusader/2/rig.json"
+      }
+    ]
+  },
+  {
+    "id": "valkyrie",
+    "name": "Valkyrie",
+    "style": "chibi",
+    "source": "https://craftpix.net/freebies/free-chibi-valkyrie-character-sprites/",
+    "archive": "craftpix-net-469596-free-chibi-valkyrie-character-sprites.zip",
+    "variants": [
+      {
+        "id": "0",
+        "name": "Valkyrie_1",
+        "rig": "valkyrie/0/rig.json"
+      },
+      {
+        "id": "1",
+        "name": "Valkyrie_2",
+        "rig": "valkyrie/1/rig.json"
+      },
+      {
+        "id": "2",
+        "name": "Valkyrie_3",
+        "rig": "valkyrie/2/rig.json"
+      }
+    ]
+  },
+  {
+    "id": "necromancer",
+    "name": "Shadow Necromancer",
+    "style": "chibi",
+    "source": "https://craftpix.net/freebies/free-chibi-necromancer-of-the-shadow-character-sprites/",
+    "archive": "craftpix-net-935193-free-chibi-necromancer-of-the-shadow-character-sprites.zip",
+    "variants": [
+      {
+        "id": "0",
+        "name": "Necromancer_of_the_Shadow_1",
+        "rig": "necromancer/0/rig.json"
+      },
+      {
+        "id": "1",
+        "name": "Necromancer_of_the_Shadow_2",
+        "rig": "necromancer/1/rig.json"
+      },
+      {
+        "id": "2",
+        "name": "Necromancer_of_the_Shadow_3",
+        "rig": "necromancer/2/rig.json"
+      }
+    ]
+  },
+  {
+    "id": "ranger",
+    "name": "Forest Ranger",
+    "style": "chibi",
+    "source": "https://craftpix.net/freebies/free-forest-ranger-chibi-character-sprites/",
+    "archive": "craftpix-net-619226-free-forest-ranger-chibi-character-sprites.zip",
+    "variants": [
+      {
+        "id": "0",
+        "name": "Forest_Ranger_1",
+        "rig": "ranger/0/rig.json"
+      },
+      {
+        "id": "1",
+        "name": "Forest_Ranger_2",
+        "rig": "ranger/1/rig.json"
+      },
+      {
+        "id": "2",
+        "name": "Forest_Ranger_3",
+        "rig": "ranger/2/rig.json"
+      }
+    ]
+  },
+  {
+    "id": "alchemist",
+    "name": "Bloody Alchemist",
+    "style": "chibi",
+    "source": "https://craftpix.net/freebies/free-bloody-alchemist-chibi-character-sprites/",
+    "archive": "craftpix-net-938458-free-bloody-alchemist-chibi-character-sprites.zip",
+    "variants": [
+      {
+        "id": "0",
+        "name": "Bloody_Alchemist_1",
+        "rig": "alchemist/0/rig.json"
+      },
+      {
+        "id": "1",
+        "name": "Bloody_Alchemist_2",
+        "rig": "alchemist/1/rig.json"
+      },
+      {
+        "id": "2",
+        "name": "Bloody_Alchemist_3",
+        "rig": "alchemist/2/rig.json"
+      }
+    ]
+  },
+  {
+    "id": "seer",
+    "name": "Seer",
+    "style": "chibi",
+    "source": "https://craftpix.net/freebies/free-seer-chibi-character-sprites/",
+    "archive": "craftpix-net-787868-free-seer-chibi-character-sprites.zip",
+    "variants": [
+      {
+        "id": "0",
+        "name": "Seer_1",
+        "rig": "seer/0/rig.json"
+      },
+      {
+        "id": "1",
+        "name": "Seer_2",
+        "rig": "seer/1/rig.json"
+      },
+      {
+        "id": "2",
+        "name": "Seer_3",
+        "rig": "seer/2/rig.json"
+      }
+    ]
+  },
+  {
+    "id": "oracle",
+    "name": "Dark Oracle",
+    "style": "chibi",
+    "source": "https://craftpix.net/freebies/free-chibi-dark-oracle-character-sprites/",
+    "archive": "craftpix-net-919731-free-chibi-dark-oracle-character-sprites.zip",
+    "variants": [
+      {
+        "id": "0",
+        "name": "Dark_Oracle_1",
+        "rig": "oracle/0/rig.json"
+      },
+      {
+        "id": "1",
+        "name": "Dark_Oracle_2",
+        "rig": "oracle/1/rig.json"
+      },
+      {
+        "id": "2",
+        "name": "Dark_Oracle_3",
+        "rig": "oracle/2/rig.json"
+      }
+    ]
+  },
+  {
+    "id": "angel",
+    "name": "Fallen Angel",
+    "style": "chibi",
+    "source": "https://craftpix.net/freebies/free-fallen-angel-chibi-2d-game-sprites/",
+    "archive": "craftpix-991117-free-fallen-angel-chibi-2d-game-sprites.zip",
+    "variants": [
+      {
+        "id": "0",
+        "name": "Fallen_Angels_1",
+        "rig": "angel/0/rig.json"
+      },
+      {
+        "id": "1",
+        "name": "Fallen_Angels_2",
+        "rig": "angel/1/rig.json"
+      },
+      {
+        "id": "2",
+        "name": "Fallen_Angels_3",
+        "rig": "angel/2/rig.json"
+      }
+    ]
+  },
+  {
+    "id": "minotaur",
+    "name": "Minotaur",
+    "style": "chibi",
+    "source": "https://craftpix.net/freebies/free-minotaur-chibi-character-sprites/",
+    "archive": "craftpix-net-534656-free-minotaur-chibi-character-sprites.zip",
+    "variants": [
+      {
+        "id": "0",
+        "name": "Minotaur_1",
+        "rig": "minotaur/0/rig.json"
+      },
+      {
+        "id": "1",
+        "name": "Minotaur_2",
+        "rig": "minotaur/1/rig.json"
+      },
+      {
+        "id": "2",
+        "name": "Minotaur_3",
+        "rig": "minotaur/2/rig.json"
+      }
+    ]
+  },
+  {
+    "id": "orc-ogre",
+    "name": "Orc / Ogre / Goblin",
+    "style": "chibi",
+    "source": "https://craftpix.net/freebies/free-orc-ogre-and-goblin-chibi-2d-game-sprites/",
+    "archive": "craftpix-064112-free-orc-ogre-and-goblin-chibi-2d-game-sprites.zip",
+    "variants": [
+      {
+        "id": "0",
+        "name": "Goblin",
+        "rig": "orc-ogre/0/rig.json"
+      },
+      {
+        "id": "1",
+        "name": "Ogre",
+        "rig": "orc-ogre/1/rig.json"
+      },
+      {
+        "id": "2",
+        "name": "Orc",
+        "rig": "orc-ogre/2/rig.json"
+      }
+    ]
+  },
+  {
+    "id": "fantasy-orc",
+    "name": "Fantasy Orc",
+    "style": "fantasy",
+    "source": "https://craftpix.net/freebies/2d-fantasy-orcs-free-sprite-sheets/",
+    "archive": "craftpix-062999-2d-fantasy-orc-free-sprite-sheets.zip",
+    "variants": [
+      {
+        "id": "0",
+        "name": "1_ORK",
+        "rig": "fantasy-orc/0/rig.json"
+      },
+      {
+        "id": "1",
+        "name": "2_ORK",
+        "rig": "fantasy-orc/1/rig.json"
+      },
+      {
+        "id": "2",
+        "name": "3_ORK",
+        "rig": "fantasy-orc/2/rig.json"
+      }
+    ]
+  },
+  {
+    "id": "troll",
+    "name": "Fantasy Troll",
+    "style": "fantasy",
+    "source": "https://craftpix.net/freebies/2d-fantasy-trolls-free-sprite-sheets/",
+    "archive": "craftpix-986711-2d-fantasy-trolls-free-sprite-sheets.zip",
+    "variants": [
+      {
+        "id": "0",
+        "name": "1_TROLL",
+        "rig": "troll/0/rig.json"
+      },
+      {
+        "id": "1",
+        "name": "2_TROLL",
+        "rig": "troll/1/rig.json"
+      },
+      {
+        "id": "2",
+        "name": "3_TROLL",
+        "rig": "troll/2/rig.json"
+      }
+    ]
+  },
+  {
+    "id": "satyr",
+    "name": "Satyr Tiny",
+    "style": "tiny",
+    "source": "https://craftpix.net/freebies/free-satyr-tiny-style-2d-sprites/",
+    "archive": "craftpix-891179-free-satyr-tiny-style-2d-sprites.zip",
+    "variants": [
+      {
+        "id": "0",
+        "name": "PNG",
+        "rig": "satyr/0/rig.json"
+      },
+      {
+        "id": "1",
+        "name": "PNG",
+        "rig": "satyr/1/rig.json"
+      },
+      {
+        "id": "2",
+        "name": "PNG",
+        "rig": "satyr/2/rig.json"
+      }
+    ]
+  },
+  {
+    "id": "wraith",
+    "name": "Wraith Tiny",
+    "style": "tiny",
+    "source": "https://craftpix.net/freebies/free-wraith-tiny-style-2d-sprites/",
+    "archive": "craftpix-net-563568-free-wraith-tiny-style-2d-sprites.zip",
+    "variants": [
+      {
+        "id": "0",
+        "name": "PNG",
+        "rig": "wraith/0/rig.json"
+      },
+      {
+        "id": "1",
+        "name": "PNG",
+        "rig": "wraith/1/rig.json"
+      },
+      {
+        "id": "2",
+        "name": "PNG",
+        "rig": "wraith/2/rig.json"
+      }
+    ]
+  },
+  {
+    "id": "minotaur-tiny",
+    "name": "Minotaur Tiny",
+    "style": "tiny",
+    "source": "https://craftpix.net/freebies/free-minotaur-tiny-style-2d-sprites/",
+    "archive": "craftpix-net-484869-free-minotaur-tiny-style-2d-sprites.zip",
+    "variants": [
+      {
+        "id": "0",
+        "name": "PNG",
+        "rig": "minotaur-tiny/0/rig.json"
+      },
+      {
+        "id": "1",
+        "name": "PNG",
+        "rig": "minotaur-tiny/1/rig.json"
+      },
+      {
+        "id": "2",
+        "name": "PNG",
+        "rig": "minotaur-tiny/2/rig.json"
+      }
+    ]
+  },
+  {
+    "id": "golem-tiny",
+    "name": "Golem Tiny",
+    "style": "tiny",
+    "source": "https://craftpix.net/freebies/free-golem-tiny-style-2d-character-sprites/",
+    "archive": "craftpix-891178-free-golem-tiny-style-2d-character-sprites.zip",
+    "variants": [
+      {
+        "id": "0",
+        "name": "PNG",
+        "rig": "golem-tiny/0/rig.json"
+      },
+      {
+        "id": "1",
+        "name": "PNG",
+        "rig": "golem-tiny/1/rig.json"
+      },
+      {
+        "id": "2",
+        "name": "PNG",
+        "rig": "golem-tiny/2/rig.json"
+      }
+    ]
+  }
+]

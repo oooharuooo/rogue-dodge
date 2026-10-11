@@ -13,3 +13,5 @@ for(const [weapon,id]of [['bow','twin_fang'],['katana','crescent'],['daggers','c
 {const g=game();g.skills={resolve:1};g.flow=3;g.lastCombo={results:[{held:false,perfect:false}]};g.damage(false,true);assert.equal(g.flow,3);g.damage(false,true);assert.equal(g.flow,0);}
 {const g=game();g.test=false;g.meta.xp.bow=30;g.state='reward';g.skills={ember:1};assert(!g.selectSkill('rime'));assert(!g.selectSkill('twin_fang'));assert(g.unlocked('rime'));}
 console.log('Hold Flow, four real weapon techniques, elements, one-element rule, recovery and Test Mode isolation passed');
+
+

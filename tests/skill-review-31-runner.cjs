@@ -15,7 +15,7 @@ function simulate(weapon,level,pattern,style,fps=60,build=false){
   if(a&&!a.resolved){const key=g.attackCount+':'+a.index,bad=style==='errors'&&(g.attackCount+a.index)%5===0;
    if(weapon==='bow'&&style!=='conservative'&&!g.bowSpent&&g.time>=a.start+(a.impact-a.start)*(bad?.96:.32))g.weaponAction();
    if(!pressed.has(key)){
-    if(weapon==='katana'&&style!=='conservative'&&a.family==='melee'&&a.kind!=='jump'){
+    if(weapon==='katana'&&style!=='conservative'&&a.family==='melee'&&a.kind!=='jump'&&a.coverage!=='all'){
      if(g.time>=a.impact-(bad?.35:.10)){g.deflect(a.target);pressed.add(key);}
     }else if(!g.action&&g.time>=a.impact-(bad?.8:.45)){g.act(g.recommendedAction(a));pressed.add(key);}
    }

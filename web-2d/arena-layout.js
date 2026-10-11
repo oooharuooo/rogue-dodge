@@ -4,3 +4,4 @@ function counterRelease(weapon){return {bow:.5,katana:.35,daggers:.28,greatsword
 
 // Vertical lane projection; actor roots cancel this scale to retain their proportions.
 let arenaYScale=1;
+

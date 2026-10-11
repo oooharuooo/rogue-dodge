@@ -1,0 +1,756 @@
+[
+  {
+    "id": "1",
+    "name": "01 · Đại kiếm",
+    "root": [
+      260,
+      600
+    ],
+    "bounds": [
+      20,
+      141,
+      475,
+      894
+    ],
+    "parts": [
+      {
+        "id": "helmet",
+        "file": "1-helmet.png",
+        "parent": "torso",
+        "pivot": [
+          265,
+          437
+        ],
+        "origin": [
+          109,
+          141
+        ],
+        "size": [
+          340,
+          335
+        ],
+        "pixels": 73177
+      },
+      {
+        "id": "front_hand",
+        "file": "1-front_hand.png",
+        "parent": "front_forearm",
+        "pivot": [
+          156,
+          579
+        ],
+        "origin": [
+          76,
+          537
+        ],
+        "size": [
+          97,
+          83
+        ],
+        "pixels": 5919
+      },
+      {
+        "id": "rear_hand",
+        "file": "1-rear_hand.png",
+        "parent": "rear_arm",
+        "pivot": [
+          109,
+          517
+        ],
+        "origin": [
+          63,
+          469
+        ],
+        "size": [
+          85,
+          78
+        ],
+        "pixels": 4774
+      },
+      {
+        "id": "weapon",
+        "file": "1-weapon.png",
+        "parent": "front_hand",
+        "pivot": [
+          111,
+          577
+        ],
+        "origin": [
+          20,
+          361
+        ],
+        "size": [
+          141,
+          529
+        ],
+        "pixels": 22113
+      },
+      {
+        "id": "pauldron",
+        "file": "1-pauldron.png",
+        "parent": "torso",
+        "pivot": [
+          344,
+          445
+        ],
+        "origin": [
+          265,
+          372
+        ],
+        "size": [
+          210,
+          202
+        ],
+        "pixels": 27194
+      },
+      {
+        "id": "front_forearm",
+        "file": "1-front_forearm.png",
+        "parent": "front_upper",
+        "pivot": [
+          340,
+          584
+        ],
+        "origin": [
+          157,
+          542
+        ],
+        "size": [
+          201,
+          92
+        ],
+        "pixels": 13854
+      },
+      {
+        "id": "front_upper",
+        "file": "1-front_upper.png",
+        "parent": "torso",
+        "pivot": [
+          375,
+          548
+        ],
+        "origin": [
+          322,
+          532
+        ],
+        "size": [
+          99,
+          67
+        ],
+        "pixels": 3322
+      },
+      {
+        "id": "rear_arm",
+        "file": "1-rear_arm.png",
+        "parent": "torso",
+        "pivot": [
+          168,
+          472
+        ],
+        "origin": [
+          121,
+          459
+        ],
+        "size": [
+          97,
+          77
+        ],
+        "pixels": 4307
+      },
+      {
+        "id": "front_leg",
+        "file": "1-front_leg.png",
+        "parent": "torso",
+        "pivot": [
+          358,
+          706
+        ],
+        "origin": [
+          304,
+          688
+        ],
+        "size": [
+          157,
+          207
+        ],
+        "pixels": 21929
+      },
+      {
+        "id": "rear_leg",
+        "file": "1-rear_leg.png",
+        "parent": "torso",
+        "pivot": [
+          191,
+          708
+        ],
+        "origin": [
+          41,
+          686
+        ],
+        "size": [
+          217,
+          203
+        ],
+        "pixels": 16448
+      },
+      {
+        "id": "torso",
+        "file": "1-torso.png",
+        "parent": null,
+        "pivot": [
+          260,
+          600
+        ],
+        "origin": [
+          57,
+          357
+        ],
+        "size": [
+          419,
+          497
+        ],
+        "pixels": 49391
+      }
+    ],
+    "layers": [
+      "rear_leg",
+      "front_leg",
+      "torso",
+      "rear_arm",
+      "rear_hand",
+      "helmet",
+      "pauldron",
+      "front_upper",
+      "front_forearm",
+      "weapon",
+      "front_hand"
+    ],
+    "validation": {
+      "sourcePixels": 242428,
+      "mismatches": 0
+    },
+    "limits": {
+      "helmet": 12,
+      "pauldron": 10,
+      "front_upper": 12,
+      "front_forearm": 12,
+      "front_hand": 8,
+      "rear_arm": 10,
+      "rear_hand": 8,
+      "front_leg": 10,
+      "rear_leg": 10,
+      "weapon": 10,
+      "cape": 8,
+      "torso": 5
+    }
+  },
+  {
+    "id": "2",
+    "name": "02 · Búa chiến",
+    "root": [
+      773,
+      605
+    ],
+    "bounds": [
+      449,
+      135,
+      1014,
+      897
+    ],
+    "parts": [
+      {
+        "id": "helmet",
+        "file": "2-helmet.png",
+        "parent": "torso",
+        "pivot": [
+          751,
+          467
+        ],
+        "origin": [
+          573,
+          135
+        ],
+        "size": [
+          339,
+          370
+        ],
+        "pixels": 84259
+      },
+      {
+        "id": "front_hand",
+        "file": "2-front_hand.png",
+        "parent": "front_forearm",
+        "pivot": [
+          839,
+          654
+        ],
+        "origin": [
+          772,
+          626
+        ],
+        "size": [
+          87,
+          85
+        ],
+        "pixels": 5115
+      },
+      {
+        "id": "rear_hand",
+        "file": "2-rear_hand.png",
+        "parent": "rear_arm",
+        "pivot": [
+          668,
+          611
+        ],
+        "origin": [
+          609,
+          566
+        ],
+        "size": [
+          95,
+          85
+        ],
+        "pixels": 5596
+      },
+      {
+        "id": "weapon",
+        "file": "2-weapon.png",
+        "parent": "front_hand",
+        "pivot": [
+          813,
+          675
+        ],
+        "origin": [
+          449,
+          425
+        ],
+        "size": [
+          566,
+          359
+        ],
+        "pixels": 52509
+      },
+      {
+        "id": "pauldron",
+        "file": "2-pauldron.png",
+        "parent": "torso",
+        "pivot": [
+          874,
+          453
+        ],
+        "origin": [
+          787,
+          353
+        ],
+        "size": [
+          213,
+          233
+        ],
+        "pixels": 26653
+      },
+      {
+        "id": "front_forearm",
+        "file": "2-front_forearm.png",
+        "parent": "front_upper",
+        "pivot": [
+          895,
+          624
+        ],
+        "origin": [
+          820,
+          585
+        ],
+        "size": [
+          111,
+          89
+        ],
+        "pixels": 5650
+      },
+      {
+        "id": "front_upper",
+        "file": "2-front_upper.png",
+        "parent": "torso",
+        "pivot": [
+          927,
+          548
+        ],
+        "origin": [
+          846,
+          550
+        ],
+        "size": [
+          109,
+          99
+        ],
+        "pixels": 3348
+      },
+      {
+        "id": "rear_arm",
+        "file": "2-rear_arm.png",
+        "parent": "torso",
+        "pivot": [
+          726,
+          541
+        ],
+        "origin": [
+          677,
+          516
+        ],
+        "size": [
+          99,
+          84
+        ],
+        "pixels": 4598
+      },
+      {
+        "id": "front_leg",
+        "file": "2-front_leg.png",
+        "parent": "torso",
+        "pivot": [
+          860,
+          718
+        ],
+        "origin": [
+          803,
+          709
+        ],
+        "size": [
+          163,
+          189
+        ],
+        "pixels": 19627
+      },
+      {
+        "id": "rear_leg",
+        "file": "2-rear_leg.png",
+        "parent": "torso",
+        "pivot": [
+          659,
+          709
+        ],
+        "origin": [
+          547,
+          679
+        ],
+        "size": [
+          191,
+          206
+        ],
+        "pixels": 24610
+      },
+      {
+        "id": "torso",
+        "file": "2-torso.png",
+        "parent": null,
+        "pivot": [
+          773,
+          605
+        ],
+        "origin": [
+          583,
+          149
+        ],
+        "size": [
+          389,
+          700
+        ],
+        "pixels": 35762
+      }
+    ],
+    "layers": [
+      "rear_leg",
+      "front_leg",
+      "torso",
+      "rear_arm",
+      "rear_hand",
+      "helmet",
+      "pauldron",
+      "front_upper",
+      "front_forearm",
+      "weapon",
+      "front_hand"
+    ],
+    "validation": {
+      "sourcePixels": 267727,
+      "mismatches": 0
+    },
+    "limits": {
+      "helmet": 12,
+      "pauldron": 10,
+      "front_upper": 12,
+      "front_forearm": 12,
+      "front_hand": 8,
+      "rear_arm": 10,
+      "rear_hand": 8,
+      "front_leg": 10,
+      "rear_leg": 10,
+      "weapon": 10,
+      "cape": 8,
+      "torso": 5
+    }
+  },
+  {
+    "id": "3",
+    "name": "03 · Giáp áo choàng",
+    "root": [
+      1267,
+      615
+    ],
+    "bounds": [
+      1042,
+      134,
+      1518,
+      902
+    ],
+    "parts": [
+      {
+        "id": "helmet",
+        "file": "3-helmet.png",
+        "parent": "torso",
+        "pivot": [
+          1244,
+          471
+        ],
+        "origin": [
+          1076,
+          134
+        ],
+        "size": [
+          333,
+          368
+        ],
+        "pixels": 82048
+      },
+      {
+        "id": "front_hand",
+        "file": "3-front_hand.png",
+        "parent": "front_forearm",
+        "pivot": [
+          1270,
+          649
+        ],
+        "origin": [
+          1204,
+          631
+        ],
+        "size": [
+          87,
+          73
+        ],
+        "pixels": 4167
+      },
+      {
+        "id": "rear_hand",
+        "file": "3-rear_hand.png",
+        "parent": "rear_arm",
+        "pivot": [
+          1125,
+          632
+        ],
+        "origin": [
+          1089,
+          598
+        ],
+        "size": [
+          94,
+          97
+        ],
+        "pixels": 6252
+      },
+      {
+        "id": "weapon",
+        "file": "3-weapon.png",
+        "parent": "front_hand",
+        "pivot": [
+          1235,
+          691
+        ],
+        "origin": [
+          1150,
+          668
+        ],
+        "size": [
+          334,
+          235
+        ],
+        "pixels": 17316
+      },
+      {
+        "id": "pauldron",
+        "file": "3-pauldron.png",
+        "parent": "torso",
+        "pivot": [
+          1352,
+          473
+        ],
+        "origin": [
+          1283,
+          386
+        ],
+        "size": [
+          163,
+          185
+        ],
+        "pixels": 22410
+      },
+      {
+        "id": "front_forearm",
+        "file": "3-front_forearm.png",
+        "parent": "front_upper",
+        "pivot": [
+          1362,
+          620
+        ],
+        "origin": [
+          1266,
+          589
+        ],
+        "size": [
+          111,
+          81
+        ],
+        "pixels": 5788
+      },
+      {
+        "id": "front_upper",
+        "file": "3-front_upper.png",
+        "parent": "torso",
+        "pivot": [
+          1401,
+          549
+        ],
+        "origin": [
+          1315,
+          554
+        ],
+        "size": [
+          106,
+          91
+        ],
+        "pixels": 4471
+      },
+      {
+        "id": "rear_arm",
+        "file": "3-rear_arm.png",
+        "parent": "torso",
+        "pivot": [
+          1093,
+          563
+        ],
+        "origin": [
+          1051,
+          552
+        ],
+        "size": [
+          100,
+          79
+        ],
+        "pixels": 3907
+      },
+      {
+        "id": "front_leg",
+        "file": "3-front_leg.png",
+        "parent": "torso",
+        "pivot": [
+          1318,
+          735
+        ],
+        "origin": [
+          1260,
+          706
+        ],
+        "size": [
+          147,
+          196
+        ],
+        "pixels": 11437
+      },
+      {
+        "id": "rear_leg",
+        "file": "3-rear_leg.png",
+        "parent": "torso",
+        "pivot": [
+          1171,
+          736
+        ],
+        "origin": [
+          1042,
+          701
+        ],
+        "size": [
+          192,
+          184
+        ],
+        "pixels": 20301
+      },
+      {
+        "id": "cape",
+        "file": "3-cape.png",
+        "parent": "torso",
+        "pivot": [
+          1398,
+          425
+        ],
+        "origin": [
+          1365,
+          374
+        ],
+        "size": [
+          154,
+          473
+        ],
+        "pixels": 32299
+      },
+      {
+        "id": "torso",
+        "file": "3-torso.png",
+        "parent": null,
+        "pivot": [
+          1267,
+          615
+        ],
+        "origin": [
+          1046,
+          436
+        ],
+        "size": [
+          407,
+          464
+        ],
+        "pixels": 51643
+      }
+    ],
+    "layers": [
+      "cape",
+      "rear_leg",
+      "front_leg",
+      "torso",
+      "rear_arm",
+      "rear_hand",
+      "helmet",
+      "pauldron",
+      "front_upper",
+      "front_forearm",
+      "weapon",
+      "front_hand"
+    ],
+    "validation": {
+      "sourcePixels": 262039,
+      "mismatches": 0
+    },
+    "limits": {
+      "helmet": 12,
+      "pauldron": 10,
+      "front_upper": 12,
+      "front_forearm": 12,
+      "front_hand": 8,
+      "rear_arm": 10,
+      "rear_hand": 8,
+      "front_leg": 10,
+      "rear_leg": 10,
+      "weapon": 10,
+      "cape": 8,
+      "torso": 5
+    }
+  }
+]

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="240" viewBox="0 0 320 240">
+  <defs>
+    <linearGradient id="wrap" x1="0" y1="0" x2=".15" y2="1">
+      <stop stop-color="#35435f"/>
+      <stop offset=".48" stop-color="#26334d"/>
+      <stop offset="1" stop-color="#18243a"/>
+    </linearGradient>
+    <linearGradient id="fold" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#8390a8" stop-opacity=".52"/>
+      <stop offset="1" stop-color="#52617d" stop-opacity=".08"/>
+    </linearGradient>
+  </defs>
+  <!-- Cloth is wrapped around the lower face and tucked into the hood, not looped like a medical mask. -->
+  <path d="M42 141 Q67 132 96 140 Q127 148 157 141 Q193 133 224 141 Q253 147 280 137 L282 168 Q276 188 257 198 Q229 211 196 208 Q178 221 157 212 Q119 216 88 205 Q55 195 43 175 Z"
+        fill="#111a2b" stroke="#101827" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M42 141 Q67 132 96 140 Q127 148 157 141 Q193 133 224 141 Q253 147 280 137 L282 168 Q276 188 257 198 Q229 211 196 208 Q178 221 157 212 Q119 216 88 205 Q55 195 43 175 Z"
+        fill="url(#wrap)" stroke="#465571" stroke-width="3.2" stroke-linejoin="round"/>
+  <!-- Subtle tucked edges stay within the cloth silhouette; no ear loops or loose straps. -->
+  <path d="M48 148 Q57 155 65 159 M276 145 Q266 153 258 158" fill="none" stroke="#111a2b" stroke-opacity=".9" stroke-width="5" stroke-linecap="round"/>
+  <path d="M48 146 Q93 155 128 151 M164 150 Q222 153 274 145" fill="none" stroke="#74819b" stroke-opacity=".55" stroke-width="3" stroke-linecap="round"/>
+  <path d="M66 169 Q103 181 136 174 M147 174 Q176 182 207 171 M216 174 Q239 178 261 164" fill="none" stroke="url(#fold)" stroke-width="5" stroke-linecap="round"/>
+  <path d="M89 194 Q124 205 151 199 M171 199 Q202 205 232 194" fill="none" stroke="#101827" stroke-opacity=".72" stroke-width="4" stroke-linecap="round"/>
+  <path d="M44 176 Q54 183 66 182 M277 168 Q266 178 254 180" fill="none" stroke="#a98b55" stroke-opacity=".74" stroke-width="2" stroke-linecap="round"/>
+</svg>

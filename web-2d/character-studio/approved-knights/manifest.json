@@ -1,0 +1,116 @@
+[
+  {
+    "id": "1",
+    "width": 512,
+    "height": 845,
+    "parts": [
+      {
+        "name": "helmet",
+        "src": "1-helmet.png",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "name": "boots",
+        "src": "1-boots.png",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "name": "weapon",
+        "src": "1-weapon.png",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "name": "arms",
+        "src": "1-arms.png",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "name": "torso",
+        "src": "1-torso.png",
+        "x": 0,
+        "y": 0
+      }
+    ],
+    "status": "source-partition; neutral-pose only; occluded surfaces not reconstructed"
+  },
+  {
+    "id": "2",
+    "width": 512,
+    "height": 845,
+    "parts": [
+      {
+        "name": "helmet",
+        "src": "2-helmet.png",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "name": "boots",
+        "src": "2-boots.png",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "name": "weapon",
+        "src": "2-weapon.png",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "name": "arms",
+        "src": "2-arms.png",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "name": "torso",
+        "src": "2-torso.png",
+        "x": 0,
+        "y": 0
+      }
+    ],
+    "status": "source-partition; neutral-pose only; occluded surfaces not reconstructed"
+  },
+  {
+    "id": "3",
+    "width": 512,
+    "height": 845,
+    "parts": [
+      {
+        "name": "helmet",
+        "src": "3-helmet.png",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "name": "boots",
+        "src": "3-boots.png",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "name": "weapon",
+        "src": "3-weapon.png",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "name": "arms",
+        "src": "3-arms.png",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "name": "torso",
+        "src": "3-torso.png",
+        "x": 0,
+        "y": 0
+      }
+    ],
+    "status": "source-partition; neutral-pose only; occluded surfaces not reconstructed"
+  }
+]

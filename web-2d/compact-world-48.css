@@ -1,0 +1,7 @@
+#world-selection>.world-reward{display:none!important}
+#world-loadout{overflow:hidden}
+.armory-dungeon-intro{display:inline-block;margin:2px 0 5px;padding:6px 12px;border:1px solid #b49c6244;border-radius:9px;background:#0c283344;color:#cebc91;font-size:11px;line-height:1.4}
+#world-loadout .armory-crest svg{width:40px;height:40px;margin:4px auto}
+#world-loadout #weapon-cards{max-height:360px!important}
+@media(max-height:650px){.armory-dungeon-intro{font-size:10px;padding:4px 8px;margin:0 0 3px}#world-loadout .armory-crest svg{width:28px;height:28px;margin:2px auto}#world-loadout .weapon-choice-icon{width:38px;height:38px}#world-loadout #weapon-cards .weapon-choice-icon svg{width:26px;height:26px}#world-loadout #weapon-cards .weapon-select{gap:3px;padding:7px}}
+.armory-dungeon-intro{white-space:pre-line;font-size:11px;line-height:1.5}.armory-dungeon-intro button{font:inherit!important;color:inherit!important;text-decoration:none!important;border:0!important;background:none!important;padding:0!important;min-height:0!important}

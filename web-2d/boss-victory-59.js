@@ -1,0 +1,12 @@
+(()=>{
+ const crest='<svg viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="victory-metal-59" x2=".8" y2="1"><stop stop-color="#fff0bd"/><stop offset=".5" stop-color="#d8b568"/><stop offset="1" stop-color="#92703b"/></linearGradient></defs><path d="M29 94C8 75 10 47 20 31M91 94c21-19 19-47 9-63" fill="none" stroke="#ae9457" stroke-width="3"/><path d="m18 43-9-9 1 14 10 6m-3 5L5 52l4 15 11 4m1 5L9 71l7 14 10 3m76-45 9-9-1 14-10 6m3 5 12-7-4 15-11 4m-1 5 12-5-7 14-10 3" fill="#b99f61"/><path d="m60 14 12 20 22-9-5 27-6 35-23 20-23-20-6-35-5-27 22 9Z" fill="url(#victory-metal-59)" stroke="#fae7ac" stroke-width="3"/><path d="m60 35 21 16-5 28-16 15-16-15-5-28Z" fill="#203d46" stroke="#a58546" stroke-width="2"/><path d="m44 52 13 7-5 11-10-5m34-13-13 7 5 11 10-5" fill="#ddc181"/><path d="m60 45-8 31 8 9 8-9Z" fill="#f8e5ab"/><path d="m48 87 12 12 12-12" fill="none" stroke="#fff0be" stroke-width="2"/><circle cx="60" cy="17" r="3" fill="#fff0c7"/></svg>';
+ const previous=renderSkillDraft;let key='';
+ renderSkillDraft=function(){previous();const d=$('#skill-dialog'),active=game.state==='reward'&&game.rewardKind==='boss';d.classList.toggle('boss-seal-59',active);if(!active){key='';return;}if(!d.open)return;
+ const signature=game.runId+':'+locale+':'+game.runMarks+':'+game.lastMasteryReward?.amount;
+ if(signature===key)return;key=signature;
+ $('#draft-title').textContent=buildText('Boss đã bị đánh bại','Boss defeated');$('#draft-kicker').textContent=game.sandboxJourney?buildText('CHIẾN THẮNG MÔ PHỎNG','SIMULATED VICTORY'):buildText('DUNGEON '+game.dungeonId+' · HOÀN THÀNH','DUNGEON '+game.dungeonId+' · COMPLETE');
+ const cards=$('#draft-cards'),badges=Array.from(cards.querySelectorAll('.resource-badge')).map(b=>b.cloneNode(true));cards.replaceChildren();const seal=document.createElement('div');seal.className='victory-seal-59';seal.innerHTML=crest;cards.append(seal);const loot=document.createElement('div');loot.className='victory-loot-59';loot.append(...badges);cards.append(loot);
+ $('#draft-detail').textContent=game.sandboxJourney?buildText('Run thử · không lưu XP, thưởng hoặc unlock.','Test run · no XP, rewards or unlocks saved.'):buildText('Mastery XP +'+(game.runXP||0)+' giữ lại · '+game.supplies+' Supplies mất khi kết thúc run.','Mastery XP +'+(game.runXP||0)+' kept · '+game.supplies+' Supplies expire when this run ends.');
+ $('#draft-confirm').textContent=buildText('Hoàn tất hành trình','Complete journey');
+ };
+})();

@@ -7,7 +7,7 @@ const LESSONS=[
 ];
 class LessonController{
  constructor(){this.step=-1;this.last=null;this.readyAt=0;this.waiting=false;this.message='';}
- start(game){game.enterTest('bow','heavy_knight');game.enemyHp=game.enemyMax=999;game.testTempo='slow';this.step=0;this.last=null;this.waiting=false;this.readyAt=game.time+1;this.message='';}
+ start(game){game.enterTest('katana','heavy_knight');game.enemyHp=game.enemyMax=999;game.testTempo='slow';this.step=0;this.last=null;this.waiting=false;this.readyAt=game.time+1;this.message='';}
  get active(){return this.step>=0;}
  update(game){if(!this.active)return;game.hp=3;
   if(game.lastCombo&&game.lastCombo!==this.last){this.last=game.lastCombo;this.waiting=game.lastCombo.clean;this.message=this.waiting?'Đúng! Chờ nhân vật phản công tự động, rồi sang bài tiếp.':'Chưa đúng · thử lại. Quan sát động tác trước khi chạm.';this.readyAt=game.time+2;}

@@ -4,7 +4,7 @@ const finalRoomHp=CampaignGame.prototype.roomHp;
 if(finalRoomHp)CampaignGame.prototype.roomHp=function(...args){return Math.ceil(finalRoomHp.apply(this,args)/4)*4;};
 const finalResetIdentity=resetIdentity;
 resetIdentity=function(g){finalResetIdentity(g);Object.assign(g,{damageScale:4,heavyWindow:null,heavyChosen:false,pendingGuard:false,deflectMotion:null});};
-CampaignGame.prototype.deflect=function(lane){const a=this.attack;if(this.weapon!=='katana'||this.state!=='combat'||!a||a.resolved||a.family!=='melee'||a.kind==='jump'||a.deflectAttempt||this.combo?.hits[a.index]?.deflectAttempt||this.action)return false;
+CampaignGame.prototype.deflect=function(lane){const a=this.attack;if(this.weapon!=='katana'||this.state!=='combat'||!a||a.resolved||a.enemySkill==='goblin_crescent_47'||a.family!=='melee'||a.kind==='jump'||a.deflectAttempt||this.combo?.hits[a.index]?.deflectAttempt||this.action)return false;
  const attempt={lane,time:this.time};this.combo.hits[a.index].deflectAttempt=attempt;a.deflectAttempt=attempt;this.deflectMotion={start:this.time,impact:a.impact,end:a.impact+.32,lane,valid:lane===a.target&&a.impact-this.time<=(this.deflectWindow??.30)};return true;};
 const finalPrepare=CampaignGame.prototype.prepareWeaponShot;
 CampaignGame.prototype.prepareWeaponShot=function(s){const total=s.damage;finalPrepare.call(this,s);if(this.weapon==='daggers'){const shots=this.shots.filter(x=>x.counterKey===s.counterKey&&!x.followup&&!x.intercept&&!x.hit);const unit=Math.floor(total/3);shots.slice(-3).forEach((x,i)=>x.damage=i===2?total-unit*2:unit);}};

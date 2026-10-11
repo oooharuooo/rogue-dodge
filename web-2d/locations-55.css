@@ -1,0 +1,10 @@
+/* Location art adds context without resizing cards or introducing a scroll area. */
+.location-sheet-55{background:linear-gradient(180deg,#142e36a8 0,#19343deb 135px,#19343d 220px),var(--location-art-55) center top/cover no-repeat!important;text-shadow:0 1px 3px #071719}
+.location-sheet-55 .draft-banner,.location-sheet-55 h2{position:relative}
+
+.location-sheet-55{background-size:auto,100% auto!important}
+#skill-dialog.location-sheet-55 .draft-cards{overflow:hidden}
+#skill-dialog.location-sheet-55 .skill-card{min-height:0}
+#skill-dialog.location-sheet-55 .draft-description{flex-basis:100px}
+@media(max-height:620px){#skill-dialog.location-sheet-55 .draft-banner{flex-basis:60px}#skill-dialog.location-sheet-55 .draft-description{flex-basis:70px}#skill-dialog.location-sheet-55 .build-slots{flex-basis:28px}#skill-dialog.location-sheet-55 .skill-card{padding-top:8px}#skill-dialog.location-sheet-55 .skill-illustration{max-height:90px}}
+

@@ -1,0 +1,13 @@
+require('./build-balance-40.cjs');
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+vm.runInThisContext(fs.readFileSync('web-2d/world-map-41.js','utf8'));
+let data={};global.localStorage={getItem:k=>data[k]||null,setItem:(k,v)=>data[k]=v,removeItem:k=>delete data[k]};
+const g=new CampaignGame(()=>.4);assert(g.dungeonStatus(1).available);assert(!g.dungeonStatus(2).available);
+assert(!g.startDungeon(2,'katana'));assert.equal(g.state,'menu');assert(g.startDungeon(1,'katana'));
+g.selectSkill('focus');g.supplies=5;g.hp=2;g.persist();const saved=JSON.stringify(g.savedRun),xp=g.meta.xp.katana;
+assert(!g.startDungeon(1,'bow'));assert.equal(JSON.stringify(g.savedRun),saved);
+const h=new CampaignGame(()=>.4);assert(h.resume());assert.equal(h.hp,2);assert.equal(h.supplies,5);assert.equal(h.weapon,'katana');
+h.state='menu';assert(h.startDungeon(1,'bow',true));assert.equal(h.hp,3);assert.equal(h.supplies,0);assert.deepEqual(h.skills,{});assert.equal(h.meta.xp.katana,xp);
+worldProgress(h);assert(h.finishRun(true));assert.equal(h.dungeonStatus(1).clears,1);assert(!h.finishRun(true));assert.equal(h.dungeonStatus(1).clears,1);assert(h.dungeonStatus(2).requirementMet);assert(!h.dungeonStatus(2).available);h.state='won';h.persist();
+const reload=new CampaignGame(()=>.4);assert.equal(reload.dungeonStatus(1).clears,1);reload.test=true;assert(!reload.finishRun(true));assert.equal(reload.dungeonStatus(1).clears,1);
+console.log('World map 41: release gates, completion once, reload, Test isolation, replacement guard, exact resume and fresh-run reset passed.');

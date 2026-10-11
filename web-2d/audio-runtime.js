@@ -9,3 +9,4 @@ class GameAudio {
 }
 GameAudio.files={dodge:'swish-a.wav',swing:'swish-b.wav',heavy:'swish-c.wav',claw:'knife.ogg',cloth:'cloth.ogg',rock:'rock.ogg',earth:'earth.ogg',land:'footsteps.ogg',blade:'sword-clash.ogg',bell:'slam-cue.ogg',bear:'bear-claw.wav',normal:'normal.mp3',boss:'boss-loop.wav',map:'exploration.mp3'};
 if(typeof module!=='undefined')module.exports={GameAudio};
+GameAudio.files.perfectDodge='perfect-heavy-air.wav';

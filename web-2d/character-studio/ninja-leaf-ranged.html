@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <base href="/45-world-map/">
+  <title>Ninja Lá · kỹ năng tầm xa</title>
+  <link rel="stylesheet" href="/45-world-map/character-studio/style.css?v=94">
+  <style>
+    body{max-width:1480px;height:auto;min-height:100vh;overflow-x:hidden;overflow-y:auto;display:block;margin:auto;padding:20px;color:#f1dfb0;background:#10292e;font:15px/1.5 system-ui,sans-serif}
+    h1{margin:3px 0 4px;font-size:30px} .lead{color:#bed0c8;margin:0 0 18px;max-width:900px}
+    .bar{display:flex;gap:10px;align-items:center;margin:12px 0 18px;flex-wrap:wrap}.statusbar{margin-top:-8px;color:#c3d0c9;font-size:13px}
+    button{border:1px solid #7e927b;border-radius:10px;background:#1c393d;color:#f1dfb0;padding:10px 16px;font:inherit;cursor:pointer}
+    button:hover{background:#34524a}.cards{display:grid;grid-template-columns:repeat(2,minmax(350px,1fr));gap:14px}
+    article{background:linear-gradient(140deg,#263f3d,#19363b);border:1px solid #ad9860;border-radius:16px;padding:14px;min-width:0}
+    .title{display:flex;gap:10px;align-items:baseline}.title b{font-size:19px}.tag{color:#dfbd75;font-size:12px;letter-spacing:.09em;text-transform:uppercase}
+    article p{color:#c3d0c9;margin:3px 0 9px;min-height:48px}.stage{width:100%;height:auto;display:block;border-radius:11px;background:#112d34;border:1px solid #385751}
+    .meta{display:flex;justify-content:space-between;color:#c3d0c9;font-size:13px;margin-top:8px;gap:8px}.meta strong{color:#efd18e}.sound-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;color:#c3d0c9;font-size:13px}.sound-row select{max-width:72%;padding:8px;background:#1c393d;color:#f1dfb0;border:1px solid #7e927b;border-radius:8px}.sound-row button{padding:7px 10px;font-size:13px}
+    .foot{margin-top:16px;color:#aebfb7;font-size:13px}.back{color:#e8cd8d;text-decoration:none}
+    @media(max-width:820px){.cards{grid-template-columns:1fr}body{padding:12px}article p{min-height:0}}
+  </style>
+</head>
+<body>
+  <header><small>CHARACTER STUDIO · TEST MODE</small><h1>Skill tầm xa · Ninja Lá</h1>
+    <p class="lead">Bốn hướng thiết kế riêng, dùng cùng rig và ngoại hình Ninja Lá đã duyệt. Theo nhịp Enemy Skill Lab: báo đòn 0,875 giây → tung đòn → chạm → hồi thế. Lane đơn được báo bằng tay; skill 3 lane chỉ chớp một lần cạnh Ninja. Đây là concept preview, chưa đưa vào combat.</p>
+  </header>
+  <div class="bar"><label for="single-lane">Lane cho mẫu 1–2:</label><select id="single-lane"><option value="0">Trên · tay nâng lên</option><option value="1" selected>Giữa · tay đưa ngang</option><option value="2">Dưới · tay hạ xuống</option></select><label for="speed">Tốc độ:</label><select id="speed"><option value="1">1×</option><option value="0.5">0,5×</option></select><button id="toggle">Tạm dừng</button><button id="replay">Phát lại</button><button id="cue">Giữ lấy đà</button><button id="impact">Giữ lúc tung đòn</button></div>
+  <div class="bar statusbar"><span id="status">Đang tải rig và part Ninja Lá…</span><a class="back" href="/45-world-map/character-studio/">Quay lại Character Studio</a></div>
+  <main class="cards">
+    <article><div class="title"><b>01 · Ghim shuriken</b><span class="tag">1 lane · nhắm chính xác</span></div><p>Chỉ cánh tay ném đổi hướng theo lane đã chọn: nâng lên, ngang hoặc hạ xuống. Shuriken bay thẳng và ghim vào đúng lane được báo.</p><canvas class="stage" id="s1" width="720" height="340"></canvas><div class="meta"><span><strong>Nhịp:</strong> tay ngắm → phóng → ghim</span><span><strong>Vai trò:</strong> đơn mục tiêu</span></div><div class="sound-row"><label for="sound1">Âm thanh</label><select id="sound1"><option value="swish-a.wav">Gió nhẹ · Swish A</option><option value="knife.ogg">Lưỡi dao xé gió · Kenney</option></select><button data-listen="sound1">Nghe thử</button></div></article>
+    <article><div class="title"><b>02 · Kunai hồi tuyến</b><span class="tag">1 lane · quỹ đạo cong</span></div><p>Tay ném hướng đúng lane; kunai lượn theo đường cong rồi ghim vào điểm ngắm. Vệt dây mảnh tạo nhịp khác shuriken mà không di chuyển thân hay chân.</p><canvas class="stage" id="s2" width="720" height="340"></canvas><div class="meta"><span><strong>Nhịp:</strong> tay ngắm → ném → ghim</span><span><strong>Vai trò:</strong> đơn mục tiêu</span></div><div class="sound-row"><label for="sound2">Âm thanh</label><select id="sound2"><option value="swish-b.wav">Lướt nhanh · Swish B</option><option value="knife.ogg">Dao sắc · Kenney</option></select><button data-listen="sound2">Nghe thử</button></div></article>
+    <article><div class="title"><b>03 · Tán diệp</b><span class="tag">3 lanes · ba đường phóng</span></div><p>Tay ngắm ngang suốt pha báo đòn; một dấu chớp duy nhất gần Ninja báo lúc sắp tung. Ba shuriken bung quạt rồi ghim riêng vào ba lane.</p><canvas class="stage" id="s3" width="720" height="340"></canvas><div class="meta"><span><strong>Nhịp:</strong> giữ tay ngang → chớp cạnh Ninja → bung quạt → hồi thế</span><span><strong>Vai trò:</strong> phủ 3 lane</span></div><div class="sound-row"><label for="sound3">Âm thanh</label><select id="sound3"><option value="swish-c.wav">Ba nhát mạnh · Swish C</option><option value="swish-b.wav">Ba nhát gọn · Swish B</option></select><button data-listen="sound3">Nghe thử</button></div></article>
+    <article><div class="title"><b>04 · Ảnh lá xuyên tuyến</b><span class="tag">3 lanes · không ném vũ khí</span></div><p>Hai tay kết ấn ngang trong lúc lấy đà; một dấu chớp cạnh Ninja báo tung. Sóng lá quét xuyên cả ba lane rồi tan trước khi Ninja hồi thế.</p><canvas class="stage" id="s4" width="720" height="340"></canvas><div class="meta"><span><strong>Nhịp:</strong> giữ tay ngang → chớp cạnh Ninja → sóng quét → hồi thế</span><span><strong>Vai trò:</strong> phủ 3 lane</span></div><div class="sound-row"><label for="sound4">Âm thanh</label><select id="sound4"><option value="swish-a.wav">Lá lướt · Swish A</option><option value="earth.ogg">Năng lượng đất · qubodup</option></select><button data-listen="sound4">Nghe thử</button></div></article>
+  </main>
+  <p class="foot">Lane đơn: hướng cánh tay ném phải trùng với lane bị nhắm; đầu, thân và chân giữ nguyên. Ba lane: không chớp ở từng lane, chỉ có một dấu chớp gần Ninja. Âm thanh nghe thử là bản thu CC0: <a href="https://opengameart.org/content/swishes-sound-pack">Swishes · artisticdude</a>, <a href="https://kenney.nl/assets/rpg-audio">RPG Audio · Kenney</a>, <a href="https://opengameart.org/content/earth-element-magic-spell">Earth Spell · qubodup</a>. <a class="back" href="/45-world-map/character-studio/">Mở Character Studio</a></p>
+  <script src="/45-world-map/character-studio/ninja-leaf-ranged.js?v=11"></script>
+</body>
+</html>

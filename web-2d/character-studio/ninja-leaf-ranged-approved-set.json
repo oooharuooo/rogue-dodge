@@ -1,0 +1,30 @@
+{
+  "id": "ninja-leaf-ranged-set-2026-10-10",
+  "name": "Ninja Lá · ranged concept set",
+  "status": "saved-for-future-use",
+  "approvedByUserForReuse": true,
+  "gameplayIntegrated": false,
+  "animationRules": {
+    "grammar": "tell -> release -> contact -> recovery",
+    "tellMs": 875,
+    "singleLane": "Only the throwing arm aims: up for top, level for middle, down for bottom. Head, torso, and legs remain in idle pose.",
+    "threeLanes": "Use one flash beside Ninja only; never flash each lane.",
+    "projectileOrigin": "The throwing-hand socket; the weapon leaves the hand at release."
+  },
+  "concepts": [
+    { "id": "pin", "name": "Ghim shuriken", "coverage": ["top", "middle", "bottom"], "type": "single-lane", "motion": "Straight throw, pin into the targeted lane." },
+    { "id": "returning-kunai", "name": "Kunai hồi tuyến", "coverage": ["top", "middle", "bottom"], "type": "single-lane", "motion": "Curved throw and pin into the targeted lane." },
+    { "id": "leaf-fan", "name": "Tán diệp", "coverage": ["top", "middle", "bottom"], "type": "three-lane", "motion": "Three shuriken fan out and pin one per lane." },
+    { "id": "leaf-wave", "name": "Ảnh lá xuyên tuyến", "coverage": ["top", "middle", "bottom"], "type": "three-lane", "motion": "Horizontal hand seal, then a leaf-energy wave crosses all lanes; no thrown weapon." }
+  ],
+  "soundCandidates": {
+    "finalSelection": null,
+    "sources": [
+      { "name": "Swishes Sound Pack", "creator": "artisticdude", "license": "CC0", "url": "https://opengameart.org/content/swishes-sound-pack" },
+      { "name": "RPG Audio", "creator": "Kenney", "license": "CC0", "url": "https://kenney.nl/assets/rpg-audio" },
+      { "name": "Earth Element Magic Spell", "creator": "qubodup", "license": "CC0", "url": "https://opengameart.org/content/earth-element-magic-spell" }
+    ]
+  },
+  "preview": "../balance-previews/63-character-studio/ninja-leaf-ranged.html",
+  "designNotes": "rogue-dodge/NINJA-PROTOTYPE-79.md"
+}

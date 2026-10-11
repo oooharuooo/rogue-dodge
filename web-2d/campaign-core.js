@@ -3,6 +3,16 @@ Object.assign(ENEMIES,{iron_bear:{name:'Iron Bear',variant:1,hp:11,windup:1.65,p
 Object.assign(BOSSES,{elder_bear:{name:'Elder Bear',variant:1,hp:24,windup:1.6,phases:3,pattern:['jump','up','down']}});
 const BEAST_IDS=['dread_wolf','frost_wolf','iron_bear','elder_bear'];
 const ROOM_ROSTERS={swordsman:['swordsman','goblin_scout','frost_wolf'],heavy_knight:['heavy_knight','orc_raider','iron_bear'],rogue:['rogue','moss_golem','dread_wolf'],duelist:['duelist','minotaur_guard','ogre_smith']};
+// Approved D1 all-lanes assignments from Enemy Skill Lab. The opening beat is
+// reserved for the tell/animation; Goblin intentionally opens with its chosen #47.
+const D1_ALL_LANE_SKILLS={
+ goblin_scout:{id:'goblin_crescent_47',firstAt:0,every:3},
+ orc_raider:{id:'orc_crescent_47',firstAt:2,every:3},
+ minotaur_guard:{id:'minotaur_crescent_47',firstAt:1,every:3},
+ executioner:{id:'executioner_lattice_44',firstAt:2,every:3}
+};
+function d1AllLaneSkillFor(game){return game.enemyId==='executioner'&&game.isBoss||game.enemyId!=='executioner'?D1_ALL_LANE_SKILLS[game.enemyId]||null:null;}
+function d1AllLaneSkillReady(game){const skill=d1AllLaneSkillFor(game);if(!skill)return false;if(game.test&&game.testCoverage==='all')return true;if(!game.test&&game.dungeonId!==1)return false;return game.attackCount>=skill.firstAt&&(game.attackCount-skill.firstAt)%skill.every===0;}
 // Campaign topology is data, separate from legacy five-room runs.
 const CAMPAIGN_ROUTE=[['swordsman','heavy_knight'],['rogue','swordsman','heavy_knight'],['rogue','event','duelist'],['rest','heavy_knight','shrine'],['rogue','shop','duelist'],['event','heavy_knight','treasure'],['duelist','rogue','shrine'],['camp','duelist'],['boss']];
 const ROUTE_REGIONS=[{name:'Rừng cổ',subtitle:'Dấu chân trong sương',from:0,to:2},{name:'Đèo đá',subtitle:'Giá của mỗi lựa chọn',from:3,to:5},{name:'Thành bỏ hoang',subtitle:'Trước cổng lãnh chúa',from:6,to:8}];
@@ -16,15 +26,21 @@ class CampaignGame extends CombatGame {
  roomHp(node,tier=this.floor){const e=ENEMIES[this.roomEnemy(node)],depth=this.routeVersion===1?1:1+Math.floor(tier/3)*.15;return Math.ceil(e.hp*depth*(node==='duelist'?1.25:1));}
  roomEnemy(node){const ids=ROOM_ROSTERS[node];return ids?ids[(this.runIndex||0)%ids.length]:node;}
  get combatProfile(){return BEAST_IDS.includes(this.enemyId)?'melee':super.combatProfile;}
- get chainLength(){if(this.test&&this.testLength)return super.chainLength;if(this.enemyId==='elder_bear')return [2,3,4][this.phase-1];return super.chainLength;}
+ get chainLength(){if(this.test&&this.testCoverage==='all')return 1;if(d1AllLaneSkillReady(this))return 1;if(this.test&&this.testLength)return super.chainLength;if(this.enemyId==='elder_bear')return [2,3,4][this.phase-1];return super.chainLength;}
  beginChain(forced){
+  const d1Skill=d1AllLaneSkillFor(this);
+  if(this.test&&this.testCoverage==='all')forced=[{family:'melee',kind:'melee',target:1,...(d1Skill?{enemySkill:d1Skill.id}:{kind:'jump'}),skillClass:'single',beatCount:1,coverage:'all'}];
   if(!forced){const profile=this.combatProfile,id=this.enemyId;forced=Array.from({length:this.chainLength},(_,i)=>{
+   if(d1AllLaneSkillReady(this)&&i===0)return {family:'melee',kind:'melee',target:1,enemySkill:d1Skill.id,skillClass:'single',beatCount:1,coverage:'all'};
    const family=profile==='mixed'?(this.rng()<.5?'melee':'ranged'):profile,r=this.rng();
    if(family==='ranged'){const kind=r<1/3?'up':r<2/3?'down':'jump';return {family,kind,target:kind==='up'?0:kind==='down'?2:1};}
-   const slam=['iron_bear','elder_bear','ogre_smith','rune_golem'].includes(id)?.4:['dread_wolf','frost_wolf'].includes(id)?.15:.25;
+   // Goblin Scout has one deliberate all-lanes move (#47). Do not let the
+   // generic random ground-slam create a second, earthquake-like all-lanes skill.
+   const slam=id==='goblin_scout'?0:['iron_bear','elder_bear','ogre_smith','rune_golem'].includes(id)?.4:['dread_wolf','frost_wolf'].includes(id)?.15:.25;
    if(r<slam)return {family,kind:'jump',target:1};
-   const pick=(r-slam)/(1-slam);return {family,kind:'melee',target:i===0?1:pick<1/3?0:pick<2/3?1:2};
-  });}
+   const pick=(r-slam)/(1-slam);return {family,kind:'melee',target:this.isBoss&&id==='executioner'?1:i===0?1:pick<1/3?0:pick<2/3?1:2,...(id==='goblin_scout'?{enemySkill:'goblin_dagger_01'}:{})};
+ });}
+  if(forced)forced=forced.map(hit=>hit.kind==='jump'&&!hit.coverage?{...hit,coverage:'all'}:hit);
   const ok=super.beginChain(forced);if(!ok)return false;
   const tempo=this.test?this.testTempo:'standard',mult=tempo==='slow'?1.25:tempo==='challenge'?.92:1;
   const early=!this.test&&this.floor===0?.2:0;
@@ -48,4 +64,4 @@ class CampaignGame extends CombatGame {
  }
  persist(){super.persist();if(!this.test&&this.savedRun){this.savedRun.routeVersion=this.routeVersion;this.savedRun.skillOfferKey=this.skillOfferKey;this.savedRun.skillOfferIds=this.skillOfferIds;this.savedRun.runIndex=this.runIndex||0;this.savedRun.routeReward=this.routeReward;this.savedRun.routeOutcome=this.routeOutcome;try{localStorage.setItem('rogue-lane-checkpoint-v1',JSON.stringify(this.savedRun));}catch{}}}
 }
-if(typeof module!=='undefined')module.exports={CampaignGame,BEAST_IDS,ROOM_ROSTERS,CAMPAIGN_ROUTE,ROUTE_REGIONS,routeConnected};
+if(typeof module!=='undefined')module.exports={CampaignGame,BEAST_IDS,ROOM_ROSTERS,CAMPAIGN_ROUTE,ROUTE_REGIONS,routeConnected,D1_ALL_LANE_SKILLS,d1AllLaneSkillReady};

@@ -1,0 +1,242 @@
+[
+  {
+    "id": "snow-original",
+    "biome": "Tuyết",
+    "title": "01 · Tuyết hiện tại",
+    "role": "Battle",
+    "src": "backgrounds/approved-55/snow-original.webp",
+    "new": false,
+    "focusX": 0.5,
+    "bytes": 215464
+  },
+  {
+    "id": "forest-rest",
+    "biome": "Rừng",
+    "title": "02 · Suối trú chân",
+    "role": "Rest",
+    "src": "backgrounds/approved-55/forest-rest.webp",
+    "new": true,
+    "focusX": 0.15,
+    "bytes": 184874
+  },
+  {
+    "id": "forest-merchant",
+    "biome": "Rừng",
+    "title": "03 · Lều dưới tán cây",
+    "role": "Merchant",
+    "src": "backgrounds/approved-55/forest-merchant.webp",
+    "new": true,
+    "focusX": 0.85,
+    "bytes": 213328
+  },
+  {
+    "id": "snow-rest",
+    "biome": "Tuyết",
+    "title": "02 · Trạm sưởi đèo tuyết",
+    "role": "Rest",
+    "src": "backgrounds/approved-55/snow-rest.webp",
+    "new": true,
+    "focusX": 0.15,
+    "bytes": 208028
+  },
+  {
+    "id": "snow-merchant",
+    "biome": "Tuyết",
+    "title": "03 · Chợ ven đường băng",
+    "role": "Merchant",
+    "src": "backgrounds/approved-55/snow-merchant.webp",
+    "new": true,
+    "focusX": 0.85,
+    "bytes": 220474
+  },
+  {
+    "id": "desert-rest",
+    "biome": "Sa mạc",
+    "title": "01 · Bóng mát ốc đảo",
+    "role": "Rest",
+    "src": "backgrounds/approved-55/desert-rest.webp",
+    "new": true,
+    "focusX": 0.15,
+    "bytes": 156982
+  },
+  {
+    "id": "desert-merchant",
+    "biome": "Sa mạc",
+    "title": "02 · Trạm caravan",
+    "role": "Merchant",
+    "src": "backgrounds/approved-55/desert-merchant.webp",
+    "new": true,
+    "focusX": 0.85,
+    "bytes": 157786
+  },
+  {
+    "id": "desert-boss",
+    "biome": "Sa mạc",
+    "title": "03 · Cổng vua cát",
+    "role": "Boss",
+    "src": "backgrounds/approved-55/desert-boss.webp",
+    "new": true,
+    "focusX": 0.5,
+    "bytes": 130126
+  },
+  {
+    "id": "volcano-rest",
+    "biome": "Núi lửa",
+    "title": "01 · Hốc đá nguội",
+    "role": "Rest",
+    "src": "backgrounds/approved-55/volcano-rest.webp",
+    "new": true,
+    "focusX": 0.15,
+    "bytes": 122850
+  },
+  {
+    "id": "volcano-merchant",
+    "biome": "Núi lửa",
+    "title": "02 · Lò rèn ven dung nham",
+    "role": "Merchant",
+    "src": "backgrounds/approved-55/volcano-merchant.webp",
+    "new": true,
+    "focusX": 0.85,
+    "bytes": 128176
+  },
+  {
+    "id": "volcano-boss",
+    "biome": "Núi lửa",
+    "title": "03 · Vương tọa tro tàn",
+    "role": "Boss",
+    "src": "backgrounds/approved-55/volcano-boss.webp",
+    "new": true,
+    "focusX": 0.5,
+    "bytes": 165708
+  },
+  {
+    "id": "ruins-rest",
+    "biome": "Phế tích",
+    "title": "01 · Sân tu viện",
+    "role": "Rest",
+    "src": "backgrounds/approved-55/ruins-rest.webp",
+    "new": true,
+    "focusX": 0.15,
+    "bytes": 221858
+  },
+  {
+    "id": "ruins-merchant",
+    "biome": "Phế tích",
+    "title": "02 · Chợ trong thành đổ",
+    "role": "Merchant",
+    "src": "backgrounds/approved-55/ruins-merchant.webp",
+    "new": true,
+    "focusX": 0.85,
+    "bytes": 187022
+  },
+  {
+    "id": "ruins-boss",
+    "biome": "Phế tích",
+    "title": "03 · Điện vua quên lãng",
+    "role": "Boss",
+    "src": "backgrounds/approved-55/ruins-boss.webp",
+    "new": true,
+    "focusX": 0.5,
+    "bytes": 136248
+  },
+  {
+    "id": "abyss-rest",
+    "biome": "Vực sâu",
+    "title": "01 · Hang đèn xanh",
+    "role": "Rest",
+    "src": "backgrounds/approved-55/abyss-rest.webp",
+    "new": true,
+    "focusX": 0.15,
+    "bytes": 128282
+  },
+  {
+    "id": "abyss-merchant",
+    "biome": "Vực sâu",
+    "title": "02 · Quầy giữa hang sâu",
+    "role": "Merchant",
+    "src": "backgrounds/approved-55/abyss-merchant.webp",
+    "new": true,
+    "focusX": 0.85,
+    "bytes": 129654
+  },
+  {
+    "id": "abyss-boss",
+    "biome": "Vực sâu",
+    "title": "03 · Cổng vực lặng",
+    "role": "Boss",
+    "src": "backgrounds/approved-55/abyss-boss.webp",
+    "new": true,
+    "focusX": 0.5,
+    "bytes": 124518
+  },
+  {
+    "id": "forest-boss",
+    "biome": "Rừng",
+    "title": "04 · Cổng cổ thụ",
+    "role": "Boss",
+    "src": "backgrounds/approved-55/forest-boss.webp",
+    "new": true,
+    "focusX": 0.5,
+    "bytes": 240662
+  },
+  {
+    "id": "forest-normal",
+    "biome": "Rừng",
+    "title": "05 · Lối rừng xanh",
+    "role": "Normal",
+    "src": "backgrounds/approved-55/forest-normal.webp",
+    "new": true,
+    "focusX": 0.5,
+    "bytes": 198382
+  },
+  {
+    "id": "snow-normal",
+    "biome": "Tuyết",
+    "title": "04 · Đồng tuyết",
+    "role": "Normal",
+    "src": "backgrounds/approved-55/snow-normal.webp",
+    "new": true,
+    "focusX": 0.5,
+    "bytes": 185688
+  },
+  {
+    "id": "volcano-normal",
+    "biome": "Núi lửa",
+    "title": "04 · Lối đá tro",
+    "role": "Normal",
+    "src": "backgrounds/approved-55/volcano-normal.webp",
+    "new": true,
+    "focusX": 0.5,
+    "bytes": 115130
+  },
+  {
+    "id": "desert-normal",
+    "biome": "Sa mạc",
+    "title": "04 · Đường qua cồn cát",
+    "role": "Normal",
+    "src": "backgrounds/approved-55/desert-normal.webp",
+    "new": true,
+    "focusX": 0.5,
+    "bytes": 119796
+  },
+  {
+    "id": "ruins-normal",
+    "biome": "Phế tích",
+    "title": "04 · Đường thành cổ",
+    "role": "Normal",
+    "src": "backgrounds/approved-55/ruins-normal.webp",
+    "new": true,
+    "focusX": 0.5,
+    "bytes": 197038
+  },
+  {
+    "id": "abyss-normal",
+    "biome": "Vực sâu",
+    "title": "04 · Lối hang sâu",
+    "role": "Normal",
+    "src": "backgrounds/approved-55/abyss-normal.webp",
+    "new": true,
+    "focusX": 0.5,
+    "bytes": 116538
+  }
+]

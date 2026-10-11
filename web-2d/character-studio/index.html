@@ -1,0 +1,18 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="/45-world-map/"><title>Character Studio · Test Mode</title><link rel="stylesheet" href="/45-world-map/character-studio/style.css?v=81"></head><body class="studio-embedded"><header><small>ROGUE DODGE · AUTHORING TOOL</small><h1>Character Studio</h1><p>Studio tạo nhân vật · mở từ menu chính → Test Mode · <a href="/45-world-map/character-studio/ninja-leaf-ranged.html" style="color:#e8cd8d">Xem preview skill Ninja Lá ↗</a></p></header><nav id="families"><button data-family="human">Người cũ</button><button data-family="package">Package miễn phí</button><button data-family="approved">Mẫu tham chiếu</button><button data-family="golem">Golem</button><button data-family="orc">Orc</button><button data-family="ogre">Ogre</button><button data-family="goblin">Goblin</button><button data-family="minotaur">Minotaur</button></nav><main><section class="preview"><canvas id="preview" width="700" height="650" aria-label="Nhân vật đang ghép"></canvas><div><label>Tên có sẵn<select id="role"><option value="">Tên riêng</option><option>Heavy Knight</option><option>Iron Warden</option><option>Executioner</option><option>Swordsman</option><option>Rogue</option><option>Ranger</option><option>Mage</option><option>Frost Mage</option><option>Frost Sentinel</option><option>Goblin</option><option>Orc</option><option>Ogre</option><option>Golem</option><option>Fire Golem</option><option>Minotaur</option><option>Wolf</option><option>Snow Wolf</option><option>Bear</option></select></label><label>Tên nhân vật<input id="name" value="Nhân vật mới" maxlength="60"></label><button id="save">Lưu bản ghép</button><button id="export">Xuất JSON</button><button id="png">Xuất PNG</button></div><p id="status" role="status">Đang tải bộ khung…</p><label>Bản ghép đã lưu<select id="saved"><option value="">Chọn bản ghép</option></select></label><details><summary>Asset hiện có & phần còn thiếu</summary><p>Ba bộ người hiện có dùng chung rig. Kho cũ vẫn được giữ: hero, humanoid và các nhánh monster. Các nhóm Golem, Orc, Ogre, Goblin và Minotaur có bộ slot theo rig riêng. 20 package miễn phí có 60 bộ khung Spriter gốc và PNG part độc lập. Head PNG đang gộp tóc/mũ với nền đầu; không giả vờ đã tách tóc. Slot tóc độc lập nhận PNG riêng. Mày/mắt/miệng đang cắt vùng từ sprite mặt, chưa phải artwork tách lớp hoàn chỉnh. Package dùng hierarchy, pivot và thứ tự lớp gốc. Chọn animation có sẵn rồi kiểm tra bản ghép trước khi đưa vào game.</p><p>Nhập PNG theo khung slot: đầu/tóc 480×480, mặt 320×240, thân 320×320, tay/chân 128×128, vũ khí 400×128. Ảnh mới dùng điểm neo của rig; kiểm tra khớp trước khi duyệt.</p></details></section><aside><div class="intro"><h2>Bộ phận độc lập</h2><p>Đổi từng slot, hoặc nhập PNG riêng từ máy. Tệp chỉ được đọc trong trình duyệt này.</p></div><nav id="groups"><button data-group="head">Đầu</button><button data-group="body">Thân</button><button data-group="limbs">Tay chân</button><button data-group="weapon">Vũ khí</button></nav><div id="slots"></div></aside></main><footer>Studio chỉ mở từ Test Mode. Bản ghép và package là công cụ tham khảo; chưa tự đưa nhân vật vào roster combat.</footer><script src="modular-enemies.js"></script><script src="boss-motion.js"></script><script src="/45-world-map/character-studio/studio.js?v=78"></script><script src="/45-world-map/character-studio/knight-rig-68.js?v=78"></script><script src="/45-world-map/character-studio/packages74.js?v=94"></script><script src="/45-world-map/character-studio/families.js?v=78"></script></body></html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

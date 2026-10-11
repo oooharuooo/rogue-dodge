@@ -39,7 +39,7 @@ for(const w of Object.keys(WEAPONS)){
    else {const id=g.offerSkills(Object.keys(SKILLS))[0];if(!id||!g.selectSkill(id))g.skip();}
   }else if(g.state==='combat'){
    if(!g.combo&&!g.counter&&!g.action)g.beginChain();const a=g.attack;
-   if(a&&!a.resolved){if(w==='bow'&&!g.bowSpent&&g.time>=a.start+(a.impact-a.start)*.32)g.weaponAction();if(w==='katana'&&a.family==='melee'&&a.kind!=='jump'){if(g.time>=a.impact-.1)g.deflect(a.target);}else if(!g.action&&g.time>=a.impact-.45)g.act(g.recommendedAction(a));}
+   if(a&&!a.resolved){if(w==='bow'&&!g.bowSpent&&g.time>=a.start+(a.impact-a.start)*.32)g.weaponAction();if(w==='katana'&&a.family==='melee'&&a.kind!=='jump'&&a.coverage!=='all'){if(g.time>=a.impact-.1)g.deflect(a.target);}else if(!g.action&&g.time>=a.impact-.45)g.act(g.recommendedAction(a));}
    if(w==='daggers'&&g.daggerWindow&&g.time>=g.daggerWindow.start+.04)g.weaponAction();if(w==='greatsword'&&g.heavyWindow)g.weaponAction();g.update(1/60);
   }
   if(previous==='combat'&&g.state==='reward')wins++;previous=g.state;

@@ -14,7 +14,7 @@ CampaignGame.prototype.loadEnemy=function(...args){const ok=identityLoad.apply(t
 CampaignGame.prototype.damage=function(perfect,mutate=false){
  const heldOnly=this.lastCombo?.results.every(r=>r.held||r.interrupted||r.deflected||r.perfect),flow=perfect?this.flow+1:heldOnly?this.flow:this.skills.resolve&&(this.resolveUsed||0)<this.skills.resolve?this.flow:0;
  const critical=this.opening;let base=WEAPON_RULES[this.weapon].base,bonus=0;const events=[];const add=(id,amount)=>{bonus+=amount;events.push({id,amount:Math.round(amount*4),text:(SKILL_VISUALS[id]?.title||id)+' · +'+Math.round(amount*4)+' DMG'});};
- if(critical){base*=2;events.push({id:'opening',text:'Sơ hở · chí mạng'});}
+ if(critical){base*=2;events.push({id:'opening',text:'Stagger · chí mạng'});}
  if(this.skills.momentum&&flow>=(this.skills.momentum>=2?2:3))add('momentum',.5);
  const count=this.perfects+(perfect?1:0);if(perfect&&this.skills.flame_counter&&count%(this.skills.flame_counter>=2?2:3)===0)add('flame_counter',.5);
  if(this.pendingWeaponBonus)add('mastery',this.pendingWeaponBonus);
@@ -41,7 +41,7 @@ CampaignGame.prototype.update=function(dt){
  if(this.state!=='combat'){this.daggerWindow=null;return;}
  let resourcesChanged=false;const c=this.combo||this.lastCombo;for(const r of c?.results||[]){const key=this.attackCount+':'+r.index;if(this.identitySeen.has(key))continue;this.identitySeen.add(key);resourcesChanged=true;if(r.perfect||r.deflected){this.stamina=Math.max(0,this.stamina-(r.deflected?2:1));if(this.stamina===0)this.opening=true;}}
  if(this.lastCombo&&this.lastCombo!==oldLast){resourcesChanged=true;const clean=this.lastCombo.clean;if(this.opening&&!this.counter)this.counter={perfect:false,start:null,released:false,readyAt:this.time+.42};
- if(this.weapon==='greatsword'){this.armor=this.chainArmor;this.chainArmor=0;if(clean){if(this.armor){this.heavyWindow={start:this.time,end:this.time+.38};}else{this.pendingGuard=true;this.armorRecovery=1;}}else this.armorRecovery=0;}
+ if(this.weapon==='greatsword'){this.armor=this.chainArmor;this.chainArmor=0;if(clean){if(this.armor){this.heavyWindow={start:this.time,end:this.time+.65};if(this.counter)this.counter.readyAt=Math.max(this.counter.readyAt,this.time+.73);}else{this.pendingGuard=true;this.armorRecovery=1;}}else this.armorRecovery=0;}
  if(clean&&this.weapon==='katana')this.nextSwordBonus=WEAPON_RULES.katana.masteryClean[Math.min(3,this.level)-1]+(this.skills.crescent||0)*.25;}
  if(this.pendingGuard&&!this.counter){this.pendingGuard=false;this.armor=1;this.armorBroken=false;this.armorRecovery=0;this.skillEvents.push({id:'guard_gain',text:'THẾ ĐỠ',time:this.time});}if(this.heavyWindow&&this.time>this.heavyWindow.end)this.heavyWindow=null;
  if(this.daggerWindow&&this.time>this.daggerWindow.end){this.daggerWindow=null;if(this.level>=2)this.pendingWeaponBonus+=WEAPON_RULES.daggers.masterySkip[Math.min(3,this.level)-1];}
@@ -66,6 +66,10 @@ function weaponHeroPosition(g,age=g.counter?.start==null?-1:g.time-g.counter.sta
  const m=g.weaponMotion;if(m?.followStart!=null&&g.time<m.end){const t=g.time-m.followStart,from=regular(m.followStart-m.start);if(t<.08)return from+(630-from)*ease(t/.08);if(t<.32)return 630;return 90+540*(1-ease((t-.32)/.33));}
  return regular(age);
 }
+
+
+
+
 
 
 

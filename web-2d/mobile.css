@@ -26,6 +26,52 @@ canvas{object-fit:fill}.lane-input{position:absolute;inset:0;pointer-events:none
 /* System fonts keep Vietnamese accents in the same face as the base letters. */
 h2{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;font-weight:700;line-height:1.4;letter-spacing:normal}
 
+/* Landscape phones: use the full width while retaining the arena's live canvas projection. */
+@media (orientation:landscape) and (max-height:600px){
+ html,body{width:100%;height:100%;min-width:0}
+ .shell{width:100%;max-width:none;height:100dvh;padding:calc(4px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) calc(4px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:32px auto auto minmax(0,1fr) 16px 16px 14px;gap:4px}
+ .shell>header{grid-column:1;grid-row:1;height:32px;min-width:0}header h1{font-size:18px}header button{min-height:32px;padding:3px 9px}
+ .shell>.status{grid-column:1;grid-row:2;min-height:26px;padding:2px 8px}
+ .shell>#turn-hud{grid-column:1;grid-row:3;position:static;transform:none;justify-self:center;align-self:center;width:max-content;max-width:90%;height:22px;padding:2px 7px}
+ .shell>.stage{grid-column:1;grid-row:4;position:relative;min-width:0;min-height:0;width:100%;height:auto;max-height:none;flex:none;margin:0;border-radius:12px}
+ .stage canvas{width:100%;height:100%}
+ .shell>#turn-damage-summary{grid-column:1;grid-row:5;flex:none;height:16px;min-height:16px;line-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .shell>#feedback{grid-column:1;grid-row:6;flex:none;height:16px;min-height:16px;line-height:16px;font-size:11px}
+ .shell>.tiny-stats{grid-column:1;grid-row:7;flex:none;height:14px;min-height:14px;line-height:14px}
+ #proc-toast{left:10px;right:10px;bottom:34px;max-height:42px;padding:4px 7px}
+ #lesson-panel{max-height:28dvh;overflow:auto}
+ #menu-panel{inset:42px 8px 8px;max-height:none;overflow:auto}
+ .sheet{top:42px;bottom:8px;left:8px;right:8px;max-width:none;overflow:auto}
+ dialog{max-height:calc(100dvh - 12px);width:min(760px,calc(100% - 20px));padding:12px}
+ #mastery-dialog{width:min(760px,calc(100% - 20px))}
+ .test-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+ .test-grid select{min-width:0}
+ .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+ /* Keep the illustrated continent in its authored portrait ratio; use the spare width for context. */
+ .shell #world-selection{display:grid;grid-template-columns:minmax(150px,.7fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;align-items:center;gap:8px}
+ .shell #world-selection .world-heading{grid-column:2;grid-row:1}
+ .shell #world-selection .world-grid.illustrated-world{grid-column:1;grid-row:1 / 4;justify-self:center;align-self:center;flex:none;width:auto;height:min(100%,calc(100dvh - 92px));max-height:calc(100dvh - 92px);aspect-ratio:1086 / 1448}
+ .shell #world-selection .world-grid.illustrated-world .world-art{width:100%;height:100%;object-fit:fill}
+ .shell #world-selection .world-reward{grid-column:2;grid-row:2}
+ .shell #world-selection #world-saved{grid-column:2;grid-row:3}
+ /* The four weapon choices become one clear row so labels and icons do not collide in short viewports. */
+ .shell #world-loadout{width:min(760px,calc(100vw - 20px));height:min(360px,calc(100dvh - 12px));padding:10px 14px;gap:5px}
+ .shell #world-loadout .armory-crest svg{width:24px;height:24px;margin:1px auto}
+ .shell #world-loadout .loadout-heading h2{font-size:18px}
+ .shell #world-loadout .loadout-heading p{margin:2px 0;font-size:11px}
+ .shell #world-loadout .armory-dungeon-intro{font-size:9px;line-height:1.25;padding:2px 6px;margin:0}
+ .shell #world-loadout #weapon-cards{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:minmax(0,1fr);max-height:none!important;min-height:0;gap:6px}
+ .shell #world-loadout .weapon-choice{grid-template-rows:minmax(0,1fr) 20px;min-height:0}
+ .shell #world-loadout #weapon-cards .weapon-select{max-height:none!important;min-height:0;padding:4px 2px;gap:2px}
+ .shell #world-loadout .weapon-choice-icon{width:32px;height:32px}
+ .shell #world-loadout #weapon-cards .weapon-choice-icon svg{width:22px;height:22px}
+ .shell #world-loadout .weapon-choice-name{font-size:10px;line-height:1.1}
+ .shell #world-loadout .weapon-mastery-level{font-size:9px!important}
+ .shell #world-loadout #weapon-cards .weapon-guide{min-height:20px;height:20px;padding:1px;font-size:9px}
+ .shell #world-loadout #start{min-height:36px;padding:5px;margin-top:0!important}
+ .shell #world-loadout #resume{min-height:32px;padding:4px}
+}
+
 #lesson-panel{padding:10px;flex-shrink:0}#lesson-panel h2{font-size:15px;margin:0}#lesson-panel p{font-size:12px;margin:5px 0}#lesson-panel button{padding:8px;font-size:12px}body:has(#lesson-panel:not([hidden])) .stage{min-height:180px;margin-top:0;margin-bottom:0}
 
 .node-name{white-space:normal;line-height:1.15;text-align:center;overflow-wrap:anywhere}.route-node{height:78px}.node-icon{font-size:22px;line-height:26px}
